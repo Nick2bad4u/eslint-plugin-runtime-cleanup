@@ -32,7 +32,6 @@ declare const styles: {
     readonly "sb-preset-recommended-type-checked": string;
     readonly "sb-preset-strict": string;
     readonly "sb-preset-runtime-cleanup": string;
-    readonly "sb-preset-type-guards": string;
     readonly "theme-doc-markdown": string;
     readonly "theme-doc-sidebar-item-category-level-2": string;
     readonly "theme-doc-sidebar-item-category-level-3": string;

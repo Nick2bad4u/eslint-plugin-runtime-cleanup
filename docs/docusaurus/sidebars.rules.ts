@@ -58,7 +58,7 @@ const sidebars = {
         },
         {
             className: "sb-cat-presets",
-            collapsed: true,
+            collapsed: false,
             customProps: {
                 badge: "presets",
             },
@@ -104,6 +104,48 @@ const sidebars = {
                     id: "presets/experimental",
                     label: "Experimental",
                     type: "doc",
+                },
+                {
+                    className: "sb-cat-rules-cleanup",
+                    collapsed: false,
+                    customProps: {
+                        badge: "rules",
+                    },
+                    items: [
+                        {
+                            id: "no-floating-child-processes",
+                            label: "no-floating-child-processes",
+                            type: "doc",
+                        },
+                        {
+                            id: "no-floating-observers",
+                            label: "no-floating-observers",
+                            type: "doc",
+                        },
+                        {
+                            id: "no-floating-timers",
+                            label: "no-floating-timers",
+                            type: "doc",
+                        },
+                        {
+                            id: "no-floating-workers",
+                            label: "no-floating-workers",
+                            type: "doc",
+                        },
+                        {
+                            id: "no-unmanaged-event-listeners",
+                            label: "no-unmanaged-event-listeners",
+                            type: "doc",
+                        },
+                    ],
+                    label: "Rules in presets",
+                    link: {
+                        description:
+                            "Stable runtime cleanup rules enabled by the recommended, strict, and all presets.",
+                        title: "Rules in presets",
+                        type: "generated-index",
+                    },
+                    type: "category",
                 },
             ],
         },

@@ -25,7 +25,7 @@ Continue using `@eslint/config-helpers` for ESLint flat config composition, and 
 ## Rationale
 
 1. **Current usage is correct and low-risk**: it improves config readability and type-friendly composition.
-2. **No replacement value** for typed rule helpers or import-safe fixer infrastructure.
+2. **No replacement value** for typed rule helpers or cleanup-safe fixer infrastructure.
 3. **Separation of concerns**: config authoring helpers should remain in config-layer code.
 
 ## Consequences

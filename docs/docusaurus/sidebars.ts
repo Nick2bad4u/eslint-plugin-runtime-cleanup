@@ -156,6 +156,11 @@ const sidebars = {
                     label: "ADR 0015 · Preset Semver Policy",
                     type: "doc",
                 },
+                {
+                    id: "developer/adr/experimental-rule-admission-and-skip-criteria",
+                    label: "ADR 0016 · Experimental Rules",
+                    type: "doc",
+                },
             ],
             label: "🧭 Architecture Decisions",
             collapsible: true,
@@ -214,8 +219,8 @@ const sidebars = {
                     type: "doc",
                 },
                 {
-                    id: "developer/charts/import-safe-autofix-decision-tree",
-                    label: "Import-Safe Autofix Tree",
+                    id: "developer/charts/autofix-safety-decision-tree",
+                    label: "Autofix Safety Tree",
                     type: "doc",
                 },
                 {
@@ -269,7 +274,7 @@ const sidebars = {
             collapsed: true,
             collapsible: true,
             description:
-                "Type-level contracts and shared type aliases exposed by the plugin.",
+                "Public TypeScript contracts and shared type aliases exposed by the plugin.",
             customProps: {
                 badge: "types",
             },
@@ -282,8 +287,8 @@ const sidebars = {
             label: "Types",
             link: {
                 description:
-                    "Type-level contracts and shared type aliases exposed by the plugin.",
-                title: "Type Aliases",
+                    "Public TypeScript contracts and shared type aliases exposed by the plugin.",
+                title: "TypeScript Contracts",
                 type: "generated-index",
             },
             type: "category",
@@ -347,13 +352,13 @@ const sidebars = {
                     type: "link",
                 },
                 {
-                    href: "/blog/the-thinking-behind-eslint-plugin-runtime-cleanup",
-                    label: "🧠 Blog · Thinking behind plugin",
+                    href: "/docs/rules/overview",
+                    label: "📏 Rule reference",
                     type: "link",
                 },
                 {
-                    href: "/blog/designing-safe-autofixes-for-eslint-plugin-runtime-cleanup",
-                    label: "🛡️ Blog · Designing safe autofixes",
+                    href: "/docs/rules/presets",
+                    label: "🎛 Preset matrix",
                     type: "link",
                 },
                 {

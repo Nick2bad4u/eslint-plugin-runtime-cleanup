@@ -152,25 +152,33 @@ const effectivePresetRuleNamesByConfig: Readonly<
     Record<RuntimeCleanupConfigName, readonly RuntimeCleanupRuleName[]>
 > = {
     all: [
+        "no-floating-child-processes",
         "no-floating-observers",
         "no-floating-timers",
+        "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     experimental: [],
     minimal: [],
     recommended: [
+        "no-floating-child-processes",
         "no-floating-observers",
         "no-floating-timers",
+        "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     "recommended-type-checked": [
+        "no-floating-child-processes",
         "no-floating-observers",
         "no-floating-timers",
+        "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     strict: [
+        "no-floating-child-processes",
         "no-floating-observers",
         "no-floating-timers",
+        "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
 };

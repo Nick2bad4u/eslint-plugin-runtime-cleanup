@@ -26,6 +26,8 @@ Current syntax-only rules:
 - `src/rules/no-floating-timers.ts` reports discarded timer handles without using type information.
 - `src/rules/no-unmanaged-event-listeners.ts` reports event listener registrations without using type information.
 - `src/rules/no-floating-observers.ts` reports discarded observer instances without using type information.
+- `src/rules/no-floating-workers.ts` reports discarded worker instances without using type information.
+- `src/rules/no-floating-child-processes.ts` reports discarded child process handles without using type information.
 
 When a typed rule is added, update this inventory with:
 

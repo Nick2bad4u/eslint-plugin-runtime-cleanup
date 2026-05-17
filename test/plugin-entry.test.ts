@@ -29,8 +29,10 @@ const expectedPluginMeta = {
     version: expectedPluginVersion,
 };
 const expectedRuleRegistryShape = expect.objectContaining({
+    "no-floating-child-processes": expect.any(Object),
     "no-floating-observers": expect.any(Object),
     "no-floating-timers": expect.any(Object),
+    "no-floating-workers": expect.any(Object),
     "no-unmanaged-event-listeners": expect.any(Object),
 });
 

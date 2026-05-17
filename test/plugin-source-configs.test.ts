@@ -23,37 +23,51 @@ describe("source plugin config wiring", () => {
         const plugin = await loadSourcePlugin();
         const noFloatingObserversRuleId =
             "runtime-cleanup/no-floating-observers";
+        const noFloatingChildProcessesRuleId =
+            "runtime-cleanup/no-floating-child-processes";
         const noFloatingTimersRuleId = "runtime-cleanup/no-floating-timers";
+        const noFloatingWorkersRuleId =
+            "runtime-cleanup/no-floating-workers";
         const noUnmanagedEventListenersRuleId =
             "runtime-cleanup/no-unmanaged-event-listeners";
         const expectedRulesByConfig = {
             all: {
+                [noFloatingChildProcessesRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             experimental: {},
             minimal: {},
             recommended: {
+                [noFloatingChildProcessesRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             "recommended-type-checked": {
+                [noFloatingChildProcessesRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             strict: {
+                [noFloatingChildProcessesRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
         } as const;
 
         expect(Object.keys(plugin.rules)).toStrictEqual([
+            "no-floating-child-processes",
             "no-floating-observers",
             "no-floating-timers",
+            "no-floating-workers",
             "no-unmanaged-event-listeners",
         ]);
 

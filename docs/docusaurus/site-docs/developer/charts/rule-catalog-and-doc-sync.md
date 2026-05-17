@@ -11,7 +11,7 @@ Use this diagram to understand how a single rule change propagates through catal
 ```mermaid
 flowchart TB
     classDef src fill:#1e293b,stroke:#93c5fd,color:#f8fafc,stroke-width:1px
-    classDef catalog fill:#312e81,stroke:#a5b4fc,color:#eef2ff,stroke-width:1px
+    classDef catalog fill:#0f3f3b,stroke:#5eead4,color:#ecfeff,stroke-width:1px
     classDef docs fill:#14532d,stroke:#86efac,color:#f0fdf4,stroke-width:1px
     classDef tests fill:#7f1d1d,stroke:#fca5a5,color:#fef2f2,stroke-width:1px
     classDef output fill:#0f766e,stroke:#5eead4,color:#ecfeff,stroke-width:1px

@@ -17,7 +17,7 @@ This section provides high-signal diagrams for the plugin architecture, rule exe
 - [Change impact and validation matrix](./change-impact-and-validation-matrix.md)
 - [Quality gates and release flow](./quality-gates-and-release-flow.md)
 - [Typed rule semantic analysis flow](./typed-rule-semantic-analysis-flow.md)
-- [Import-safe autofix decision tree](./import-safe-autofix-decision-tree.md)
+- [Autofix safety decision tree](./autofix-safety-decision-tree.md)
 - [Preset composition and rule matrix](./preset-composition-and-rule-matrix.md)
 - [Docs link integrity and anchor stability](./docs-link-integrity-and-anchor-stability.md)
 - [Typed rule performance budget and hotspots](./typed-rule-performance-budget-and-hotspots.md)
@@ -37,7 +37,7 @@ Use the **Charts** category in the Developer sidebar to navigate between these p
 5. Use the change-impact matrix to choose the right validation depth per change.
 6. Use quality-gate and release flow for day-to-day maintenance and CI decisions.
 7. Use the typed-rule semantic flow when debugging parser-services/checker failures.
-8. Use the import-safe autofix tree for fix/suggest safety triage.
+8. Use the autofix safety tree for fix/suggest safety triage.
 9. Use the preset composition matrix when modifying recommendation/config composition.
 10. Use docs link integrity flow to triage broken anchor and route references quickly.
 11. Use typed-rule performance budget flow before expanding semantic checks.

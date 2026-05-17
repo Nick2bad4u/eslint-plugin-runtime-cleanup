@@ -1,12 +1,12 @@
 ---
-title: Import-Safe Autofix Decision Tree
-description: Decision matrix for when a rewrite can safely insert imports, reuse aliases, or downgrade to suggestion-only mode.
+title: Autofix Safety Decision Tree
+description: Decision matrix for when runtime cleanup rewrites can safely edit code, reuse existing handles, or downgrade to suggestion-only mode.
 sidebar_position: 7
 ---
 
-# Import-safe autofix decision tree
+# Autofix safety decision tree
 
-This chart explains how import-aware rewrite helpers decide whether to emit a fix, a suggestion, or a diagnostic-only report.
+This chart explains how runtime cleanup rules decide whether to emit a fix, a suggestion, or a diagnostic-only report.
 
 ```mermaid
 flowchart TD
@@ -19,16 +19,16 @@ flowchart TD
     B -->|No| X[No autofix; emit message only]
     B -->|Yes| C{Required helper symbol already imported?}
 
-    C -->|Yes| D[Reuse in-scope import alias]
-    C -->|No| E{Import insertion allowed by settings?}
+    C -->|Yes| D[Reuse existing cleanup handle]
+    C -->|No| E{Handle rewrite allowed by settings?}
     E -->|No| Y[Suggestion-only or message only]
-    E -->|Yes| F[resolveImportInsertionDecisionForReportFix]
+    E -->|Yes| F[Resolve cleanup rewrite for report fix]
 
     F --> G{Conflicts or shadowing risk?}
-    G -->|Yes| H[getSafeLocalNameForImportedValue]
-    H --> I{Safe alias available?}
+    G -->|Yes| H[Choose safe local binding name]
+    H --> I{Safe binding available?}
     I -->|No| Z[Suggestion-only path]
-    I -->|Yes| J[Insert import with safe alias]
+    I -->|Yes| J[Introduce cleanup binding]
     G -->|No| J
 
     D --> K[Rewrite call/member expression]
@@ -46,12 +46,12 @@ flowchart TD
 
 ## Why this chart matters
 
-- Import insertion is where most autofix regressions happen.
-- The tree clarifies that symbol safety and parse safety are independent gates.
+- Binding insertion and ownership rewrites are where most autofix regressions happen.
+- The tree clarifies that local-name safety and parse safety are independent gates.
 - Suggestion fallback is a correctness tool, not a failure mode.
 
 ## Review checklist
 
-- Verify import insertion honors plugin settings and nearest program scope.
-- Verify local alias selection does not shadow existing bindings.
+- Verify cleanup binding insertion honors plugin settings and nearest program scope.
+- Verify local binding selection does not shadow existing bindings.
 - Verify rewritten output remains parse-safe and semantically equivalent.

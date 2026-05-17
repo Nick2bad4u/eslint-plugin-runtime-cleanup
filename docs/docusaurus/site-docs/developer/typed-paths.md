@@ -36,7 +36,9 @@ No current rules have optional typed branches.
 ### Syntax-only rules
 
 - `src/rules/no-floating-observers.ts`
+- `src/rules/no-floating-child-processes.ts`
 - `src/rules/no-floating-timers.ts`
+- `src/rules/no-floating-workers.ts`
 - `src/rules/no-unmanaged-event-listeners.ts`
 
 ## Telemetry counters

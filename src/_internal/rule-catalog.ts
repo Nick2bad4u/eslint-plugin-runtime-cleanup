@@ -29,6 +29,8 @@ const orderedRuleNames = [
     "no-floating-timers",
     "no-unmanaged-event-listeners",
     "no-floating-observers",
+    "no-floating-workers",
+    "no-floating-child-processes",
 ] as const satisfies readonly string[];
 /* eslint-enable perfectionist/sort-arrays -- Re-enable sorting outside the stable rule catalog. */
 

@@ -55,30 +55,41 @@ const configs = isObject(runtimeCleanupPlugin.configs)
         : null;
     const noFloatingObserversRuleId =
         "runtime-cleanup/no-floating-observers";
+    const noFloatingChildProcessesRuleId =
+        "runtime-cleanup/no-floating-child-processes";
     const noFloatingTimersRuleId = "runtime-cleanup/no-floating-timers";
+    const noFloatingWorkersRuleId = "runtime-cleanup/no-floating-workers";
     const noUnmanagedEventListenersRuleId =
         "runtime-cleanup/no-unmanaged-event-listeners";
     const expectedRulesByConfig = {
         all: {
+            [noFloatingChildProcessesRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         experimental: {},
         minimal: {},
         recommended: {
+            [noFloatingChildProcessesRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         "recommended-type-checked": {
+            [noFloatingChildProcessesRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         strict: {
+            [noFloatingChildProcessesRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
     } as const satisfies Record<string, Record<string, "error">>;

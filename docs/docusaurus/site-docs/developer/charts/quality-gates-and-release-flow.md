@@ -12,7 +12,7 @@ This diagram shows the expected quality path from implementation through release
 flowchart LR
     classDef stage fill:#1e293b,stroke:#93c5fd,color:#f8fafc,stroke-width:1px
     classDef quality fill:#14532d,stroke:#86efac,color:#f0fdf4,stroke-width:1px
-    classDef release fill:#312e81,stroke:#a5b4fc,color:#eef2ff,stroke-width:1px
+    classDef release fill:#0f3f3b,stroke:#5eead4,color:#ecfeff,stroke-width:1px
     classDef failure fill:#7f1d1d,stroke:#fca5a5,color:#fef2f2,stroke-width:1px
 
     Design[Design] --> Implement[Implement]

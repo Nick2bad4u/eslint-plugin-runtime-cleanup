@@ -20,7 +20,7 @@ const liveBadges = [
     {
         alt: "npm license",
         href: `https://github.com/${repositorySlug}/blob/main/LICENSE`,
-        src: `${badgeBaseUrl}/npm/license/${packageName}?color=purple`,
+        src: `${badgeBaseUrl}/npm/license/${packageName}?color=teal`,
     },
     {
         alt: "npm total downloads",

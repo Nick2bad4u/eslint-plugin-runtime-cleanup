@@ -11,7 +11,7 @@ This diagram explains how rule metadata and preset definitions combine into user
 ```mermaid
 flowchart LR
     classDef source fill:#1e293b,stroke:#93c5fd,color:#f8fafc,stroke-width:1px
-    classDef meta fill:#312e81,stroke:#a5b4fc,color:#eef2ff,stroke-width:1px
+    classDef meta fill:#0f3f3b,stroke:#5eead4,color:#ecfeff,stroke-width:1px
     classDef preset fill:#14532d,stroke:#86efac,color:#f0fdf4,stroke-width:1px
     classDef docs fill:#7c2d12,stroke:#fdba74,color:#fff7ed,stroke-width:1px
 

@@ -10,7 +10,7 @@ This diagram shows how source modules, rule metadata, docs, generated tooling as
 
 ```mermaid
 flowchart TB
-    classDef source fill:#312e81,stroke:#a5b4fc,color:#eef2ff,stroke-width:1px
+    classDef source fill:#0f3f3b,stroke:#5eead4,color:#ecfeff,stroke-width:1px
     classDef runtime fill:#0f766e,stroke:#5eead4,color:#ecfeff,stroke-width:1px
     classDef docs fill:#7c2d12,stroke:#fdba74,color:#fff7ed,stroke-width:1px
     classDef ext fill:#334155,stroke:#94a3b8,color:#f8fafc,stroke-width:1px

@@ -12,6 +12,10 @@ easy to leak when allocation and teardown drift apart.
   `removeEventListener` cleanup call.
 - [`no-floating-observers`](./no-floating-observers.md) requires native
   observer instances to be retained so they can be disconnected during cleanup.
+- [`no-floating-workers`](./no-floating-workers.md) requires worker handles to
+  be retained so they can be terminated during cleanup.
+- [`no-floating-child-processes`](./no-floating-child-processes.md) requires
+  child process handles to be retained so they can be killed during cleanup.
 
 Future rules should continue to target explicit runtime resource lifetimes,
 including timers, listeners, observers, abort controllers, workers, streams,

@@ -13,7 +13,7 @@ flowchart LR
     classDef authored fill:#1e293b,stroke:#94a3b8,color:#f8fafc,stroke-width:1px
     classDef generated fill:#064e3b,stroke:#34d399,color:#ecfdf5,stroke-width:1px
     classDef validation fill:#7f1d1d,stroke:#fca5a5,color:#fef2f2,stroke-width:1px
-    classDef output fill:#312e81,stroke:#a5b4fc,color:#eef2ff,stroke-width:1px
+    classDef output fill:#0f3f3b,stroke:#5eead4,color:#ecfeff,stroke-width:1px
 
     A[docs/rules/*.md]
     B[docs/docusaurus/site-docs/**]

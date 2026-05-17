@@ -10,23 +10,19 @@
     overflow: clip;
     padding: 4.45rem 0 3.65rem;
     background:
-        radial-gradient(
-            circle at 86% 12%,
-            rgb(244 114 182 / 28%),
-            transparent 40%
-        ),
-        radial-gradient(
-            circle at 16% 90%,
-            rgb(34 211 238 / 30%),
-            transparent 45%
-        ),
+        linear-gradient(90deg, rgb(255 255 255 / 7%) 1px, transparent 1px),
+        linear-gradient(0deg, rgb(255 255 255 / 7%) 1px, transparent 1px),
         linear-gradient(
             134deg,
-            #312e81 0%,
-            #4338ca 38%,
-            #3b82f6 72%,
-            #22d3ee 100%
+            #052e2b 0%,
+            #0f766e 42%,
+            #15803d 72%,
+            #f59e0b 100%
         );
+    background-size:
+        28px 28px,
+        28px 28px,
+        auto;
     border-block-end: 1px solid rgb(255 255 255 / 18%);
     color: #ffffff;
     isolation: isolate;
@@ -41,22 +37,20 @@
 
 .heroBanner::before {
     z-index: -1;
-    border-radius: 999rem;
-    background: rgb(255 255 255 / 11%);
-    block-size: 24rem;
-    filter: blur(8px);
-    inline-size: 24rem;
-    inset: -40% auto auto -18%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 16%));
+    block-size: 100%;
+    inline-size: 28%;
+    inset: 0 auto 0 12%;
+    transform: skewX(-16deg);
 }
 
 .heroBanner::after {
     z-index: -1;
-    border-radius: 999rem;
-    background: rgb(255 255 255 / 8%);
-    block-size: 26rem;
-    filter: blur(2px);
-    inline-size: 26rem;
-    inset: auto -12% -46% auto;
+    background: linear-gradient(90deg, transparent, rgb(20 184 166 / 22%));
+    block-size: 100%;
+    inline-size: 18%;
+    inset: 0 16% 0 auto;
+    transform: skewX(-16deg);
 }
 
 @keyframes hero-panel-shimmer {
@@ -154,15 +148,15 @@
 }
 
 .heroInlineLinkCleanup {
-    border-color: rgb(196 181 253 / 58%);
-    background: rgb(91 33 182 / 30%);
-    color: rgb(243 232 255);
+    border-color: rgb(253 230 138 / 64%);
+    background: rgb(120 53 15 / 32%);
+    color: rgb(254 243 199);
 
     &:hover,
     &:focus {
-        border-color: rgb(216 180 254 / 82%);
-        background: rgb(126 34 206 / 38%);
-        color: rgb(250 245 255);
+        border-color: rgb(254 240 138 / 86%);
+        background: rgb(146 64 14 / 42%);
+        color: rgb(255 251 235);
     }
 }
 
@@ -290,16 +284,16 @@
 }
 
 .heroActionPrimary {
-    border-color: rgb(224 231 255 / 36%);
+    border-color: rgb(153 246 228 / 44%);
     background:
-        linear-gradient(145deg, rgb(129 140 248 / 90%), rgb(99 102 241 / 90%)),
-        linear-gradient(180deg, rgb(255 255 255 / 12%), rgb(255 255 255 / 0%));
-    color: rgb(232 239 255);
+        linear-gradient(145deg, rgb(13 148 136 / 94%), rgb(15 118 110 / 94%)),
+        linear-gradient(180deg, rgb(255 255 255 / 14%), rgb(255 255 255 / 0%));
+    color: rgb(240 253 250);
 
     &:hover,
     &:focus {
-        border-color: rgb(224 231 255 / 50%);
-        color: rgb(242 246 255);
+        border-color: rgb(253 230 138 / 72%);
+        color: rgb(255 251 235);
     }
 }
 
@@ -460,8 +454,8 @@
     background:
         linear-gradient(
             165deg,
-            rgb(79 70 229 / 10%),
-            rgb(14 165 233 / 8%) 56%,
+            rgb(15 118 110 / 10%),
+            rgb(245 158 11 / 8%) 56%,
             transparent
         ),
         var(--live-stats-section-background-color);
@@ -480,10 +474,10 @@
 
     display: inline-flex;
     padding: 0.2rem 0.56rem;
-    border: 1px solid rgb(79 70 229 / 24%);
+    border: 1px solid rgb(15 118 110 / 24%);
     border-radius: 999rem;
     margin: 0;
-    background: rgb(79 70 229 / 10%);
+    background: rgb(15 118 110 / 10%);
     color: var(--live-stats-kicker-color);
     font-size: 0.75rem;
     font-weight: 700;
@@ -525,8 +519,8 @@
     background:
         linear-gradient(
             170deg,
-            rgb(79 70 229 / 7%),
-            rgb(14 165 233 / 6%) 48%,
+            rgb(15 118 110 / 7%),
+            rgb(245 158 11 / 6%) 48%,
             transparent
         ),
         var(--card-background-color);
@@ -547,7 +541,7 @@
 
     &:hover,
     &:focus {
-        border-color: rgb(99 102 241 / 35%);
+        border-color: rgb(13 148 136 / 35%);
         box-shadow: var(--card-shadow-hover);
         transform: translateY(-2px);
     }
@@ -571,7 +565,7 @@
     justify-content: center;
     border-radius: 0.6rem;
     margin: 0;
-    background: rgb(79 70 229 / 14%);
+    background: rgb(15 118 110 / 14%);
     block-size: 1.9rem;
     font-family:
         "NerdFontSymbols Nerd Font Symbols", "Symbols Nerd Font Mono",

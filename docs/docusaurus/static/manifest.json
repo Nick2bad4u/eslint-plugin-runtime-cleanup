@@ -1,6 +1,6 @@
 {
     "$schema": "https://www.schemastore.org/web-manifest-combined.json",
-    "background_color": "#2E2A33",
+    "background_color": "#0B3D39",
     "categories": [
         "developer tools",
         "documentation",
@@ -90,5 +90,5 @@
         }
     ],
     "start_url": ".",
-    "theme_color": "#2E2A33"
+    "theme_color": "#0B3D39"
 }

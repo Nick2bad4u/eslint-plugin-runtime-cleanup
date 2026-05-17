@@ -5,8 +5,10 @@
 
 import type { TSESLint } from "@typescript-eslint/utils";
 
+import noFloatingChildProcesses from "../rules/no-floating-child-processes.js";
 import noFloatingObservers from "../rules/no-floating-observers.js";
 import noFloatingTimers from "../rules/no-floating-timers.js";
+import noFloatingWorkers from "../rules/no-floating-workers.js";
 import noUnmanagedEventListeners from "../rules/no-unmanaged-event-listeners.js";
 
 /** Runtime rule module shape used by registry/preset builders. */
@@ -19,8 +21,10 @@ export type RuleWithDocs = TSESLint.RuleModule<string, readonly unknown[]>;
 const runtimeCleanupRuleRegistry: Readonly<
     Record<string, RuleWithDocs>
 > = {
+    "no-floating-child-processes": noFloatingChildProcesses,
     "no-floating-observers": noFloatingObservers,
     "no-floating-timers": noFloatingTimers,
+    "no-floating-workers": noFloatingWorkers,
     "no-unmanaged-event-listeners": noUnmanagedEventListeners,
 };
 

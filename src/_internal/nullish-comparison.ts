@@ -9,17 +9,17 @@ import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 /**
  * Normalized representation of one binary comparison against null/undefined.
  */
-export type NullishComparison = Readonly<{
+type NullishComparison = Readonly<{
     comparedExpression: TSESTree.Expression;
     kind: NullishComparisonKind;
     operator: NullishComparisonOperator;
 }>;
 
 /** Nullish literal kinds supported by comparison extraction. */
-export type NullishComparisonKind = "null" | "undefined";
+type NullishComparisonKind = "null" | "undefined";
 
 /** Operators supported by nullish comparison extraction. */
-export type NullishComparisonOperator = "!=" | "!==" | "==" | "===";
+type NullishComparisonOperator = "!=" | "!==" | "==" | "===";
 
 /** Default accepted operators for nullish comparison parsing. */
 const defaultNullishComparisonOperators = [

@@ -42,6 +42,10 @@ const orderedRuleNames = [
     "no-floating-geolocation-watches",
     "no-floating-media-streams",
     "no-floating-wake-locks",
+    "no-floating-object-urls",
+    "no-floating-audio-contexts",
+    "no-floating-web-stream-locks",
+    "no-floating-infinite-animations",
 ] as const satisfies readonly string[];
 /* eslint-enable perfectionist/sort-arrays -- Re-enable sorting outside the stable rule catalog. */
 

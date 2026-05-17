@@ -35,7 +35,7 @@ export const runtimeCleanupConfigMetadataByName: Readonly<
         icon: "A",
         presetName: "runtime-cleanup:all",
         readmeOrder: 5,
-        requiresTypeChecking: false,
+        requiresTypeChecking: true,
     },
     experimental: {
         icon: "E",
@@ -65,7 +65,7 @@ export const runtimeCleanupConfigMetadataByName: Readonly<
         icon: "S",
         presetName: "runtime-cleanup:strict",
         readmeOrder: 4,
-        requiresTypeChecking: false,
+        requiresTypeChecking: true,
     },
 };
 

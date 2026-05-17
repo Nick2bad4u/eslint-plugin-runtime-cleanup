@@ -55,6 +55,8 @@ describe("runtime-cleanup plugin configs", () => {
         : null;
     const noFloatingAbortControllersRuleId =
         "runtime-cleanup/no-floating-abort-controllers";
+    const noFloatingAudioContextsRuleId =
+        "runtime-cleanup/no-floating-audio-contexts";
     const noFloatingBroadcastChannelsRuleId =
         "runtime-cleanup/no-floating-broadcast-channels";
     const noFloatingDisposableStacksRuleId =
@@ -63,12 +65,16 @@ describe("runtime-cleanup plugin configs", () => {
         "runtime-cleanup/no-floating-file-watchers";
     const noFloatingGeolocationWatchesRuleId =
         "runtime-cleanup/no-floating-geolocation-watches";
+    const noFloatingInfiniteAnimationsRuleId =
+        "runtime-cleanup/no-floating-infinite-animations";
     const noFloatingMessageChannelsRuleId =
         "runtime-cleanup/no-floating-message-channels";
     const noFloatingMediaStreamsRuleId =
         "runtime-cleanup/no-floating-media-streams";
     const noFloatingNetworkConnectionsRuleId =
         "runtime-cleanup/no-floating-network-connections";
+    const noFloatingObjectUrlsRuleId =
+        "runtime-cleanup/no-floating-object-urls";
     const noFloatingObserversRuleId = "runtime-cleanup/no-floating-observers";
     const noFloatingServersRuleId = "runtime-cleanup/no-floating-servers";
     const noFloatingStreamsRuleId = "runtime-cleanup/no-floating-streams";
@@ -76,25 +82,31 @@ describe("runtime-cleanup plugin configs", () => {
         "runtime-cleanup/no-floating-child-processes";
     const noFloatingTimersRuleId = "runtime-cleanup/no-floating-timers";
     const noFloatingWakeLocksRuleId = "runtime-cleanup/no-floating-wake-locks";
+    const noFloatingWebStreamLocksRuleId =
+        "runtime-cleanup/no-floating-web-stream-locks";
     const noFloatingWorkersRuleId = "runtime-cleanup/no-floating-workers";
     const noUnmanagedEventListenersRuleId =
         "runtime-cleanup/no-unmanaged-event-listeners";
     const expectedRulesByConfig = {
         all: {
             [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingAudioContextsRuleId]: "error",
             [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
             [noFloatingDisposableStacksRuleId]: "error",
             [noFloatingFileWatchersRuleId]: "error",
             [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingInfiniteAnimationsRuleId]: "error",
             [noFloatingMediaStreamsRuleId]: "error",
             [noFloatingMessageChannelsRuleId]: "error",
             [noFloatingNetworkConnectionsRuleId]: "error",
+            [noFloatingObjectUrlsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingServersRuleId]: "error",
             [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
             [noFloatingWakeLocksRuleId]: "error",
+            [noFloatingWebStreamLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
@@ -102,6 +114,7 @@ describe("runtime-cleanup plugin configs", () => {
         minimal: {},
         recommended: {
             [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingAudioContextsRuleId]: "error",
             [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
             [noFloatingDisposableStacksRuleId]: "error",
@@ -110,6 +123,7 @@ describe("runtime-cleanup plugin configs", () => {
             [noFloatingMediaStreamsRuleId]: "error",
             [noFloatingMessageChannelsRuleId]: "error",
             [noFloatingNetworkConnectionsRuleId]: "error",
+            [noFloatingObjectUrlsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingServersRuleId]: "error",
             [noFloatingStreamsRuleId]: "error",
@@ -120,37 +134,45 @@ describe("runtime-cleanup plugin configs", () => {
         },
         "recommended-type-checked": {
             [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingAudioContextsRuleId]: "error",
             [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
             [noFloatingDisposableStacksRuleId]: "error",
             [noFloatingFileWatchersRuleId]: "error",
             [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingInfiniteAnimationsRuleId]: "error",
             [noFloatingMediaStreamsRuleId]: "error",
             [noFloatingMessageChannelsRuleId]: "error",
             [noFloatingNetworkConnectionsRuleId]: "error",
+            [noFloatingObjectUrlsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingServersRuleId]: "error",
             [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
             [noFloatingWakeLocksRuleId]: "error",
+            [noFloatingWebStreamLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         strict: {
             [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingAudioContextsRuleId]: "error",
             [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
             [noFloatingDisposableStacksRuleId]: "error",
             [noFloatingFileWatchersRuleId]: "error",
             [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingInfiniteAnimationsRuleId]: "error",
             [noFloatingMediaStreamsRuleId]: "error",
             [noFloatingMessageChannelsRuleId]: "error",
             [noFloatingNetworkConnectionsRuleId]: "error",
+            [noFloatingObjectUrlsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
             [noFloatingServersRuleId]: "error",
             [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
             [noFloatingWakeLocksRuleId]: "error",
+            [noFloatingWebStreamLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },

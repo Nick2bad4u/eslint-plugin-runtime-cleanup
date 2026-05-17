@@ -1,6 +1,6 @@
 ---
 title: ADR 0016 - Experimental Rule Admission and Skip Criteria
-description: Decision record for when candidate type-fest and ts-extras migrations should ship as experimental rules versus being documented as intentionally skipped.
+description: Decision record for when candidate cleanup checks should ship as experimental rules versus being documented as intentionally skipped.
 sidebar_position: 16
 ---
 
@@ -13,7 +13,7 @@ sidebar_position: 16
 
 The plugin now has an explicit `experimental` preset for lower-confidence or report-only rules.
 
-As coverage expands across `type-fest` and `ts-extras`, maintainers will keep finding additional candidate migrations. Some of them have a clear, narrow hand-written pattern that maps cleanly to a single upstream utility. Others are conceptually related to a Type-Fest helper but show up in too many semantically different forms to make a good lint rule.
+As coverage expands across timers, listeners, observers, abort controllers, workers, streams, child processes, and disposable resources, maintainers will keep finding additional candidate checks. Some of them have a clear, narrow allocation pattern and an equally clear cleanup obligation. Others are conceptually related to resource cleanup but require ownership or control-flow knowledge that a local ESLint rule cannot infer reliably.
 
 Without a documented policy, the project risks one of two failure modes:
 
@@ -24,8 +24,8 @@ Without a documented policy, the project risks one of two failure modes:
 
 Adopt a precision-first admission policy for experimental rules.
 
-1. A candidate may ship in `typefest.configs.experimental` only when it has a narrow, defensible matcher and a canonical upstream replacement.
-2. Experimental rules should usually begin as report-only unless the autofix is mechanically safe and equivalent.
+1. A candidate may ship in `runtimeCleanup.configs.experimental` only when it has a narrow, defensible matcher and a canonical cleanup obligation.
+2. Experimental rules should usually begin as report-only unless the autofix is mechanically safe and preserves cleanup timing.
 3. If a candidate's real-world manual forms are too varied, too semantic, or too easy to mis-detect, the project should document it as intentionally skipped rather than forcing a noisy rule.
 4. Skipped candidates remain eligible for future reconsideration if a tighter matcher or stronger adoption evidence emerges.
 
@@ -33,7 +33,7 @@ Adopt a precision-first admission policy for experimental rules.
 
 A candidate is a good experimental rule when most of the following are true:
 
-- there is a single preferred upstream replacement,
+- there is a single preferred cleanup action,
 - the manual pattern is recognizable without heroics,
 - the reported message is easy to explain in one sentence,
 - false positives are expected to stay low,
@@ -42,17 +42,15 @@ A candidate is a good experimental rule when most of the following are true:
 
 ## Explicitly skipped examples
 
-The following candidates were reviewed and intentionally not added in the initial experimental batch:
+The following candidate shapes are intentionally not good initial rules unless a future design narrows them substantially:
 
-- `SetParameterType`
-- `Jsonify`
-- `SimplifyDeep`
-- `Entry`
-- `Entries`
-- `isPropertyDefined`
-- `isPropertyPresent`
+- generic “resource was opened but not closed somewhere later” checks that require whole-program ownership tracking,
+- event listener pairing across different modules,
+- stream cleanup checks that cannot distinguish borrowed streams from owned streams,
+- child-process rules that cannot distinguish intentionally detached processes from leaked handles,
+- and auto-inserting cleanup blocks when the correct cleanup lifetime is not syntactically obvious.
 
-These were skipped because their hand-rolled equivalents are too varied or too semantically squishy for a narrow, trustworthy rule right now. In particular, `isPropertyDefined` and `isPropertyPresent` intentionally operate on own data properties, which does not match the semantics of the common `value.property !== undefined` or `value.property != null` patterns people write by hand.
+These are skipped because their real-world forms are too varied or too semantic for a narrow, trustworthy rule right now.
 
 ## Rationale
 
@@ -64,7 +62,7 @@ These were skipped because their hand-rolled equivalents are too varied or too s
 ## Consequences
 
 - Contributors should justify new experimental rules using matcher precision, not just upstream API coverage.
-- Some real Type-Fest and `ts-extras` utilities will remain intentionally uncovered until stronger patterns are demonstrated.
+- Some real cleanup obligations will remain intentionally uncovered until stronger patterns are demonstrated.
 - Experimental preset docs should link to this decision when explaining why some candidates are present and others are not.
 
 ## Revisit Triggers
@@ -72,5 +70,5 @@ These were skipped because their hand-rolled equivalents are too varied or too s
 Re-evaluate this decision if:
 
 - repeated user demand clusters around one skipped candidate,
-- upstream Type-Fest or `ts-extras` documentation establishes a clearer canonical migration shape,
+- platform or framework documentation establishes a clearer canonical cleanup shape,
 - or the plugin gains shared matcher infrastructure that materially lowers false-positive risk for currently skipped candidates.

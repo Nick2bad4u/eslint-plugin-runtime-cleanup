@@ -1,6 +1,6 @@
 ---
 title: ADR 0003 - @eslint/object-schema Adoption
-description: Decision record for whether eslint-plugin-typefest should adopt @eslint/object-schema in plugin internals.
+description: Decision record for whether eslint-plugin-runtime-cleanup should adopt @eslint/object-schema in plugin internals.
 sidebar_position: 3
 ---
 

@@ -1,14 +1,11 @@
 import {
-    createTypefestFlatConfig,
-    typefestRuleSets,
+    createRuntimeCleanupFlatConfig,
+    runtimeCleanupRuleSets,
 } from "./eslint-benchmark-config.mjs";
 
-/**
- * Benchmark-oriented ESLint flat config for CLI TIMING/--stats runs.
- */
 /** @type {import("eslint").Linter.Config[]} */
-const benchmarkTimingConfig = createTypefestFlatConfig({
-    rules: typefestRuleSets.recommended,
+const benchmarkTimingConfig = createRuntimeCleanupFlatConfig({
+    rules: runtimeCleanupRuleSets.recommended,
 });
 
 export default benchmarkTimingConfig;

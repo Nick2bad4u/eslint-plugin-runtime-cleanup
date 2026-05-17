@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible bug in eslint-plugin-typefest
+about: Report a reproducible bug in eslint-plugin-runtime-cleanup
 title: "Bug: "
 labels:
     - bug
@@ -14,7 +14,7 @@ assignees: []
 
 ## Rule / Area
 
-<!-- Example: prefer-ts-extras-array-at, docs/docusaurus, presets, runtime API docs -->
+<!-- Example: rule behavior, docs/docusaurus, presets, runtime API docs -->
 
 ## Reproduction
 
@@ -33,7 +33,7 @@ assignees: []
 ### Command and output
 
 ```bash
-# Example: npm run test -- test/prefer-ts-extras-array-at.test.ts
+# Example: npm run test -- test/<rule-id>.test.ts
 ```
 
 ## Steps to reproduce
@@ -53,7 +53,7 @@ assignees: []
 - ESLint version:
 - TypeScript version:
 - `@typescript-eslint/*` version:
-- `eslint-plugin-typefest` version/commit:
+- `eslint-plugin-runtime-cleanup` version/commit:
 - OS:
 
 ## Additional context

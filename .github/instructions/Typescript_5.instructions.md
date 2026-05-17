@@ -117,61 +117,14 @@ applyTo: "**/*.ts, **/*.tsx"
 
 ---
 
-## Utility Types, Type-Level Helpers, and Optional Utility Libraries
+## Utility Types and Type-Level Helpers
 
 - Use built-in utility types to express intent:
   - `Readonly<T>`, `Required<T>`, `Partial<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, T>`, `NonNullable<T>`, `ReturnType<F>`, `Parameters<F>`, etc.
-- Prefer built-in TypeScript utility types first. If the repository already includes a utility-type library such as **Type-Fest**, use it when it better expresses intent than the built-ins.
-
-### Optional Utility Library Guidelines
-
-- If the repository includes Type-Fest, import its helpers from `"type-fest"` and keep imports **narrow and explicit**:
-
-  ```ts
-  import type { JsonValue, SetRequired, Simplify } from "type-fest";
-  ```
-
-- If Type-Fest is available, use it for:
-  - **JSON-safe types**: `JsonObject`, `JsonValue`, `Jsonify<T>` when modeling data that must be serializable.
-
-    ```ts
-    import type { JsonValue } from "type-fest";
-
-    type ApiPayload = JsonValue;
-    ```
-
-  - **Tagged and branded types**: prefer `Tagged<Type, TagName>` for IDs and other primitives that share a representation but differ semantically. Treat legacy `Opaque`/`Branded` usage as migration territory, not the preferred new pattern.
-
-    ```ts
-    import type { Tagged } from "type-fest";
-
-    type UserId = Tagged<string, "UserId">;
-    type OrderId = Tagged<string, "OrderId">;
-    ```
-
-  - **Object refinement**:
-    - `SetRequired<T, K>` / `SetOptional<T, K>` for partial/required subsets.
-    - `Merge<T, U>` for producing a single flattened type from overlapping sources.
-    - `Simplify<T>` to clean up deeply composed types for better tooling display.
-
-    ```ts
-    import type { SetRequired, Simplify } from "type-fest";
-
-    type User = {
-      id?: string;
-      name: string;
-      email?: string;
-    };
-
-    type PersistedUser = Simplify<SetRequired<User, "id" | "email">>;
-    ```
-
-  - **String manipulation**:
-    - `CamelCase`, `KebabCase`, etc., when type-level string formats matter (e.g., mapping API keys to internal names).
-
-- Keep advanced utility-library usage:
-  - **Local to domain-focused modules** (e.g., `ids.ts`, `api-types.ts`) instead of scattering across the codebase.
-  - **Documented** at the type alias site when you use more advanced utilities, so future maintainers understand the intent.
+- Prefer built-in TypeScript utility types first.
+- Keep advanced type helpers local to domain-focused modules (e.g., `ids.ts`, `api-types.ts`) instead of scattering them across the codebase.
+- Document branded or deeply composed aliases at the type alias site so future maintainers understand the invariant.
+- Model JSON-safe data with explicit DTOs or recursive aliases rather than accepting arbitrary objects.
 
 ---
 
@@ -205,7 +158,7 @@ applyTo: "**/*.ts, **/*.tsx"
   - Type your helpers, mocks, and fixtures.
   - Avoid `as any`; prefer helpers that create correctly typed objects.
 - Ensure test code compiles under the same strict settings as production code.
-- For test fixtures that must match JSON structures, prefer repository-approved JSON-compatible types. If Type-Fest is installed, `JsonValue`/`JsonObject` are good options; otherwise define a small local type that documents the same constraint.
+- For test fixtures that must match JSON structures, prefer repository-approved JSON-compatible types. If runtime-cleanup is installed, `JsonValue`/`JsonObject` are good options; otherwise define a small local type that documents the same constraint.
 
 ---
 

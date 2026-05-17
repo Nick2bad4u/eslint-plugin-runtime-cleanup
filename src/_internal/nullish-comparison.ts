@@ -5,7 +5,6 @@
 import type { TSESTree } from "@typescript-eslint/utils";
 
 import { AST_NODE_TYPES } from "@typescript-eslint/utils";
-import { arrayIncludes, isDefined } from "ts-extras";
 
 /**
  * Normalized representation of one binary comparison against null/undefined.
@@ -263,7 +262,7 @@ export const getNullishComparison = ({
 
     if (
         allowedOperators !== defaultNullishComparisonOperators &&
-        !arrayIncludes(allowedOperators, expression.operator)
+        !allowedOperators.includes(expression.operator)
     ) {
         return null;
     }
@@ -271,7 +270,7 @@ export const getNullishComparison = ({
     const matchesComparedExpression = (
         candidateExpression: Readonly<TSESTree.Expression>
     ): boolean =>
-        !isDefined(comparedIdentifierName) ||
+        comparedIdentifierName === undefined ||
         (candidateExpression.type === AST_NODE_TYPES.Identifier &&
             candidateExpression.name === comparedIdentifierName);
 
@@ -297,7 +296,7 @@ export const getNullishComparison = ({
     }
 
     if (
-        !isDefined(comparedIdentifierName) ||
+        comparedIdentifierName === undefined ||
         !allowTypeofComparedIdentifierForUndefined
     ) {
         return null;

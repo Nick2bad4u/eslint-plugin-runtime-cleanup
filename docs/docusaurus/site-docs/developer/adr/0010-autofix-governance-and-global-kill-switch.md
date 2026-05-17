@@ -13,12 +13,12 @@ sidebar_position: 10
 
 This plugin includes migration rules where some transformations are fully safe while others are context-sensitive.
 
-The codebase already implements runtime controls in `settings.typefest` and wraps rule contexts to strip `fix` callbacks when global autofixes are disabled.
+The codebase already implements runtime controls in `settings["runtime-cleanup"]` and wraps rule contexts to strip `fix` callbacks when global autofixes are disabled.
 
 Relevant implementation points include:
 
-- `settings.typefest.disableAllAutofixes`
-- `settings.typefest.disableImportInsertionFixes`
+- `settings["runtime-cleanup"].disableAllAutofixes`
+- `settings["runtime-cleanup"].disableImportInsertionFixes`
 - `createContextWithoutAutofixes(...)` in `src/_internal/typed-rule.ts`
 - parsed/memoized settings in `src/_internal/plugin-settings.ts`
 

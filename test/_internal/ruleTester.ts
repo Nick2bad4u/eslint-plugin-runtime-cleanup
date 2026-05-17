@@ -1,16 +1,14 @@
 /**
  * @packageDocumentation
- * Shared testing utilities for eslint-plugin-typefest RuleTester and Vitest suites.
+ * Shared testing utilities for eslint-plugin-runtime-cleanup RuleTester and Vitest suites.
  */
-import type { UnknownArray, UnknownRecord } from "type-fest";
-
 import tsParser from "@typescript-eslint/parser";
 import { RuleTester } from "@typescript-eslint/rule-tester";
 import * as path from "node:path";
 import pc from "picocolors";
 import { afterAll, describe, it } from "vitest";
 
-import typefestPlugin from "../../src/plugin";
+import runtimeCleanupPlugin from "../../src/plugin";
 
 /** Shared timeout applied to RuleTester-generated Vitest cases. */
 const ruleTesterCaseTimeoutMilliseconds = 120_000;
@@ -28,7 +26,7 @@ const ruleTesterCaseTimeoutOptions = Object.freeze({
 const assertRuleTesterHook: (
     candidate: unknown,
     hookName: string
-) => asserts candidate is (...arguments_: UnknownArray) => unknown = (
+) => asserts candidate is (...arguments_: readonly unknown[]) => unknown = (
     candidate,
     hookName
 ) => {
@@ -85,16 +83,20 @@ const runTimedRuleTesterCase = ({
 };
 
 assertRuleTesterHook(afterAll, "afterAll");
-RuleTester.afterAll = (...arguments_: UnknownArray) => {
-    Reflect.apply(afterAll as (...args: UnknownArray) => unknown, undefined, [
-        ...arguments_,
-    ]);
+RuleTester.afterAll = (...arguments_: readonly unknown[]) => {
+    Reflect.apply(
+        afterAll as (...args: readonly unknown[]) => unknown,
+        undefined,
+        [...arguments_]
+    );
 };
 assertRuleTesterHook(describe, "describe");
-RuleTester.describe = (...arguments_: UnknownArray) => {
-    Reflect.apply(describe as (...args: UnknownArray) => unknown, undefined, [
-        ...arguments_,
-    ]);
+RuleTester.describe = (...arguments_: readonly unknown[]) => {
+    Reflect.apply(
+        describe as (...args: readonly unknown[]) => unknown,
+        undefined,
+        [...arguments_]
+    );
 };
 assertRuleTesterHook(it, "it");
 RuleTester.it = (text, callback) => {
@@ -236,7 +238,7 @@ const patchRuleTesterRunWithGeneratedCaseNames = (
     const writableTester = tester as RuleTester;
     const originalRun = writableTester.run.bind(writableTester);
     writableTester.run = (ruleName, ruleModule, runCases) => {
-        (originalRun as (...args: UnknownArray) => void)(
+        (originalRun as (...args: readonly unknown[]) => void)(
             ruleName,
             ruleModule,
             withGeneratedRuleCaseNames(ruleName, runCases)
@@ -292,7 +294,7 @@ export const createRuleTester = (): RuleTester =>
  *
  * @returns `true` when value is object-like and non-null.
  */
-const isRecord = (value: unknown): value is UnknownRecord =>
+const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === "object" && value !== null;
 
 /**
@@ -315,15 +317,17 @@ const isRuleModule = (value: unknown): value is PluginRuleModule => {
 /**
  * Lookup a rule module from the plugin by its unqualified rule id.
  *
- * @param ruleId - Rule id without the `typefest/` prefix.
+ * @param ruleId - Rule id without the `runtime-cleanup/` prefix.
  *
  * @returns Matching RuleTester-compatible rule module.
  */
 export const getPluginRule = (ruleId: string): PluginRuleModule => {
-    const { rules } = typefestPlugin;
-    const dynamicRules = rules as UnknownRecord;
+    const { rules } = runtimeCleanupPlugin;
+    const dynamicRules = rules as Record<string, unknown>;
     if (!Object.hasOwn(dynamicRules, ruleId)) {
-        throw new Error(`Rule '${ruleId}' is not registered in typefestPlugin`);
+        throw new Error(
+            `Rule '${ruleId}' is not registered in runtimeCleanupPlugin`
+        );
     }
 
     const rule = dynamicRules[ruleId];

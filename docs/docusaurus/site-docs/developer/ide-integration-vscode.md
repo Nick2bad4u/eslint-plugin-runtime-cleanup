@@ -24,16 +24,16 @@ Recommended checks:
 
 ```js
 // eslint.config.mjs
-import typefest from "eslint-plugin-typefest";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [
   {
     files: ["**/*.{ts,tsx}"],
     plugins: {
-      typefest,
+      "runtime-cleanup": runtimeCleanup,
     },
     rules: {
-      ...typefest.configs.recommended.rules,
+      ...runtimeCleanup.configs.recommended.rules,
     },
   },
 ];
@@ -41,7 +41,7 @@ export default [
 
 ## Type-aware parser setup notes
 
-`typefest.configs.recommended` already enables `projectService`.
+`runtimeCleanup.configs["recommended-type-checked"]` enables `projectService`. The current recommended rule set is syntax-only, but type-aware rules should always be run from a TypeScript-targeted config block.
 
 If you build a fully manual config block (instead of consuming a preset), configure parser services in the TypeScript-targeted config block:
 
@@ -54,7 +54,7 @@ languageOptions: {
 }
 ```
 
-If parser services are missing, typed rules may not run as expected.
+If parser services are missing, future typed rules may not run as expected.
 
 ## Common gotchas
 

@@ -1,28 +1,18 @@
 /**
  * @packageDocumentation
- * Internal shared utilities used by eslint-plugin-typefest rule modules and
- * plugin wiring.
+ * Internal shared utilities used by eslint-plugin-runtime-cleanup rule modules
+ * and plugin wiring.
  */
-import type { UnknownArray } from "type-fest";
 import type ts from "typescript";
 
-import {
-    AST_NODE_TYPES,
-    ESLintUtils,
-    type TSESLint,
-    type TSESTree,
-} from "@typescript-eslint/utils";
-import { assertDefined, isDefined } from "ts-extras";
+import { ESLintUtils, type TSESLint } from "@typescript-eslint/utils";
 
-import type { TypefestConfigReference } from "./typefest-config-references.js";
+import type { RuntimeCleanupConfigReference } from "./runtime-cleanup-config-references.js";
 
 import { registerProgramSettingsForContext } from "./plugin-settings.js";
 import { getRuleCatalogEntryForRuleNameOrNull } from "./rule-catalog.js";
 import { createRuleDocsUrl } from "./rule-docs-url.js";
 import { safeTypeOperation } from "./safe-type-operation.js";
-import { getScopeFromContextSourceCode } from "./scope-resolution.js";
-import { getVariableInScopeChain } from "./scope-variable.js";
-import { getTypeCheckerIsTypeAssignableToResult } from "./type-checker-compat.js";
 
 /**
  * Parser services and type checker bundle used by typed rules.
@@ -32,39 +22,37 @@ export interface TypedRuleServices {
     parserServices: ReturnType<typeof ESLintUtils.getParserServices>;
 }
 
-/** Shared typed-rule context contract used by helper utilities. */
-type TypedRuleContext = Readonly<TSESLint.RuleContext<string, UnknownArray>>;
-
-export type { TypedRuleContext };
-
-type TypefestRuleCreator = ReturnType<
-    typeof ESLintUtils.RuleCreator<TypefestRuleDocs>
+type RuntimeCleanupRuleCreator = ReturnType<
+    typeof ESLintUtils.RuleCreator<RuntimeCleanupRuleDocs>
 >;
 
 /**
  * Plugin-specific metadata extensions for `meta.docs`.
  *
  * @remarks
- * `eslint-plugin/require-meta-docs-recommended` expects `meta.docs.recommended`
- * to be boolean. Preset membership is tracked separately via
- * `meta.docs.typefestConfigs`.
- *
- * `ruleId` and `ruleNumber` are injected centrally by `createTypedRule` for
- * cataloged `prefer-*` rules. Rule authors should not hand-author those fields
- * in individual rule modules.
+ * `eslint-plugin/require-meta-docs-recommended` expects
+ * `meta.docs.recommended` to be boolean. Preset membership is tracked
+ * separately via `meta.docs.runtimeCleanupConfigs`.
  */
-interface TypefestRuleDocs {
+interface RuntimeCleanupRuleDocs {
     recommended?: boolean;
     requiresTypeChecking?: boolean;
     ruleId?: string;
     ruleNumber?: number;
-    typefestConfigs?:
-        | readonly TypefestConfigReference[]
-        | TypefestConfigReference;
+    runtimeCleanupConfigs?:
+        | readonly RuntimeCleanupConfigReference[]
+        | RuntimeCleanupConfigReference;
 }
 
+/** Shared typed-rule context contract used by helper utilities. */
+type TypedRuleContext = Readonly<
+    TSESLint.RuleContext<string, readonly unknown[]>
+>;
+
+export type { TypedRuleContext };
+
 /**
- * Rule-creator wrapper used by all plugin rules.
+ * Rule-creator wrapper used by plugin rules.
  *
  * @remarks
  * This wrapper automatically registers per-program plugin settings and injects
@@ -77,13 +65,18 @@ interface TypefestRuleDocs {
  * @returns Rule module factory output that auto-registers program settings and
  *   preserves the authored rule contract.
  */
-export const createTypedRule: TypefestRuleCreator = (ruleDefinition) => {
+export const createTypedRule: RuntimeCleanupRuleCreator = (ruleDefinition) => {
     const catalogEntry = getRuleCatalogEntryForRuleNameOrNull(
         ruleDefinition.name
     );
     const createdRule = ESLintUtils.RuleCreator.withoutDocs(ruleDefinition);
     const ruleDocs = createdRule.meta.docs;
-    assertDefined(ruleDocs);
+    if (ruleDocs === undefined) {
+        throw new TypeError(
+            `Rule '${ruleDefinition.name}' must declare meta.docs.`
+        );
+    }
+
     const canonicalDocsUrl = createRuleDocsUrl(ruleDefinition.name);
 
     if (typeof ruleDocs.url === "string" && ruleDocs.url !== canonicalDocsUrl) {
@@ -92,13 +85,14 @@ export const createTypedRule: TypefestRuleCreator = (ruleDefinition) => {
         );
     }
 
-    if (ruleDefinition.name.startsWith("prefer-") && catalogEntry === null) {
+    if (catalogEntry === null && ruleDefinition.name.startsWith("require-")) {
         throw new TypeError(
             `Rule '${ruleDefinition.name}' is missing from the stable rule catalog.`
         );
     }
 
-    const docsWithCatalog: TSESLint.RuleMetaDataDocs & TypefestRuleDocs =
+    const docsWithCatalog: RuntimeCleanupRuleDocs &
+        TSESLint.RuleMetaDataDocs =
         catalogEntry === null
             ? {
                   ...ruleDocs,
@@ -110,7 +104,6 @@ export const createTypedRule: TypefestRuleCreator = (ruleDefinition) => {
                   ruleNumber: catalogEntry.ruleNumber,
                   url: canonicalDocsUrl,
               };
-
     const metaDefaultOptions = createdRule.meta.defaultOptions;
 
     return {
@@ -122,9 +115,9 @@ export const createTypedRule: TypefestRuleCreator = (ruleDefinition) => {
         },
         meta: {
             ...createdRule.meta,
-            ...(isDefined(metaDefaultOptions)
-                ? { defaultOptions: metaDefaultOptions }
-                : {}),
+            ...(metaDefaultOptions === undefined
+                ? {}
+                : { defaultOptions: metaDefaultOptions }),
             docs: docsWithCatalog,
         },
         name: ruleDefinition.name,
@@ -191,49 +184,9 @@ export const getTypedRuleServicesOrUndefined = (
     hasTypeServices(context) ? getTypedRuleServices(context) : undefined;
 
 /**
- * Determine whether one TypeScript type is assignable to another.
- *
- * @remarks
- * Uses `checker.isTypeAssignableTo` when available and falls back to strict
- * reference equality if the checker API is unavailable or throws.
- *
- * @param checker - TypeScript type checker.
- * @param sourceType - Candidate source type.
- * @param targetType - Candidate target type.
- *
- * @returns `true` when assignable; otherwise `false`.
- */
-export const isTypeAssignableTo = (
-    checker: Readonly<ts.TypeChecker>,
-    sourceType: Readonly<ts.Type>,
-    targetType: Readonly<ts.Type>
-): boolean => {
-    const result = safeTypeOperation({
-        operation: () =>
-            getTypeCheckerIsTypeAssignableToResult(
-                checker,
-                sourceType,
-                targetType
-            ),
-        reason: "type-assignability-check-failed",
-    });
-
-    if (!result.ok || typeof result.value !== "boolean") {
-        return sourceType === targetType;
-    }
-
-    return result.value;
-};
-
-/**
  * Resolve the type of a signature parameter by index.
  *
  * @param options - Signature parameter lookup options.
- *
- *   - `checker`: TypeScript type checker.
- *   - `index`: Parameter index in the signature.
- *   - `location`: Source location used for contextual type lookup.
- *   - `signature`: Candidate call signature.
  *
  * @returns Parameter type when available; otherwise `undefined`.
  */
@@ -248,81 +201,9 @@ export const getSignatureParameterTypeAt = (
     const { checker, index, location, signature } = options;
 
     const symbol = signature?.parameters[index];
-    if (!symbol) {
+    if (symbol === undefined) {
         return undefined;
     }
 
     return checker.getTypeOfSymbolAtLocation(symbol, location);
 };
-
-/**
- * Determine whether an expression references an unshadowed global identifier.
- *
- * @param context - Rule context used for scope resolution.
- * @param expression - Expression to inspect.
- * @param identifierName - Expected identifier name.
- *
- * @returns `true` when the expression is an Identifier with the expected name
- *   and resolves to the global binding.
- */
-export const isGlobalIdentifierNamed = <
-    MessageIds extends string,
-    Options extends Readonly<UnknownArray>,
->(
-    context: Readonly<TSESLint.RuleContext<MessageIds, Options>>,
-    expression: Readonly<TSESTree.Expression>,
-    identifierName: string
-): expression is TSESTree.Identifier => {
-    if (
-        expression.type !== AST_NODE_TYPES.Identifier ||
-        expression.name !== identifierName
-    ) {
-        return false;
-    }
-
-    const result = safeTypeOperation({
-        operation: () => {
-            const initialScope = getScopeFromContextSourceCode(
-                context,
-                expression
-            );
-
-            if (initialScope === null) {
-                return true;
-            }
-
-            const variable = getVariableInScopeChain(
-                initialScope,
-                identifierName
-            );
-
-            return variable === null || variable.defs.length === 0;
-        },
-        reason: "scope-resolution-failed",
-    });
-
-    if (!result.ok) {
-        return false;
-    }
-
-    return result.value;
-};
-
-/**
- * Determine whether an expression references the global `undefined` binding
- * (not a shadowed user-defined symbol).
- *
- * @param context - Rule context used for scope resolution.
- * @param expression - Expression to inspect.
- *
- * @returns `true` when the expression is an Identifier named `undefined` that
- *   resolves to the global binding.
- */
-export const isGlobalUndefinedIdentifier = <
-    MessageIds extends string,
-    Options extends Readonly<UnknownArray>,
->(
-    context: Readonly<TSESLint.RuleContext<MessageIds, Options>>,
-    expression: Readonly<TSESTree.Expression>
-): expression is TSESTree.Identifier =>
-    isGlobalIdentifierNamed(context, expression, "undefined");

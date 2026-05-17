@@ -1,35 +1,19 @@
 /**
  * @packageDocumentation
- * Public plugin entrypoint for eslint-plugin-typefest exports and preset wiring.
+ * Public plugin entrypoint for eslint-plugin-runtime-cleanup exports and preset wiring.
  */
 import type { ESLint, Linter } from "eslint";
-import type { Except } from "type-fest";
 
 import typeScriptParser from "@typescript-eslint/parser";
-import {
-    isDefined,
-    isEmpty,
-    objectEntries,
-    objectHasIn,
-    safeCastTo,
-    setHas,
-} from "ts-extras";
 
 // eslint-disable-next-line import-x/extensions -- Avoid importing from the ESM entrypoint to preserve CJS compatibility
 import packageJson from "../package.json" with { type: "json" };
+import { runtimeCleanupRules } from "./_internal/rules-registry.js";
 import {
-    deriveRuleDocsMetadataByName,
-    deriveRulePresetMembershipByRuleName,
-    deriveTypeCheckedRuleNameSet,
-} from "./_internal/rule-docs-metadata.js";
-import { typefestRules } from "./_internal/rules-registry.js";
-import {
-    type TypefestConfigName as InternalTypefestConfigName,
-    typefestConfigMetadataByName,
-} from "./_internal/typefest-config-references.js";
-
-/** ESLint severity used by generated preset rule maps. */
-const ERROR_SEVERITY = "error" as const;
+    type RuntimeCleanupConfigName as InternalRuntimeCleanupConfigName,
+    runtimeCleanupConfigMetadataByName,
+    runtimeCleanupConfigNames,
+} from "./_internal/runtime-cleanup-config-references.js";
 
 /** Default file globs targeted by plugin presets when `files` is omitted. */
 const TYPE_SCRIPT_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
@@ -41,7 +25,7 @@ const TYPE_SCRIPT_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
  * These names are used by consumers when composing presets in ESLint flat
  * config arrays.
  */
-export type TypefestConfigName = InternalTypefestConfigName;
+export type RuntimeCleanupConfigName = InternalRuntimeCleanupConfigName;
 
 /**
  * Flat-config preset shape produced by this plugin.
@@ -50,7 +34,7 @@ export type TypefestConfigName = InternalTypefestConfigName;
  * The `rules` map is required so preset composition can always merge concrete
  * rule severity entries without additional null checks.
  */
-export type TypefestPresetConfig = Linter.Config & {
+export type RuntimeCleanupPresetConfig = Linter.Config & {
     rules: NonNullable<Linter.Config["rules"]>;
 };
 
@@ -63,15 +47,18 @@ type FlatLanguageOptions = NonNullable<FlatConfig["languageOptions"]>;
 /** Normalized parser-options shape for preset composition helpers. */
 type FlatParserOptions = NonNullable<FlatLanguageOptions["parserOptions"]>;
 
-/** Rule-map type used by preset rule-list expansion helpers. */
-type RulesConfig = TypefestPresetConfig["rules"];
-
 /** Contract for the `configs` object exported by this plugin. */
-type TypefestConfigsContract = Record<TypefestConfigName, TypefestPresetConfig>;
+type RuntimeCleanupConfigsContract = Record<
+    RuntimeCleanupConfigName,
+    RuntimeCleanupPresetConfig
+>;
 
 /** Fully assembled plugin contract used by the runtime default export. */
-type TypefestPluginContract = Except<ESLint.Plugin, "configs" | "rules"> & {
-    configs: TypefestConfigsContract;
+type RuntimeCleanupPluginContract = Omit<
+    ESLint.Plugin,
+    "configs" | "rules"
+> & {
+    configs: RuntimeCleanupConfigsContract;
     meta: {
         name: string;
         namespace: string;
@@ -97,9 +84,6 @@ function getPackageVersion(pkg: unknown): string {
 
     return typeof version === "string" ? version : "0.0.0";
 }
-
-/** Package metadata used to populate plugin runtime `meta.version`. */
-const packageJsonValue = safeCastTo<unknown>(packageJson);
 
 /** Parser module reused across preset construction. */
 const typeScriptParserValue: FlatLanguageOptions["parser"] = typeScriptParser;
@@ -129,112 +113,20 @@ const normalizeParserOptions = (
  * Consumers typically use this when building strongly typed rule maps or helper
  * utilities that require namespaced rule identifiers.
  */
-export type TypefestRuleId = `typefest/${TypefestRuleName}`;
+export type RuntimeCleanupRuleId =
+    `runtime-cleanup/${RuntimeCleanupRuleName}`;
 
-/** Unqualified rule name supported by `eslint-plugin-typefest`. */
-export type TypefestRuleName = keyof typeof typefestRules;
+/** Unqualified rule name supported by `eslint-plugin-runtime-cleanup`. */
+export type RuntimeCleanupRuleName = keyof typeof runtimeCleanupRules;
 
 /**
  * ESLint-compatible rule map view of the strongly typed internal rule record.
  */
-const typefestEslintRules: NonNullable<ESLint.Plugin["rules"]> &
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- ESLint's public RuleDefinition type requires mutable defaultOptions, while the plugin's internal rule registry intentionally stores readonly rule metadata.
-    typeof typefestRules = typefestRules as NonNullable<
-    ESLint.Plugin["rules"]
-> &
-    typeof typefestRules;
-
-const isTypefestRuleName = (value: string): value is TypefestRuleName =>
-    objectHasIn(typefestRules, value);
-
-const typefestRuleEntries: readonly (readonly [
-    TypefestRuleName,
-    (typeof typefestRules)[TypefestRuleName],
-])[] = (() => {
-    const entries: (readonly [
-        TypefestRuleName,
-        (typeof typefestRules)[TypefestRuleName],
-    ])[] = [];
-
-    for (const [ruleName] of objectEntries(typefestRules)) {
-        if (!isTypefestRuleName(ruleName)) {
-            continue;
-        }
-
-        const ruleDefinition = typefestRules[ruleName];
-
-        if (ruleDefinition === undefined) {
-            continue;
-        }
-
-        entries.push([ruleName, ruleDefinition]);
-    }
-
-    return entries;
-})();
-
-const ruleDocsMetadataByRuleName = deriveRuleDocsMetadataByName(typefestRules);
-const rulePresetMembership = deriveRulePresetMembershipByRuleName(
-    ruleDocsMetadataByRuleName
-);
-const typeCheckedRuleNames = deriveTypeCheckedRuleNameSet(
-    ruleDocsMetadataByRuleName
-);
-
-const createEmptyPresetRuleMap = (): Record<
-    TypefestConfigName,
-    TypefestRuleName[]
-> => ({
-    all: [],
-    experimental: [],
-    minimal: [],
-    recommended: [],
-    "recommended-type-checked": [],
-    strict: [],
-    "ts-extras/type-guards": [],
-    "type-fest/types": [],
-});
-
-const dedupeRuleNames = (
-    ruleNames: readonly TypefestRuleName[]
-): TypefestRuleName[] => [...new Set(ruleNames)];
-
-const derivePresetRuleNamesByConfig = (): Readonly<
-    Record<TypefestConfigName, readonly TypefestRuleName[]>
-> => {
-    const presetRuleNamesByConfig = createEmptyPresetRuleMap();
-
-    for (const [ruleName] of typefestRuleEntries) {
-        const configNames = rulePresetMembership[ruleName];
-
-        if (!isDefined(configNames) || isEmpty(configNames)) {
-            throw new TypeError(
-                `Rule '${ruleName}' is missing preset membership metadata.`
-            );
-        }
-
-        for (const configName of configNames) {
-            presetRuleNamesByConfig[configName].push(ruleName);
-        }
-    }
-
-    return {
-        all: dedupeRuleNames(presetRuleNamesByConfig.all),
-        experimental: dedupeRuleNames(presetRuleNamesByConfig.experimental),
-        minimal: dedupeRuleNames(presetRuleNamesByConfig.minimal),
-        recommended: dedupeRuleNames(presetRuleNamesByConfig.recommended),
-        "recommended-type-checked": dedupeRuleNames(
-            presetRuleNamesByConfig["recommended-type-checked"]
-        ),
-        strict: dedupeRuleNames(presetRuleNamesByConfig.strict),
-        "ts-extras/type-guards": dedupeRuleNames(
-            presetRuleNamesByConfig["ts-extras/type-guards"]
-        ),
-        "type-fest/types": dedupeRuleNames(
-            presetRuleNamesByConfig["type-fest/types"]
-        ),
-    };
-};
+const runtimeCleanupEslintRules: NonNullable<ESLint.Plugin["rules"]> &
+    typeof runtimeCleanupRules =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Internal registry is intentionally narrowed to ESLint's plugin rule map contract.
+    runtimeCleanupRules as NonNullable<ESLint.Plugin["rules"]> &
+        typeof runtimeCleanupRules;
 
 /**
  * Build an ESLint rules map that enables each provided rule at error level.
@@ -243,76 +135,67 @@ const derivePresetRuleNamesByConfig = (): Readonly<
  *
  * @returns Rules config object compatible with flat config.
  */
-function errorRulesFor(ruleNames: readonly TypefestRuleName[]): RulesConfig {
-    const rules: RulesConfig = {};
+function errorRulesFor(
+    ruleNames: readonly RuntimeCleanupRuleName[]
+): RuntimeCleanupPresetConfig["rules"] {
+    const rules: RuntimeCleanupPresetConfig["rules"] = {};
 
     for (const ruleName of ruleNames) {
-        rules[`typefest/${ruleName}`] = ERROR_SEVERITY;
+        rules[`runtime-cleanup/${ruleName}`] = "error";
     }
 
     return rules;
 }
 
-/**
- * Remove duplicates while preserving first-seen ordering.
- *
- * @param ruleNames - Candidate rule list.
- *
- * @returns Deduplicated rule list.
- */
-const presetRuleNamesByConfig = derivePresetRuleNamesByConfig();
-
-/** Recommended preset rule list for zero-type-info usage. */
-const recommendedRuleNames: TypefestRuleName[] = [];
-
-for (const ruleName of presetRuleNamesByConfig.recommended) {
-    if (setHas(typeCheckedRuleNames, ruleName)) {
-        continue;
-    }
-
-    recommendedRuleNames.push(ruleName);
-}
-
-/** Type-aware recommended preset rule list. */
-const recommendedTypeCheckedRuleNames = dedupeRuleNames([
-    ...recommendedRuleNames,
-    ...presetRuleNamesByConfig["recommended-type-checked"],
-]);
-
 /** Effective per-preset rule lists after applying derived policy overlays. */
 const effectivePresetRuleNamesByConfig: Readonly<
-    Record<TypefestConfigName, readonly TypefestRuleName[]>
+    Record<RuntimeCleanupConfigName, readonly RuntimeCleanupRuleName[]>
 > = {
-    ...presetRuleNamesByConfig,
-    experimental: dedupeRuleNames([
-        ...presetRuleNamesByConfig.all,
-        ...presetRuleNamesByConfig.experimental,
-    ]),
-    recommended: recommendedRuleNames,
-    "recommended-type-checked": recommendedTypeCheckedRuleNames,
+    all: [
+        "no-floating-observers",
+        "no-floating-timers",
+        "no-unmanaged-event-listeners",
+    ],
+    experimental: [],
+    minimal: [],
+    recommended: [
+        "no-floating-observers",
+        "no-floating-timers",
+        "no-unmanaged-event-listeners",
+    ],
+    "recommended-type-checked": [
+        "no-floating-observers",
+        "no-floating-timers",
+        "no-unmanaged-event-listeners",
+    ],
+    strict: [
+        "no-floating-observers",
+        "no-floating-timers",
+        "no-unmanaged-event-listeners",
+    ],
 };
 
 /**
  * Apply parser and plugin metadata required by all plugin presets.
  *
  * @param config - Preset-specific config fragment.
- * @param plugin - Plugin object registered under the `typefest` namespace.
+ * @param plugin - Plugin object registered under the `runtime-cleanup` namespace.
  * @param options - Preset-level wiring options.
  *
  * @returns Normalized preset config.
  */
-function withTypefestPlugin(
-    config: Readonly<TypefestPresetConfig>,
+function withRuntimeCleanupPlugin(
+    config: Readonly<RuntimeCleanupPresetConfig>,
     plugin: Readonly<ESLint.Plugin>,
     options: Readonly<{ requiresTypeChecking: boolean }>
-): TypefestPresetConfig {
+): RuntimeCleanupPresetConfig {
     const existingLanguageOptions = config.languageOptions ?? {};
     const existingParserOptions = existingLanguageOptions["parserOptions"];
     const parserOptions = normalizeParserOptions(existingParserOptions);
 
     if (
         options.requiresTypeChecking &&
-        !objectHasIn(parserOptions, "projectService")
+        !Object.hasOwn(parserOptions, "projectService")
     ) {
         Reflect.set(parserOptions, "projectService", true);
     }
@@ -329,22 +212,22 @@ function withTypefestPlugin(
         languageOptions,
         plugins: {
             ...config.plugins,
-            typefest: plugin,
+            "runtime-cleanup": plugin,
         },
     };
 }
 
 /** Minimal plugin object used when assembling flat-config presets. */
 const pluginForConfigs: ESLint.Plugin = {
-    rules: typefestEslintRules,
+    rules: runtimeCleanupEslintRules,
 };
 
 const createPresetConfig = (
-    configName: TypefestConfigName
-): TypefestPresetConfig => {
-    const configMetadata = typefestConfigMetadataByName[configName];
+    configName: RuntimeCleanupConfigName
+): RuntimeCleanupPresetConfig => {
+    const configMetadata = runtimeCleanupConfigMetadataByName[configName];
 
-    return withTypefestPlugin(
+    return withRuntimeCleanupPlugin(
         {
             name: configMetadata.presetName,
             rules: errorRulesFor(effectivePresetRuleNamesByConfig[configName]),
@@ -357,23 +240,24 @@ const createPresetConfig = (
 };
 
 /**
- * Flat config presets distributed by eslint-plugin-typefest.
+ * Flat config presets distributed by eslint-plugin-runtime-cleanup.
  */
-const createTypefestConfigsDefinition = (): TypefestConfigsContract => ({
-    all: createPresetConfig("all"),
-    experimental: createPresetConfig("experimental"),
-    minimal: createPresetConfig("minimal"),
-    recommended: createPresetConfig("recommended"),
-    "recommended-type-checked": createPresetConfig("recommended-type-checked"),
-    strict: createPresetConfig("strict"),
-    "ts-extras/type-guards": createPresetConfig("ts-extras/type-guards"),
-    "type-fest/types": createPresetConfig("type-fest/types"),
-});
+const createRuntimeCleanupConfigsDefinition =
+    (): RuntimeCleanupConfigsContract =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Object.fromEntries cannot preserve the finite preset-key union.
+        Object.fromEntries(
+            runtimeCleanupConfigNames.map((configName) => [
+                configName,
+                createPresetConfig(configName),
+            ])
+        ) as RuntimeCleanupConfigsContract;
 
-const typefestConfigsDefinition = createTypefestConfigsDefinition();
+const runtimeCleanupConfigsDefinition =
+    createRuntimeCleanupConfigsDefinition();
 
 /** Finalized typed view of all exported preset configurations. */
-const typefestConfigs: TypefestConfigsContract = typefestConfigsDefinition;
+const runtimeCleanupConfigs: RuntimeCleanupConfigsContract =
+    runtimeCleanupConfigsDefinition;
 
 /**
  * Runtime type for the plugin's generated config presets.
@@ -382,20 +266,20 @@ const typefestConfigs: TypefestConfigsContract = typefestConfigsDefinition;
  * Mirrors `plugin.configs` and is useful when composing typed preset-aware
  * tooling in external integrations.
  */
-export type TypefestConfigs = typeof typefestConfigs;
+export type RuntimeCleanupConfigs = typeof runtimeCleanupConfigs;
 
 /**
  * Main plugin object exported for ESLint consumption.
  */
-const typefestPlugin: TypefestPluginContract = {
-    configs: typefestConfigs,
+const runtimeCleanupPlugin: RuntimeCleanupPluginContract = {
+    configs: runtimeCleanupConfigs,
     meta: {
-        name: "eslint-plugin-typefest",
-        namespace: "typefest",
-        version: getPackageVersion(packageJsonValue),
+        name: "eslint-plugin-runtime-cleanup",
+        namespace: "runtime-cleanup",
+        version: getPackageVersion(packageJson),
     },
     processors: {},
-    rules: typefestEslintRules,
+    rules: runtimeCleanupEslintRules,
 };
 
 /**
@@ -405,9 +289,9 @@ const typefestPlugin: TypefestPluginContract = {
  * Includes resolved `meta`, `rules`, and `configs` contracts after plugin
  * assembly.
  */
-export type TypefestPlugin = typeof typefestPlugin;
+export type RuntimeCleanupPlugin = typeof runtimeCleanupPlugin;
 
 /**
  * Default plugin export consumed by ESLint flat config.
  */
-export default typefestPlugin;
+export default runtimeCleanupPlugin;

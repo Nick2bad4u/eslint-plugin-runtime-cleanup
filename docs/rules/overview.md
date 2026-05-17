@@ -1,50 +1,40 @@
----
-title: Overview
-description: README-style overview for eslint-plugin-typefest.
----
+# Rules overview
 
-# eslint-plugin-typefest
+`eslint-plugin-runtime-cleanup` rules target runtime resource lifetimes that are
+easy to leak when allocation and teardown drift apart.
 
-ESLint plugin for teams that want consistent TypeScript-first conventions based on:
+## Stable rules
 
-- [`type-fest`](https://github.com/sindresorhus/type-fest)
-- [`ts-extras`](https://github.com/sindresorhus/ts-extras)
+- [`no-floating-timers`](./no-floating-timers.md) requires timer handles to be
+  retained so they can be cleared during cleanup.
+- [`no-unmanaged-event-listeners`](./no-unmanaged-event-listeners.md) requires
+  event listeners to use an `AbortSignal` option or a matching
+  `removeEventListener` cleanup call.
+- [`no-floating-observers`](./no-floating-observers.md) requires native
+  observer instances to be retained so they can be disconnected during cleanup.
 
-The plugin ships focused rule sets for modern Flat Config usage, with parser setup included in each preset.
+Future rules should continue to target explicit runtime resource lifetimes,
+including timers, listeners, observers, abort controllers, workers, streams,
+child processes, and disposable handles.
 
-## Installation
+## Rule authoring expectations
 
-```bash
-npm install --save-dev eslint-plugin-typefest typescript
-```
+Runtime cleanup rules should be conservative:
 
-> `@typescript-eslint/parser` is loaded automatically by plugin presets.
-
-## Quick start (Flat Config)
-
-```ts
-import typefest from "eslint-plugin-typefest";
-
-export default [typefest.configs.recommended];
-```
-
-That is enough for TypeScript files (`**/*.{ts,tsx,mts,cts}`).
+- report only resource allocation patterns with a clear cleanup obligation
+- avoid whole-file heuristics that create noisy false positives
+- use type information only when it materially improves precision
+- prefer suggestions over autofixes when cleanup placement is ambiguous
+- document the exact lifecycle pattern the rule expects
 
 ## Presets
 
-| Preset                                            | Preset page                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------- |
-| 🟢 `typefest.configs.minimal`                     | [Minimal](./presets/minimal.md)                                     |
-| 🟡 `typefest.configs.recommended`                 | [Recommended](./presets/recommended.md)                             |
-| 🟠 `typefest.configs["recommended-type-checked"]` | [Recommended (type-checked)](./presets/recommended-type-checked.md) |
-| 🔴 `typefest.configs.strict`                      | [Strict](./presets/strict.md)                                       |
-| 🟣 `typefest.configs.all`                         | [All](./presets/all.md)                                             |
-| 🧪 `typefest.configs.experimental`                | [Experimental](./presets/experimental.md)                           |
-| 💠 `typefest.configs["type-fest/types"]`          | [type-fest/types](./presets/type-fest-types.md)                     |
-| ✴️ `typefest.configs["ts-extras/type-guards"]`    | [ts-extras/type-guards](./presets/ts-extras-type-guards.md)         |
+The preset pages describe the exported config keys and are ready for future
+rules:
 
-## Next steps
-
-- Open **Getting Started** in this sidebar.
-- Browse [**Presets**](./presets/index.md) for preset-by-preset guidance.
-- Use **Rules** to review every rule with examples.
+- [`minimal`](./presets/minimal.md)
+- [`recommended`](./presets/recommended.md)
+- [`recommended-type-checked`](./presets/recommended-type-checked.md)
+- [`strict`](./presets/strict.md)
+- [`all`](./presets/all.md)
+- [`experimental`](./presets/experimental.md)

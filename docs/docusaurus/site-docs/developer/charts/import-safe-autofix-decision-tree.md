@@ -36,7 +36,7 @@ flowchart TD
 
     K --> L{Semantics preserved?}
     L -->|No| Z
-    L -->|Yes| M[Emit autofix via reportWithTypefestPolicy]
+    L -->|Yes| M[Emit autofix via reportWithRuntimeCleanupPolicy]
 
     class A,B,C,E,F,G,I,L check
     class D,H,J,K,M safe

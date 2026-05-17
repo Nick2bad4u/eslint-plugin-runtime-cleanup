@@ -3,27 +3,20 @@
  * Parsing and memoization helpers for plugin-level runtime settings.
  */
 import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
-import type { JsonObject, UnknownArray } from "type-fest";
-
-import { isPresent, objectHasOwn } from "ts-extras";
 
 import { getProgramNode } from "./ast-node.js";
 
 /** Top-level `settings` key for this plugin. */
-const TYPEFEST_SETTINGS_KEY = "typefest";
+const RUNTIME_CLEANUP_SETTINGS_KEY = "runtime-cleanup";
 
 /** Flag that disables all plugin autofix behavior. */
 const DISABLE_ALL_AUTOFIXES_KEY = "disableAllAutofixes";
-
-/** Flag that disables import-insertion fix helpers only. */
-const DISABLE_IMPORT_INSERTION_FIXES_KEY = "disableImportInsertionFixes";
 
 /**
  * Normalized per-program settings consumed by fix-generation helpers.
  */
 interface ProgramSettings {
     disableAllAutofixes: boolean;
-    disableImportInsertionFixes: boolean;
 }
 
 /**
@@ -32,65 +25,48 @@ interface ProgramSettings {
 const settingsByProgram = new WeakMap<TSESTree.Program, ProgramSettings>();
 
 /**
- * Narrow an unknown value to a JSON-object-like record.
+ * Narrow an unknown value to an object-like record.
  *
  * @param value - Value to narrow.
  *
  * @returns `true` when the value is a non-null, non-array object.
  */
-const isObject = (value: unknown): value is Readonly<JsonObject> =>
+const isObject = (
+    value: unknown
+): value is Readonly<Record<string, unknown>> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
- * Extract the `settings.typefest` object when present and valid.
+ * Extract the `settings["runtime-cleanup"]` object when present and valid.
  *
  * @param settings - ESLint settings value from rule context.
  *
- * @returns Parsed `settings.typefest` object when valid; otherwise `null`.
+ * @returns Parsed plugin settings object when valid; otherwise `null`.
  */
-const getTypefestSettings = (
+const getRuntimeCleanupSettings = (
     settings: unknown
-): null | Readonly<JsonObject> => {
+): null | Readonly<Record<string, unknown>> => {
     if (!isObject(settings)) {
         return null;
     }
 
-    const typefestSettings = settings[TYPEFEST_SETTINGS_KEY];
+    const pluginSettings = settings[RUNTIME_CLEANUP_SETTINGS_KEY];
 
-    return isObject(typefestSettings) ? typefestSettings : null;
+    return isObject(pluginSettings) ? pluginSettings : null;
 };
 
 /**
- * Read a strict boolean flag (`true`) from a JSON object by key.
+ * Read a strict boolean flag (`true`) from an object by key.
  *
  * @param object - Source settings object.
  * @param key - Flag key to read.
  *
  * @returns `true` only when the key exists and equals literal `true`.
  */
-const readBooleanFlag = (object: Readonly<JsonObject>, key: string): boolean =>
-    objectHasOwn(object, key) && object[key] === true;
-
-/**
- * Reads the import-insertion disable flag from plugin settings.
- *
- * @param settings - ESLint settings value from rule context.
- *
- * @returns `true` when import insertion fixes are explicitly disabled.
- */
-const readDisableImportInsertionFixesFromSettings = (
-    settings: unknown
-): boolean => {
-    const typefestSettings = getTypefestSettings(settings);
-    if (!isPresent(typefestSettings)) {
-        return false;
-    }
-
-    return readBooleanFlag(
-        typefestSettings,
-        DISABLE_IMPORT_INSERTION_FIXES_KEY
-    );
-};
+const readBooleanFlag = (
+    object: Readonly<Record<string, unknown>>,
+    key: string
+): boolean => Object.hasOwn(object, key) && object[key] === true;
 
 /**
  * Reads the global autofix disable flag from plugin settings.
@@ -100,19 +76,13 @@ const readDisableImportInsertionFixesFromSettings = (
  * @returns `true` when all plugin autofixes are explicitly disabled.
  */
 const readDisableAllAutofixesFromSettings = (settings: unknown): boolean => {
-    const typefestSettings = getTypefestSettings(settings);
-    if (!isPresent(typefestSettings)) {
+    const pluginSettings = getRuntimeCleanupSettings(settings);
+    if (pluginSettings === null) {
         return false;
     }
 
-    return readBooleanFlag(typefestSettings, DISABLE_ALL_AUTOFIXES_KEY);
+    return readBooleanFlag(pluginSettings, DISABLE_ALL_AUTOFIXES_KEY);
 };
-
-/**
- * Guard values suitable for WeakMap object keys.
- */
-const isWeakMapKeyObject = (value: unknown): value is object =>
-    typeof value === "object" && value !== null;
 
 /**
  * Register parsed plugin settings for the current file program.
@@ -122,28 +92,18 @@ const isWeakMapKeyObject = (value: unknown): value is object =>
  * @returns Memoized immutable settings for the context's program node.
  */
 export const registerProgramSettingsForContext = (
-    context: Readonly<TSESLint.RuleContext<string, UnknownArray>>
+    context: Readonly<TSESLint.RuleContext<string, readonly unknown[]>>
 ): Readonly<ProgramSettings> => {
     const programNode = context.sourceCode.ast;
 
-    const disableAllAutofixes = readDisableAllAutofixesFromSettings(
-        context.settings
-    );
-    const disableImportInsertionFixes =
-        disableAllAutofixes ||
-        readDisableImportInsertionFixesFromSettings(context.settings);
-
     const parsedSettings: Readonly<ProgramSettings> = Object.freeze({
-        disableAllAutofixes,
-        disableImportInsertionFixes,
+        disableAllAutofixes: readDisableAllAutofixesFromSettings(
+            context.settings
+        ),
     });
 
-    if (!isWeakMapKeyObject(programNode)) {
-        return parsedSettings;
-    }
-
     const existingProgramSettings = settingsByProgram.get(programNode);
-    if (isPresent(existingProgramSettings)) {
+    if (existingProgramSettings !== undefined) {
         return existingProgramSettings;
     }
 
@@ -153,22 +113,22 @@ export const registerProgramSettingsForContext = (
 };
 
 /**
- * Determine whether import insertion autofixes are globally disabled for the
- * file containing the provided node.
+ * Determine whether autofixes are globally disabled for the file containing the
+ * provided node.
  *
  * @param node - AST node used to resolve the enclosing Program.
  *
- * @returns `true` when import insertion fixes should be suppressed.
+ * @returns `true` when fixes should be suppressed.
  */
-export const isImportInsertionFixesDisabledForNode = (
+export const areAutofixesDisabledForNode = (
     node: Readonly<TSESTree.Node>
 ): boolean => {
     const programNode = getProgramNode(node);
-    if (!isPresent(programNode)) {
+    if (programNode === null) {
         return false;
     }
 
     const settings = settingsByProgram.get(programNode);
 
-    return settings?.disableImportInsertionFixes === true;
+    return settings?.disableAllAutofixes === true;
 };

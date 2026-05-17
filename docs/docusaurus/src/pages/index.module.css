@@ -153,7 +153,7 @@
     }
 }
 
-.heroInlineLinkTypeFest {
+.heroInlineLinkCleanup {
     border-color: rgb(196 181 253 / 58%);
     background: rgb(91 33 182 / 30%);
     color: rgb(243 232 255);
@@ -166,7 +166,7 @@
     }
 }
 
-.heroInlineLinkTsExtras {
+.heroInlineLinkRuntime {
     border-color: rgb(125 211 252 / 58%);
     background: rgb(14 116 144 / 30%);
     color: rgb(224 242 254);

@@ -84,7 +84,7 @@ jobs:
               env:
                   CI: "true"
                   MAX_THREADS: "1"
-                  TYPEFEST_VITEST_HANGING_PROCESS_REPORTER: "true"
+                  RUNTIME_CLEANUP_VITEST_HANGING_PROCESS_REPORTER: "true"
                   VITEST_HANGING_PROCESS_REPORTER: "true"
 
             - name: Verify coverage artifact

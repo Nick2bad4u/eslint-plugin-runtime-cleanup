@@ -1,15 +1,13 @@
-/**
- * @packageDocumentation
- * Type-level contract tests for runtime entrypoint declarations.
- */
 import type { ESLint } from "eslint";
 
-import typefestPlugin from "eslint-plugin-typefest";
+import runtimeCleanupPlugin from "eslint-plugin-runtime-cleanup";
 import { assertType } from "vitest";
 
-assertType<ESLint.Plugin>(typefestPlugin);
+assertType<ESLint.Plugin>(runtimeCleanupPlugin);
 
-assertType<ESLint.Plugin["configs"] | undefined>(typefestPlugin.configs);
-assertType<string | undefined>(typefestPlugin.meta?.name);
-assertType<string | undefined>(typefestPlugin.meta?.version);
-assertType<ESLint.Plugin["rules"] | undefined>(typefestPlugin.rules);
+assertType<ESLint.Plugin["configs"] | undefined>(
+    runtimeCleanupPlugin.configs
+);
+assertType<string | undefined>(runtimeCleanupPlugin.meta?.name);
+assertType<string | undefined>(runtimeCleanupPlugin.meta?.version);
+assertType<ESLint.Plugin["rules"] | undefined>(runtimeCleanupPlugin.rules);

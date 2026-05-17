@@ -1,6 +1,6 @@
 ---
 title: Quality Gates and Release Flow
-description: CI quality gates and the release-hardening path for eslint-plugin-typefest.
+description: CI quality gates and the release-hardening path for eslint-plugin-runtime-cleanup.
 sidebar_position: 4
 ---
 

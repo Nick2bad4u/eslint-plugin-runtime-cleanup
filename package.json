@@ -1,25 +1,26 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
-    "name": "eslint-plugin-typefest",
+    "name": "eslint-plugin-runtime-cleanup",
     "version": "1.2.8",
     "private": false,
-    "description": "ESLint rules for adopting type-fest and ts-extras conventions.",
+    "description": "ESLint rules for requiring cleanup of runtime resources.",
     "keywords": [
         "eslint",
         "eslint-plugin",
         "eslintplugin",
-        "type-fest",
-        "ts-extras",
+        "cleanup",
+        "resources",
+        "runtime",
         "typescript"
     ],
-    "homepage": "https://nick2bad4u.github.io/eslint-plugin-typefest/",
+    "homepage": "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
     "bugs": {
-        "url": "https://github.com/Nick2bad4u/eslint-plugin-typefest/issues",
+        "url": "https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues",
         "email": "20943337+Nick2bad4u@users.noreply.github.com"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Nick2bad4u/eslint-plugin-typefest.git"
+        "url": "git+https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup.git"
     },
     "license": "MIT",
     "author": "Nick2bad4u <20943337+Nick2bad4u@users.noreply.github.com> (https://github.com/Nick2bad4u)",
@@ -74,9 +75,9 @@
         "build": "tsc -b tsconfig.build.json --force && npm run build:types:cjs && npm run build:cjs",
         "build:cjs": "esbuild dist/plugin.js --bundle --format=cjs --platform=node --packages=external --sourcemap --outfile=dist/plugin.cjs --footer:js=\"module.exports = module.exports.default;\"",
         "build:clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-        "build:eslint-inspector": "npx -y @eslint/config-inspector@latest build --outDir \"docs/docusaurus/static/eslint-inspector\" --base \"/eslint-plugin-typefest/eslint-inspector/\"",
+        "build:eslint-inspector": "npx -y @eslint/config-inspector@latest build --outDir \"docs/docusaurus/static/eslint-inspector\" --base \"/eslint-plugin-runtime-cleanup/eslint-inspector/\"",
         "build:eslint-inspector:local": "npx @eslint/config-inspector",
-        "build:stylelint-inspector": "npx -y stylelint-config-inspector@latest build --outDir \"docs/docusaurus/static/stylelint-inspector\" --base \"/eslint-plugin-typefest/stylelint-inspector/\"",
+        "build:stylelint-inspector": "npx -y stylelint-config-inspector@latest build --outDir \"docs/docusaurus/static/stylelint-inspector\" --base \"/eslint-plugin-runtime-cleanup/stylelint-inspector/\"",
         "build:stylelint-inspector:local": "npx stylelint-config-inspector@latest",
         "build:types:cjs": "node -e \"require('node:fs').copyFileSync('dist/plugin.d.ts','dist/plugin.d.cts')\"",
         "changelog": "git-cliff --config cliff.toml --current",
@@ -143,7 +144,7 @@
         "lint:exports": "ts-unused-exports tsconfig.json src/plugin.ts --excludePathsFromReport=plugin.ts",
         "lint:fix": "cross-env NODE_OPTIONS=--max_old_space_size=16384 eslint . --cache --cache-strategy content --cache-location .cache/.eslintcache --fix",
         "lint:fix:quiet": "cross-env ESLINT_PROGRESS=off NODE_OPTIONS=--max_old_space_size=16384 eslint . --cache --cache-strategy content --cache-location .cache/.eslintcache --fix && echo \"Eslint fix done!\"",
-        "lint:grype": "grype . -c .grype.yaml --name eslint-plugin-typefest",
+        "lint:grype": "grype . -c .grype.yaml --name eslint-plugin-runtime-cleanup",
         "lint:knip": "npm run knip",
         "lint:knip:exports": "npm run knip -- --include exports,nsExports,classMembers,types,nsTypes,enumMembers,duplicates",
         "lint:knip:unused:exports": "npm run knip -- --dependencies --exports",
@@ -155,7 +156,7 @@
         "lint:package": "npm run lint:node-version-files && npm run lint:package-sort && npm run lint:packagelintrc && echo \"Package.json lint done!\"",
         "lint:package:strict": "npm run lint:node-version-files && npm run lint:package-sort && npm run lint:package-check:strict && npm run lint:packagelintrc && echo \"Package.json lint done!\"",
         "lint:package-check": "publint && attw --pack .",
-        "lint:package-check:strict": "publint && attw --pack . --profile strict",
+        "lint:package-check:strict": "publint && node scripts/check-package-types.mjs",
         "lint:package-sort": "sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\"",
         "lint:package-sort-check": "sort-package-json --check \"./package.json\" \"./docs/docusaurus/package.json\"",
         "lint:packagelintrc": "npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
@@ -185,14 +186,14 @@
         "sync:peer-eslint-range": "node scripts/sync-peer-eslint-range.mjs",
         "sync:presets-rules-matrix": "node scripts/sync-presets-rules-matrix.mjs",
         "sync:readme-rules-table": "node scripts/sync-readme-rules-table.mjs",
-        "sync:readme-rules-table:update": "npm run build && cross-env TYPEFEST_UPDATE_GENERATED_DOCS=1 vitest run test/readme-rules-table-sync.test.ts -u",
+        "sync:readme-rules-table:update": "npm run build && cross-env RUNTIME_CLEANUP_UPDATE_GENERATED_DOCS=1 vitest run test/readme-rules-table-sync.test.ts -u",
         "sync:readme-rules-table:write": "node scripts/sync-readme-rules-table.mjs --write",
         "sync:rules:check": "npm run sync:readme-rules-table && npm run sync:presets-rules-matrix",
-        "sync:rules:write": "npm run sync:readme-rules-table:write && npm run sync:presets-rules-matrix",
+        "sync:rules:write": "npm run sync:readme-rules-table:write && node scripts/sync-presets-rules-matrix.mjs --write",
         "pretest": "npm run build",
         "test": "vitest run",
-        "test:autofix:fixtures": "cross-env TYPEFEST_AUTOFIX_SMOKE=1 vitest run test/autofix-fixtures-all-rules-smoke.test.ts",
-        "test:autofix:fixtures:typed": "cross-env TYPEFEST_AUTOFIX_SMOKE=1 TYPEFEST_AUTOFIX_FIXTURE_DIR=test/fixtures/typed vitest run test/autofix-fixtures-all-rules-smoke.test.ts",
+        "test:autofix:fixtures": "node -e \"console.log('No autofix fixtures are defined yet.')\"",
+        "test:autofix:fixtures:typed": "node -e \"console.log('No typed autofix fixtures are defined yet.')\"",
         "test:ci": "cross-env CI=true vitest run --reporter=default",
         "test:coverage": "vitest run --coverage --reporter=default",
         "test:coverage:detailed": "vitest run --coverage --reporter=verbose",
@@ -223,9 +224,7 @@
     "dependencies": {
         "@typescript-eslint/parser": "^8.59.3",
         "@typescript-eslint/type-utils": "^8.59.3",
-        "@typescript-eslint/utils": "^8.59.3",
-        "ts-extras": "^1.0.0",
-        "type-fest": "^5.6.0"
+        "@typescript-eslint/utils": "^8.59.3"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.2",

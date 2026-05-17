@@ -7,32 +7,30 @@ sidebar_position: 2
 Install the plugin:
 
 ```bash
-npm install --save-dev eslint-plugin-typefest
+npm install --save-dev eslint-plugin-runtime-cleanup
 ```
 
 Then enable it in your Flat Config:
 
 ```ts
-import typefest from "eslint-plugin-typefest";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [
     {
         plugins: {
-            typefest,
+            "runtime-cleanup": runtimeCleanup,
         },
-        rules: {
-            "typefest/prefer-ts-extras-is-defined": "error",
-        },
+        rules: {},
     },
 ];
 ```
 
 ## Recommended approach
 
-- Start with one ruleset (`typefest.configs.recommended` or `typefest.configs.strict`).
-- Fix violations in small batches.
-- Promote warnings to errors after stabilization.
+- Start with `runtimeCleanup.configs.recommended` once cleanup rules are added.
+- Use `runtimeCleanup.configs["recommended-type-checked"]` for rules that require TypeScript parser services.
+- Fix violations in small batches and promote warnings to errors after stabilization.
 
 ## Rule navigation
 
-Use the sidebar **Rules** section for the full list of rule docs synced from the repository.
+Use the sidebar **Rules** section for the rule docs synced from the repository.

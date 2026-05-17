@@ -3,25 +3,14 @@
  * Derivation helpers for canonical rule docs metadata.
  */
 import type { TSESLint } from "@typescript-eslint/utils";
-import type { UnknownArray, UnknownRecord } from "type-fest";
-
-import {
-    arrayIncludes,
-    isDefined,
-    isEmpty,
-    isInteger,
-    objectEntries,
-} from "ts-extras";
-
-import type { TypefestRuleNamePattern } from "./rules-registry.js";
 
 import { createRuleDocsUrl } from "./rule-docs-url.js";
 import {
-    isTypefestConfigReference,
-    type TypefestConfigName,
-    type TypefestConfigReference,
-    typefestConfigReferenceToName,
-} from "./typefest-config-references.js";
+    isRuntimeCleanupConfigReference,
+    type RuntimeCleanupConfigName,
+    type RuntimeCleanupConfigReference,
+    runtimeCleanupConfigReferenceToName,
+} from "./runtime-cleanup-config-references.js";
 
 /** Normalized docs metadata derived for each rule. */
 export type RuleDocsMetadata = Readonly<{
@@ -30,36 +19,33 @@ export type RuleDocsMetadata = Readonly<{
     requiresTypeChecking: boolean;
     ruleId: string;
     ruleNumber: number;
-    typefestConfigNames: readonly TypefestConfigName[];
-    typefestConfigReferences: readonly TypefestConfigReference[];
+    runtimeCleanupConfigNames: readonly RuntimeCleanupConfigName[];
+    runtimeCleanupConfigReferences: readonly RuntimeCleanupConfigReference[];
     url: string;
 }>;
 
 /** Rule-name keyed metadata map derived from static docs contracts. */
 export type RuleDocsMetadataByName = Readonly<
-    Record<TypefestRuleNamePattern, RuleDocsMetadata>
+    Record<string, RuleDocsMetadata>
 >;
 
 /** Rule-map contract accepted by docs metadata derivation helpers. */
 type RuleMap = Readonly<
-    Record<
-        TypefestRuleNamePattern,
-        TSESLint.RuleModule<string, Readonly<UnknownArray>>
-    >
+    Record<string, TSESLint.RuleModule<string, readonly unknown[]>>
 >;
 
 /**
  * Canonical docs contract required on every plugin rule.
  */
-type TypefestRuleDocsContract = Readonly<{
+type RuntimeCleanupRuleDocsContract = Readonly<{
     description: string;
     recommended: boolean;
     requiresTypeChecking: boolean;
     ruleId: string;
     ruleNumber: number;
-    typefestConfigs:
-        | readonly TypefestConfigReference[]
-        | TypefestConfigReference;
+    runtimeCleanupConfigs:
+        | readonly RuntimeCleanupConfigReference[]
+        | RuntimeCleanupConfigReference;
     url: string;
 }>;
 
@@ -80,7 +66,7 @@ const isRuleIdInCanonicalFormat = (value: string): boolean => {
     for (const character of value.slice(RULE_ID_DIGIT_START_INDEX)) {
         const codePoint = character.codePointAt(0);
 
-        if (!isDefined(codePoint)) {
+        if (codePoint === undefined) {
             return false;
         }
 
@@ -98,41 +84,43 @@ const isRuleIdInCanonicalFormat = (value: string): boolean => {
 /**
  * Guard dynamic values to object-shaped records.
  */
-const isUnknownRecord = (value: unknown): value is Readonly<UnknownRecord> =>
+const isUnknownRecord = (
+    value: unknown
+): value is Readonly<Record<string, unknown>> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
- * Convert rule docs `typefestConfigs` into a normalized, deduped reference
- * list.
+ * Convert rule docs `runtimeCleanupConfigs` into a normalized, deduped
+ * reference list.
  */
-const normalizeTypefestConfigReferences = (
+const normalizeRuntimeCleanupConfigReferences = (
     ruleName: string,
-    typefestConfigs: TypefestRuleDocsContract["typefestConfigs"]
-): readonly TypefestConfigReference[] => {
+    runtimeCleanupConfigs: RuntimeCleanupRuleDocsContract["runtimeCleanupConfigs"]
+): readonly RuntimeCleanupConfigReference[] => {
     const candidates =
-        typeof typefestConfigs === "string"
-            ? [typefestConfigs]
-            : [...typefestConfigs];
+        typeof runtimeCleanupConfigs === "string"
+            ? [runtimeCleanupConfigs]
+            : [...runtimeCleanupConfigs];
 
-    const references: TypefestConfigReference[] = [];
+    const references: RuntimeCleanupConfigReference[] = [];
 
     for (const candidate of candidates) {
-        if (!isTypefestConfigReference(candidate)) {
+        if (!isRuntimeCleanupConfigReference(candidate)) {
             throw new TypeError(
-                `Rule '${ruleName}' has invalid docs.typefestConfigs reference '${String(candidate)}'.`
+                `Rule '${ruleName}' has invalid docs.runtimeCleanupConfigs reference '${String(candidate)}'.`
             );
         }
 
-        if (arrayIncludes(references, candidate)) {
+        if (references.includes(candidate)) {
             continue;
         }
 
         references.push(candidate);
     }
 
-    if (isEmpty(references)) {
+    if (references.length === 0) {
         throw new TypeError(
-            `Rule '${ruleName}' must declare at least one docs.typefestConfigs reference.`
+            `Rule '${ruleName}' must declare at least one docs.runtimeCleanupConfigs reference.`
         );
     }
 
@@ -145,7 +133,7 @@ const normalizeTypefestConfigReferences = (
 const getRuleDocsContract = (
     ruleName: string,
     docs: unknown
-): TypefestRuleDocsContract => {
+): RuntimeCleanupRuleDocsContract => {
     if (!isUnknownRecord(docs)) {
         throw new TypeError(`Rule '${ruleName}' must declare meta.docs.`);
     }
@@ -155,7 +143,7 @@ const getRuleDocsContract = (
     const requiresTypeChecking = docs["requiresTypeChecking"];
     const ruleId = docs["ruleId"];
     const ruleNumber = docs["ruleNumber"];
-    const typefestConfigs = docs["typefestConfigs"];
+    const runtimeCleanupConfigs = docs["runtimeCleanupConfigs"];
     const url = docs["url"];
 
     if (typeof description !== "string" || description.trim().length === 0) {
@@ -201,7 +189,7 @@ const getRuleDocsContract = (
 
     if (
         typeof ruleNumber !== "number" ||
-        !isInteger(ruleNumber) ||
+        !Number.isInteger(ruleNumber) ||
         ruleNumber < 1
     ) {
         throw new TypeError(
@@ -209,10 +197,10 @@ const getRuleDocsContract = (
         );
     }
 
-    if (typeof typefestConfigs === "string") {
-        if (!isTypefestConfigReference(typefestConfigs)) {
+    if (typeof runtimeCleanupConfigs === "string") {
+        if (!isRuntimeCleanupConfigReference(runtimeCleanupConfigs)) {
             throw new TypeError(
-                `Rule '${ruleName}' has invalid docs.typefestConfigs reference '${typefestConfigs}'.`
+                `Rule '${ruleName}' has invalid docs.runtimeCleanupConfigs reference '${runtimeCleanupConfigs}'.`
             );
         }
 
@@ -222,30 +210,26 @@ const getRuleDocsContract = (
             requiresTypeChecking,
             ruleId,
             ruleNumber,
-            typefestConfigs,
+            runtimeCleanupConfigs,
             url,
         };
     }
 
-    if (!Array.isArray(typefestConfigs)) {
+    if (!Array.isArray(runtimeCleanupConfigs)) {
         throw new TypeError(
-            `Rule '${ruleName}' must declare docs.typefestConfigs as a preset reference or array.`
+            `Rule '${ruleName}' must declare docs.runtimeCleanupConfigs as a preset reference or array.`
         );
     }
 
-    const normalizedTypefestConfigs: TypefestConfigReference[] = [];
-
-    for (const candidate of typefestConfigs) {
+    for (const candidate of runtimeCleanupConfigs) {
         if (
             typeof candidate !== "string" ||
-            !isTypefestConfigReference(candidate)
+            !isRuntimeCleanupConfigReference(candidate)
         ) {
             throw new TypeError(
-                `Rule '${ruleName}' has invalid docs.typefestConfigs reference '${String(candidate)}'.`
+                `Rule '${ruleName}' has invalid docs.runtimeCleanupConfigs reference '${String(candidate)}'.`
             );
         }
-
-        normalizedTypefestConfigs.push(candidate);
     }
 
     return {
@@ -254,7 +238,7 @@ const getRuleDocsContract = (
         requiresTypeChecking,
         ruleId,
         ruleNumber,
-        typefestConfigs: normalizedTypefestConfigs,
+        runtimeCleanupConfigs,
         url,
     };
 };
@@ -266,18 +250,19 @@ export const deriveRuleDocsMetadataByName = (
     rules: RuleMap
 ): RuleDocsMetadataByName => {
     const metadataByRuleName: Record<
-        TypefestRuleNamePattern,
+        string,
         RuleDocsMetadata
     > = {};
 
-    for (const [ruleName, ruleModule] of objectEntries(rules)) {
+    for (const [ruleName, ruleModule] of Object.entries(rules)) {
         const ruleDocs = getRuleDocsContract(ruleName, ruleModule.meta.docs);
-        const typefestConfigReferences = normalizeTypefestConfigReferences(
-            ruleName,
-            ruleDocs.typefestConfigs
-        );
-        const typefestConfigNames = typefestConfigReferences.map(
-            (reference) => typefestConfigReferenceToName[reference]
+        const runtimeCleanupConfigReferences =
+            normalizeRuntimeCleanupConfigReferences(
+                ruleName,
+                ruleDocs.runtimeCleanupConfigs
+            );
+        const runtimeCleanupConfigNames = runtimeCleanupConfigReferences.map(
+            (reference) => runtimeCleanupConfigReferenceToName[reference]
         );
 
         metadataByRuleName[ruleName] = {
@@ -286,8 +271,8 @@ export const deriveRuleDocsMetadataByName = (
             requiresTypeChecking: ruleDocs.requiresTypeChecking,
             ruleId: ruleDocs.ruleId,
             ruleNumber: ruleDocs.ruleNumber,
-            typefestConfigNames,
-            typefestConfigReferences,
+            runtimeCleanupConfigNames,
+            runtimeCleanupConfigReferences,
             url: ruleDocs.url,
         };
     }
@@ -300,10 +285,12 @@ export const deriveRuleDocsMetadataByName = (
  */
 export const deriveTypeCheckedRuleNameSet = (
     ruleDocsMetadataByName: RuleDocsMetadataByName
-): ReadonlySet<TypefestRuleNamePattern> => {
-    const ruleNames: TypefestRuleNamePattern[] = [];
+): ReadonlySet<string> => {
+    const ruleNames: string[] = [];
 
-    for (const [ruleName, metadata] of objectEntries(ruleDocsMetadataByName)) {
+    for (const [ruleName, metadata] of Object.entries(
+        ruleDocsMetadataByName
+    )) {
         if (!metadata.requiresTypeChecking) {
             continue;
         }
@@ -319,21 +306,20 @@ export const deriveTypeCheckedRuleNameSet = (
  */
 export const deriveRulePresetMembershipByRuleName = (
     ruleDocsMetadataByName: RuleDocsMetadataByName
-): Readonly<Record<TypefestRuleNamePattern, readonly TypefestConfigName[]>> => {
+): Readonly<
+    Record<string, readonly RuntimeCleanupConfigName[]>
+> => {
     const membershipByRuleName: Record<
-        TypefestRuleNamePattern,
-        readonly TypefestConfigName[]
+        string,
+        readonly RuntimeCleanupConfigName[]
     > = {};
 
-    for (const [ruleName, metadata] of objectEntries(ruleDocsMetadataByName)) {
-        membershipByRuleName[ruleName] = metadata.typefestConfigNames;
-    }
-
-    if (isEmpty(objectEntries(membershipByRuleName))) {
-        throw new TypeError(
-            "Rule metadata derivation produced no membership entries."
-        );
+    for (const [ruleName, metadata] of Object.entries(
+        ruleDocsMetadataByName
+    )) {
+        membershipByRuleName[ruleName] = metadata.runtimeCleanupConfigNames;
     }
 
     return membershipByRuleName;
 };
+

@@ -2,173 +2,45 @@
  * @packageDocumentation
  * Stable catalog IDs for all plugin rules.
  */
-import { objectFromEntries, setHas } from "ts-extras";
 
 /**
  * Catalog metadata for a single rule.
  */
-export type TypefestRuleCatalogEntry = Readonly<{
-    ruleId: TypefestRuleCatalogId;
-    ruleName: TypefestRuleNamePattern;
+export type RuntimeCleanupRuleCatalogEntry = Readonly<{
+    ruleId: RuntimeCleanupRuleCatalogId;
+    ruleName: string;
     ruleNumber: number;
 }>;
 
 /**
  * Stable machine-friendly rule id format (for example: `R001`).
  */
-export type TypefestRuleCatalogId = `R${string}`;
-
-/** Pattern for unqualified rule names supported by eslint-plugin-typefest. */
-type TypefestRuleNamePattern = `prefer-${string}`;
+export type RuntimeCleanupRuleCatalogId = `R${string}`;
 
 /**
  * Stable global ordering used for rule catalog IDs.
  *
  * @remarks
- * Append new rules to preserve existing IDs.
+ * Append new rules to preserve existing IDs once the first runtime-cleanup
+ * rules are added.
  */
-/* eslint-disable perfectionist/sort-arrays -- Stable public catalog IDs depend on append-only ordering. */
+/* eslint-disable perfectionist/sort-arrays -- Catalog order is append-only so existing rule IDs remain stable. */
 const orderedRuleNames = [
-    "prefer-ts-extras-array-at",
-    "prefer-ts-extras-array-concat",
-    // Reserved historical rule IDs kept in the catalog so removing these
-    // unusable rules does not renumber every later public rule reference.
-    "prefer-ts-extras-array-find",
-    "prefer-ts-extras-array-find-last",
-    "prefer-ts-extras-array-find-last-index",
-    "prefer-ts-extras-array-first",
-    "prefer-ts-extras-array-includes",
-    "prefer-ts-extras-array-join",
-    "prefer-ts-extras-array-last",
-    "prefer-ts-extras-as-writable",
-    "prefer-ts-extras-assert-defined",
-    "prefer-ts-extras-assert-error",
-    "prefer-ts-extras-assert-never",
-    "prefer-ts-extras-assert-present",
-    "prefer-ts-extras-is-defined",
-    "prefer-ts-extras-is-defined-filter",
-    "prefer-ts-extras-is-empty",
-    "prefer-ts-extras-is-equal-type",
-    "prefer-ts-extras-is-finite",
-    "prefer-ts-extras-is-infinite",
-    "prefer-ts-extras-is-integer",
-    "prefer-ts-extras-is-present",
-    "prefer-ts-extras-is-present-filter",
-    "prefer-ts-extras-is-property-defined",
-    "prefer-ts-extras-is-property-present",
-    "prefer-ts-extras-is-safe-integer",
-    "prefer-ts-extras-key-in",
-    "prefer-ts-extras-not",
-    "prefer-ts-extras-object-entries",
-    "prefer-ts-extras-object-from-entries",
-    "prefer-ts-extras-object-has-in",
-    "prefer-ts-extras-object-has-own",
-    "prefer-ts-extras-object-keys",
-    "prefer-ts-extras-object-map-values",
-    "prefer-ts-extras-object-values",
-    "prefer-ts-extras-safe-cast-to",
-    "prefer-ts-extras-set-has",
-    "prefer-ts-extras-string-split",
-    "prefer-type-fest-absolute",
-    "prefer-type-fest-abstract-constructor",
-    "prefer-type-fest-and-all",
-    "prefer-type-fest-array-length",
-    "prefer-type-fest-arrayable",
-    "prefer-type-fest-async-return-type",
-    "prefer-type-fest-asyncify",
-    "prefer-type-fest-conditional-except",
-    "prefer-type-fest-conditional-keys",
-    "prefer-type-fest-conditional-pick",
-    "prefer-type-fest-conditional-pick-deep",
-    "prefer-type-fest-constructor",
-    "prefer-type-fest-distributed-omit",
-    "prefer-type-fest-distributed-pick",
-    "prefer-type-fest-except",
-    "prefer-type-fest-if",
-    "prefer-type-fest-iterable-element",
-    "prefer-type-fest-json-array",
-    "prefer-type-fest-json-object",
-    "prefer-type-fest-json-primitive",
-    "prefer-type-fest-json-value",
-    "prefer-type-fest-keys-of-union",
-    "prefer-type-fest-less-than",
-    "prefer-type-fest-less-than-or-equal",
-    "prefer-type-fest-literal-union",
-    "prefer-type-fest-merge",
-    "prefer-type-fest-merge-exclusive",
-    "prefer-type-fest-non-empty-tuple",
-    "prefer-type-fest-non-nullable-deep",
-    "prefer-type-fest-omit-index-signature",
-    "prefer-type-fest-optional",
-    "prefer-type-fest-or-all",
-    "prefer-type-fest-partial-deep",
-    "prefer-type-fest-pick-index-signature",
-    "prefer-type-fest-primitive",
-    "prefer-type-fest-promisable",
-    "prefer-type-fest-readonly-deep",
-    "prefer-type-fest-require-all-or-none",
-    "prefer-type-fest-require-at-least-one",
-    "prefer-type-fest-require-exactly-one",
-    "prefer-type-fest-require-one-or-none",
-    "prefer-type-fest-required-deep",
-    "prefer-type-fest-schema",
-    "prefer-type-fest-set-non-nullable",
-    "prefer-type-fest-set-optional",
-    "prefer-type-fest-set-readonly",
-    "prefer-type-fest-set-required",
-    "prefer-type-fest-set-return-type",
-    "prefer-type-fest-simplify",
-    "prefer-type-fest-stringified",
-    "prefer-type-fest-tagged-brands",
-    "prefer-type-fest-tuple-of",
-    "prefer-type-fest-union-length",
-    "prefer-type-fest-union-member",
-    "prefer-type-fest-union-to-intersection",
-    "prefer-type-fest-union-to-tuple",
-    "prefer-type-fest-unknown-array",
-    "prefer-type-fest-unknown-map",
-    "prefer-type-fest-unknown-record",
-    "prefer-type-fest-unknown-set",
-    "prefer-type-fest-unwrap-tagged",
-    "prefer-type-fest-value-of",
-    "prefer-type-fest-writable",
-    "prefer-type-fest-writable-deep",
-    "prefer-type-fest-is-any",
-    "prefer-type-fest-is-never",
-    "prefer-type-fest-is-null",
-    "prefer-type-fest-is-undefined",
-    "prefer-type-fest-entry",
-    "prefer-type-fest-entries",
-    "prefer-type-fest-array-element",
-    "prefer-type-fest-array-values",
-    "prefer-type-fest-is-unknown",
-    "prefer-type-fest-is-tuple",
-    "prefer-type-fest-and",
-    "prefer-type-fest-or",
-    "prefer-type-fest-extract-rest-element",
-    "prefer-type-fest-is-nullable",
-    "prefer-type-fest-has-optional-keys",
-    "prefer-type-fest-has-required-keys",
-    "prefer-type-fest-has-readonly-keys",
-    "prefer-type-fest-has-writable-keys",
-    "prefer-type-fest-optional-keys-of",
-    "prefer-type-fest-required-keys-of",
-    "prefer-type-fest-readonly-keys-of",
-    "prefer-type-fest-writable-keys-of",
-] as const satisfies readonly TypefestRuleNamePattern[];
-/* eslint-enable perfectionist/sort-arrays -- Re-enable array sorting outside the stable public catalog. */
+    "no-floating-timers",
+    "no-unmanaged-event-listeners",
+    "no-floating-observers",
+] as const satisfies readonly string[];
+/* eslint-enable perfectionist/sort-arrays -- Re-enable sorting outside the stable rule catalog. */
 
-const toRuleCatalogId = (ruleNumber: number): TypefestRuleCatalogId =>
+const toRuleCatalogId = (
+    ruleNumber: number
+): RuntimeCleanupRuleCatalogId =>
     `R${String(ruleNumber).padStart(3, "0")}`;
-
-const isTypefestRuleNamePattern = (
-    ruleName: string
-): ruleName is TypefestRuleNamePattern => ruleName.startsWith("prefer-");
 
 /**
  * Canonical catalog metadata entries in stable display/order form.
  */
-export const typefestRuleCatalogEntries: readonly TypefestRuleCatalogEntry[] =
+export const runtimeCleanupRuleCatalogEntries: readonly RuntimeCleanupRuleCatalogEntry[] =
     orderedRuleNames.map((ruleName, index) => {
         const ruleNumber = index + 1;
 
@@ -182,29 +54,19 @@ export const typefestRuleCatalogEntries: readonly TypefestRuleCatalogEntry[] =
 /**
  * Fast lookup map for rule catalog metadata by rule name.
  */
-export const typefestRuleCatalogByRuleName: Readonly<
-    Partial<Record<TypefestRuleNamePattern, TypefestRuleCatalogEntry>>
-> = objectFromEntries(
-    typefestRuleCatalogEntries.map((entry) => [entry.ruleName, entry])
+export const runtimeCleanupRuleCatalogByRuleName: Readonly<
+    Partial<Record<string, RuntimeCleanupRuleCatalogEntry>>
+> = Object.fromEntries(
+    runtimeCleanupRuleCatalogEntries.map((entry) => [entry.ruleName, entry])
 );
 
-/**
- * Resolve stable catalog metadata for a rule name.
- *
- * @throws When the rule is missing from the catalog.
- */
 /**
  * Resolve stable catalog metadata for a rule name when available.
  */
 export const getRuleCatalogEntryForRuleNameOrNull = (
     ruleName: string
-): null | TypefestRuleCatalogEntry => {
-    if (!isTypefestRuleNamePattern(ruleName)) {
-        return null;
-    }
-
-    return typefestRuleCatalogByRuleName[ruleName] ?? null;
-};
+): null | RuntimeCleanupRuleCatalogEntry =>
+    runtimeCleanupRuleCatalogByRuleName[ruleName] ?? null;
 
 /**
  * Resolve stable catalog metadata for a rule name.
@@ -213,7 +75,7 @@ export const getRuleCatalogEntryForRuleNameOrNull = (
  */
 export const getRuleCatalogEntryForRuleName = (
     ruleName: string
-): TypefestRuleCatalogEntry => {
+): RuntimeCleanupRuleCatalogEntry => {
     const catalogEntry = getRuleCatalogEntryForRuleNameOrNull(ruleName);
 
     if (catalogEntry === null) {
@@ -228,28 +90,30 @@ export const getRuleCatalogEntryForRuleName = (
 /**
  * Resolve stable catalog metadata by rule id.
  */
-export const typefestRuleCatalogByRuleId: ReadonlyMap<
-    TypefestRuleCatalogId,
-    TypefestRuleCatalogEntry
-> = new Map(typefestRuleCatalogEntries.map((entry) => [entry.ruleId, entry]));
+export const runtimeCleanupRuleCatalogByRuleId: ReadonlyMap<
+    RuntimeCleanupRuleCatalogId,
+    RuntimeCleanupRuleCatalogEntry
+> = new Map(
+    runtimeCleanupRuleCatalogEntries.map((entry) => [entry.ruleId, entry])
+);
 
 /**
  * Resolve stable catalog metadata for a catalog id.
  */
 export const getRuleCatalogEntryForRuleId = (
-    ruleId: TypefestRuleCatalogId
-): TypefestRuleCatalogEntry | undefined =>
-    typefestRuleCatalogByRuleId.get(ruleId);
+    ruleId: RuntimeCleanupRuleCatalogId
+): RuntimeCleanupRuleCatalogEntry | undefined =>
+    runtimeCleanupRuleCatalogByRuleId.get(ruleId);
 
 /**
  * Validate that catalog IDs are unique and sequential.
  */
 export const validateRuleCatalogIntegrity = (): boolean => {
-    const entries = typefestRuleCatalogEntries;
-    const seenRuleIds = new Set<TypefestRuleCatalogId>();
+    const entries = runtimeCleanupRuleCatalogEntries;
+    const seenRuleIds = new Set<RuntimeCleanupRuleCatalogId>();
 
     for (const [index, entry] of entries.entries()) {
-        if (setHas(seenRuleIds, entry.ruleId)) {
+        if (seenRuleIds.has(entry.ruleId)) {
             return false;
         }
 

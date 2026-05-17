@@ -36,8 +36,8 @@ flowchart TD
     N --> O
     C --> P[Report syntax-only findings]
     O --> Q{Fix or suggest safe?}
-    Q -->|Fix safe| R[reportWithTypefestPolicy fix]
-    Q -->|Only suggest safe| S[reportWithTypefestPolicy suggest]
+    Q -->|Fix safe| R[reportWithRuntimeCleanupPolicy fix]
+    Q -->|Only suggest safe| S[reportWithRuntimeCleanupPolicy suggest]
     Q -->|Unsafe rewrite| T[report message only]
 
     F --> U[Fail fast and surface configuration issue]

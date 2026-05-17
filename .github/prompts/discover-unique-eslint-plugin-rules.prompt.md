@@ -67,3 +67,4 @@ Your final deliverable should normally include:
 - validation results
 
 Only leave implementation undone if the user explicitly narrowed the task to discovery-only research.
+

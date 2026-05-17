@@ -7,7 +7,7 @@ import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { generatePresetsRulesMatrixSectionFromRules } from "../scripts/sync-presets-rules-matrix.mjs";
-import typefestPlugin from "../src/plugin";
+import runtimeCleanupPlugin from "../src/plugin";
 
 const MATRIX_SECTION_HEADING = "## Rule matrix";
 
@@ -98,8 +98,12 @@ describe("presets rules matrix synchronization", () => {
         const presetsMarkdown = await fs.readFile(presetsIndexPath, "utf8");
 
         const presetsMatrixSection = extractMatrixSection(presetsMarkdown);
+        const runtimeCleanupRules =
+            runtimeCleanupPlugin.rules as Parameters<
+                typeof generatePresetsRulesMatrixSectionFromRules
+            >[0];
         const expectedMatrixSection =
-            generatePresetsRulesMatrixSectionFromRules(typefestPlugin.rules);
+            generatePresetsRulesMatrixSectionFromRules(runtimeCleanupRules);
 
         expect(normalizeMarkdownTableSpacing(presetsMatrixSection)).toBe(
             normalizeMarkdownTableSpacing(expectedMatrixSection)

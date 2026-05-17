@@ -7,7 +7,7 @@
         "education",
         "productivity"
     ],
-    "description": "Documentation site for eslint-plugin-typefest, including rule reference, presets, architecture notes, and API docs.",
+    "description": "Documentation site for eslint-plugin-runtime-cleanup, including rule reference, presets, architecture notes, and API docs.",
     "dir": "ltr",
     "display": "standalone",
     "display_override": [
@@ -43,14 +43,14 @@
     ],
     "id": "./",
     "lang": "en",
-    "name": "eslint-plugin-typefest Documentation",
+    "name": "eslint-plugin-runtime-cleanup Documentation",
     "orientation": "any",
     "prefer_related_applications": false,
     "scope": ".",
-    "short_name": "Typefest Docs",
+    "short_name": "Runtime Cleanup Docs",
     "shortcuts": [
         {
-            "description": "Browse the full eslint-plugin-typefest rule catalog.",
+            "description": "Browse the eslint-plugin-runtime-cleanup rule catalog.",
             "icons": [
                 {
                     "sizes": "192x192",
@@ -60,7 +60,7 @@
             ],
             "name": "Rule Reference",
             "short_name": "Rules",
-            "url": "./docs/rules"
+            "url": "./docs/rules/overview"
         },
         {
             "description": "Compare the shipped preset bundles and included rules.",

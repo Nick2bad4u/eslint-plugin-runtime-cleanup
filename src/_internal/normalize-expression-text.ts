@@ -1,5 +1,4 @@
 import type { TSESTree } from "@typescript-eslint/utils";
-import type { JsonObject } from "type-fest";
 
 /**
  * @packageDocumentation
@@ -7,14 +6,11 @@ import type { JsonObject } from "type-fest";
  * nodes used by safe-fix heuristics.
  */
 import { AST_NODE_TYPES } from "@typescript-eslint/utils";
-import { isDefined, objectHasOwn, objectKeys } from "ts-extras";
-
-import { setContainsValue } from "./set-membership.js";
 
 /**
  * Object-like value that can participate in deep structural comparisons.
  */
-type ComparableObject = Readonly<JsonObject>;
+type ComparableObject = Readonly<Record<string, unknown>>;
 
 /**
  * ESTree metadata keys ignored during structural-equivalence checks.
@@ -47,9 +43,7 @@ const isComparableRecord = (value: unknown): value is ComparableObject =>
  * Return stable comparable keys after stripping metadata properties.
  */
 const getComparableKeys = (value: ComparableObject): readonly string[] =>
-    objectKeys(value).filter(
-        (key) => !setContainsValue(ignoredPropertyKeys, key)
-    );
+    Object.keys(value).filter((key) => !ignoredPropertyKeys.has(key));
 
 /**
  * Read comparable keys with per-comparison caching to reduce repeated
@@ -65,7 +59,7 @@ const getCachedComparableKeys = (
     comparableKeysByObject: WeakMap<ComparableObject, readonly string[]>
 ): readonly string[] => {
     const existingComparableKeys = comparableKeysByObject.get(value);
-    if (isDefined(existingComparableKeys)) {
+    if (existingComparableKeys !== undefined) {
         return existingComparableKeys;
     }
 
@@ -89,7 +83,7 @@ const unwrapTransparentExpression = (
     const visitedExpressions = new Set<Readonly<TSESTree.Expression>>();
 
     while (true) {
-        if (setContainsValue(visitedExpressions, currentExpression)) {
+        if (visitedExpressions.has(currentExpression)) {
             return currentExpression;
         }
 
@@ -135,14 +129,14 @@ const markAndCheckSeenPair = (
     seenPairs: WeakMap<object, WeakSet<object>>
 ): boolean => {
     const seenRightNodes = seenPairs.get(left);
-    if (isDefined(seenRightNodes) && seenRightNodes.has(right)) {
+    if (seenRightNodes?.has(right) === true) {
         return true;
     }
 
-    if (isDefined(seenRightNodes)) {
-        seenRightNodes.add(right);
-    } else {
+    if (seenRightNodes === undefined) {
         seenPairs.set(left, new WeakSet([right]));
+    } else {
+        seenRightNodes.add(right);
     }
 
     return false;
@@ -225,12 +219,12 @@ const areEquivalentNodeValues = (
         return false;
     }
 
-    if (leftKeys.some((key) => !setContainsValue(rightKeySet, key))) {
+    if (leftKeys.some((key) => !rightKeySet.has(key))) {
         return false;
     }
 
     return leftKeys.every((key) => {
-        if (!objectHasOwn(left, key) || !objectHasOwn(right, key)) {
+        if (!Object.hasOwn(left, key) || !Object.hasOwn(right, key)) {
             return false;
         }
 

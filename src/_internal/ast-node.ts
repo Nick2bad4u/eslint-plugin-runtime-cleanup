@@ -5,7 +5,6 @@ import type { TSESTree } from "@typescript-eslint/utils";
  * AST parent-chain traversal helpers used by multiple rule utilities.
  */
 import { AST_NODE_TYPES } from "@typescript-eslint/utils";
-import { keyIn } from "ts-extras";
 
 import { resolveFirstValueInLinkedStructure } from "./cycle-safe-linked-search.js";
 
@@ -21,7 +20,7 @@ type NodeWithOptionalParent = Readonly<TSESTree.Node> & {
  */
 const hasOptionalParentProperty = (
     node: Readonly<TSESTree.Node>
-): node is NodeWithOptionalParent => keyIn(node, "parent");
+): node is NodeWithOptionalParent => "parent" in node;
 
 /**
  * Gets a node's parent reference when available.

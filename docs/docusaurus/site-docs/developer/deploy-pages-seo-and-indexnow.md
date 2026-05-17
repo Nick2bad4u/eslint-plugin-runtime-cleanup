@@ -18,8 +18,8 @@ The production docs build publishes the following search-related assets automati
 
 For the live site, those assets are available under the GitHub Pages project path:
 
-- `https://nick2bad4u.github.io/eslint-plugin-typefest/robots.txt`
-- `https://nick2bad4u.github.io/eslint-plugin-typefest/sitemap.xml`
+- `https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/robots.txt`
+- `https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/sitemap.xml`
 
 ## `INDEXNOW_KEY` secret
 
@@ -61,11 +61,11 @@ The automation retries that specific first-run verification state for a bounded 
 
 This site is hosted as a GitHub Pages **project site** under:
 
-`https://nick2bad4u.github.io/eslint-plugin-typefest/`
+`https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/`
 
 That means the repository controls a path on `nick2bad4u.github.io`, not the host root itself. The workflow therefore publishes the IndexNow verification file at:
 
-`https://nick2bad4u.github.io/eslint-plugin-typefest/indexnow-key.txt`
+`https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt`
 
 and submits it through the IndexNow `keyLocation` field instead of assuming a root-host verification file.
 
@@ -129,6 +129,6 @@ If you ever need a full replay, the `submit-sitemap` helper still exists as a ma
 ## Related files
 
 - [Developer docs index](./index.md)
-- [Docusaurus config](https://github.com/Nick2bad4u/eslint-plugin-typefest/blob/main/docs/docusaurus/docusaurus.config.ts)
-- [Deploy workflow](https://github.com/Nick2bad4u/eslint-plugin-typefest/blob/main/.github/workflows/deploy-docusaurus.yml)
-- [Manual IndexNow workflow](https://github.com/Nick2bad4u/eslint-plugin-typefest/blob/main/.github/workflows/run-indexnow.yml)
+- [Docusaurus config](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/blob/main/docs/docusaurus/docusaurus.config.ts)
+- [Deploy workflow](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/blob/main/.github/workflows/deploy-docusaurus.yml)
+- [Manual IndexNow workflow](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/blob/main/.github/workflows/run-indexnow.yml)

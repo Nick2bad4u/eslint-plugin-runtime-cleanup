@@ -5,10 +5,8 @@ import type { TSESTree } from "@typescript-eslint/utils";
  * Utilities for detecting nodes that live inside `.filter(...)` callbacks.
  */
 import { AST_NODE_TYPES } from "@typescript-eslint/utils";
-import { arrayFirst } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
-import { setContainsValue } from "./set-membership.js";
 
 /** Target method name used for callback-context detection. */
 const FILTER_METHOD_NAME = "filter";
@@ -98,7 +96,7 @@ const isSingleParameterExpressionArrowFunction = (
         return false;
     }
 
-    const firstParameter = arrayFirst(callback.params);
+    const firstParameter = callback.params.at(0);
 
     return firstParameter?.type === AST_NODE_TYPES.Identifier;
 };
@@ -146,7 +144,7 @@ export const isWithinFilterCallback = (
     const visitedNodes = new Set<TSESTree.Node>();
 
     while (currentNode) {
-        if (setContainsValue(visitedNodes, currentNode)) {
+        if (visitedNodes.has(currentNode)) {
             return false;
         }
 

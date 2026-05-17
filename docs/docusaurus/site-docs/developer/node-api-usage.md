@@ -12,16 +12,16 @@ Use this pattern when embedding linting in scripts, custom tooling, or release c
 
 ```js
 import { ESLint } from "eslint";
-import typefest from "eslint-plugin-typefest";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 const eslint = new ESLint({
   overrideConfig: {
     files: ["**/*.ts"],
     plugins: {
-      typefest,
+      "runtime-cleanup": runtimeCleanup,
     },
     rules: {
-      "typefest/prefer-type-fest-primitive": "error",
+      "runtime-cleanup/no-floating-timers": "error",
     },
   },
 });
@@ -29,7 +29,7 @@ const eslint = new ESLint({
 const fileResults = await eslint.lintFiles(["src/**/*.ts"]);
 
 const textResults = await eslint.lintText(
-  "type PrimitiveAlias = string | number | bigint | boolean | symbol | null | undefined;",
+  "setInterval(() => refreshCache(), 1000);",
   { filePath: "virtual.ts" }
 );
 

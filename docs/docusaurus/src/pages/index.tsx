@@ -55,8 +55,8 @@ const heroBadges = [
  */
 const heroStats = [
     {
-        description: "Type-safe patterns from type-fest and ts-extras.",
-        headline: "\uf0ca 70+ Rules",
+        description: "Ready for the first runtime cleanup rules.",
+        headline: "\uf0ca Clean Scaffold",
     },
     {
         description: "Start small, then scale to stricter coverage.",
@@ -77,9 +77,9 @@ const overviewButtonIcon = "\udb81\udf1d";
 const comparePresetsButtonIcon = "\udb85\udc92";
 const heroKickerIcon = "\uf0ad";
 const heroKickerIcon2 = "\uf135";
-const packageName = "eslint-plugin-typefest";
-const homepageDescription = `Explore ${packageName} documentation, presets, and rule references for adopting type-fest and ts-extras patterns in modern TypeScript projects.`;
-const homepageKeywords = `${packageName}, type-fest, ts-extras, eslint rules, typescript linting, flat config`;
+const packageName = "eslint-plugin-runtime-cleanup";
+const homepageDescription = `Explore ${packageName} documentation, presets, and rule references for enforcing cleanup of timers, listeners, observers, AbortController instances, workers, streams, child processes, and disposables.`;
+const homepageKeywords = `${packageName}, runtime cleanup, eslint rules, timers, event listeners, abortcontroller, workers, streams, disposables, typescript linting, flat config`;
 const homepageStructuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
@@ -107,7 +107,7 @@ const homeCards = [
         icon: "\uf135",
         title: "Get Started",
         description:
-            "Install the plugin, enable a preset, and start enforcing type-safe ts-extras and type-fest patterns.",
+            "Install the plugin, enable a preset, and prepare a runtime cleanup linting baseline.",
         to: "/docs/rules/getting-started",
     },
     {
@@ -121,8 +121,8 @@ const homeCards = [
         icon: "\uf02d",
         title: "Rule Reference",
         description:
-            "Browse every rule with concrete incorrect/correct examples and migration guidance.",
-        to: "/docs/rules",
+            "Review the current rule roadmap and the documentation shape future rules will use.",
+        to: "/docs/rules/overview",
     },
 ] as const satisfies readonly HomeCard[];
 
@@ -134,7 +134,7 @@ export default function Home() {
 
     return (
         <Layout
-            title="Type-safe ESLint rules for type-fest and ts-extras"
+            title="ESLint rules for runtime cleanup"
             description={homepageDescription}
         >
             <Head>
@@ -157,26 +157,11 @@ export default function Home() {
                                 {packageName}
                             </Heading>
                             <p className={styles.heroSubtitle}>
-                                ESLint rules that recommend safer, clearer
-                                TypeScript types, type guards, and other
-                                patterns by utilizing{" "}
-                                <Link
-                                    className={`${styles.heroInlineLink} ${styles.heroInlineLinkTypeFest}`}
-                                    href="https://github.com/sindresorhus/type-fest"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    type-fest
-                                </Link>{" "}
-                                and{" "}
-                                <Link
-                                    className={`${styles.heroInlineLink} ${styles.heroInlineLinkTsExtras}`}
-                                    href="https://github.com/sindresorhus/ts-extras"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    ts-extras
-                                </Link>
+                                ESLint rules for code that allocates runtime
+                                resources and must release them deliberately:
+                                timers, listeners, observers, AbortController
+                                instances, workers, streams, child processes,
+                                and disposables.
                             </p>
 
                             <div className={styles.heroBadgeRow}>

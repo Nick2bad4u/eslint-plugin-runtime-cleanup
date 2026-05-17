@@ -1,9 +1,10 @@
-# Contributing to eslint-plugin-typefest
+# Contributing to eslint-plugin-runtime-cleanup
 
 Thanks for your interest in contributing.
 
-This repository contains an ESLint plugin focused on `type-fest` and
-`ts-extras` usage patterns for TypeScript codebases.
+This repository contains an ESLint plugin focused on finding runtime resources
+that need explicit cleanup, including timers, listeners, observers, controllers,
+workers, streams, child processes, and disposable handles.
 
 ## Prerequisites
 
@@ -97,15 +98,13 @@ Focused update flow:
 
 ```bash
 npx vitest run test/plugin-contract-snapshots.test.ts -u
-npx vitest run test/rule-metadata-snapshots.test.ts -u
 npm run sync:readme-rules-table:update
-npx vitest run test/docs-heading-snapshots.test.ts -u
 ```
 
 Verification flow:
 
 ```bash
-npx vitest run test/plugin-contract-snapshots.test.ts test/rule-metadata-snapshots.test.ts test/readme-rules-table-sync.test.ts test/docs-heading-snapshots.test.ts
+npx vitest run test/plugin-contract-snapshots.test.ts test/readme-rules-table-sync.test.ts test/presets-rules-matrix-sync.test.ts
 ```
 
 For detailed design and review guidance, see
@@ -127,7 +126,7 @@ Format:
 
 Examples:
 
-- `:sparkles: feat(rule): add prefer-type-fest-xyz`
+- `:sparkles: feat(rule): add require-timer-cleanup`
 - `:bug: fix(rule): avoid false positive in union type handling`
 - `:memo: docs: clarify configuration for type-aware rules`
 

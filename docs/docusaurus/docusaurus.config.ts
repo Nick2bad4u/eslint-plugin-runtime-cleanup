@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 /** Route base path where docs site is deployed (GitHub Pages project path). */
 const baseUrl =
-    process.env["DOCUSAURUS_BASE_URL"] ?? "/eslint-plugin-typefest/";
+    process.env["DOCUSAURUS_BASE_URL"] ?? "/eslint-plugin-runtime-cleanup/";
 /** Opt-in flag for experimental Docusaurus performance features. */
 const enableExperimentalFaster =
     process.env["DOCUSAURUS_ENABLE_EXPERIMENTAL"] === "true";
@@ -16,21 +16,21 @@ const enableExperimentalFaster =
 /** GitHub organization used for edit links and project metadata. */
 const organizationName = "Nick2bad4u";
 /** Repository name used for edit links and project metadata. */
-const projectName = "eslint-plugin-typefest";
+const projectName = "eslint-plugin-runtime-cleanup";
 /** Public origin for the published documentation site. */
 const siteOrigin = "https://nick2bad4u.github.io";
 /** Canonical public site URL including the GitHub Pages project path. */
 const siteUrl = `${siteOrigin}${baseUrl}`;
 /** Global site description used for SEO and social cards. */
 const siteDescription =
-    "Type-safe ESLint rules for adopting type-fest and ts-extras patterns in modern TypeScript codebases.";
+    "ESLint rules for requiring cleanup of runtime resources in modern TypeScript codebases.";
 /** Global blog description used for SEO and social cards. */
 const projectBlogDescription = `Updates, architecture notes, and practical guidance for ${projectName} users.`;
 /** Global project tagline used for SEO metadata. */
-const projectTagline = `Type-safe ESLint rules for adopting type-fest and ts-extras patterns in modern TypeScript codebases.`;
+const projectTagline = `ESLint rules for requiring cleanup of runtime resources in modern TypeScript codebases.`;
 /** Global project keywords used for SEO metadata. */
 const projectKeywords =
-    "eslint, eslint-plugin, type-fest, ts-extras, typescript, flat config, static analysis";
+    "eslint, eslint-plugin, cleanup, resources, timers, event listeners, observers, abortcontroller, workers, streams, child processes, disposables, typescript, flat config, static analysis";
 /** Social preview image used for Open Graph and Twitter cards. */
 const socialCardImagePath = "img/logo.png";
 /** Absolute social preview image URL. */
@@ -460,8 +460,8 @@ const config = {
                             to: "/docs/rules/presets",
                         },
                         {
-                            label: "📏 Rule Reference",
-                            to: "/docs/rules",
+                            label: "🚦 Adoption",
+                            to: "/docs/rules/category/adoption--rollout",
                         },
                     ],
                     title: "📚 Explore",
@@ -477,12 +477,12 @@ const config = {
                             label: "\ue7d2 ESLint Inspector",
                         },
                         {
-                            href: `https://www.npmjs.com/package/ts-extras`,
-                            label: "\uf113 ts-extras",
+                            href: `https://www.npmjs.com/package/${projectName}`,
+                            label: "\ue616 NPM",
                         },
                         {
-                            href: `https://www.npmjs.com/package/type-fest`,
-                            label: "\ue65b type-fest",
+                            href: `https://nick2bad4u.github.io/${projectName}/`,
+                            label: "\uf02d Documentation",
                         },
                     ],
                     title: "📁 Project",
@@ -540,28 +540,7 @@ const config = {
                         },
                         {
                             label: "• Adoption & Rollout",
-                            to: "/docs/rules/category/-adoption--rollout",
-                        },
-                    ],
-                },
-                {
-                    activeBaseRegex: "^/docs/rules(?:/(?!presets(?:/|$)).*)?$",
-                    label: "📜 Rules",
-                    position: "left",
-                    to: "/docs/rules",
-                    type: "dropdown",
-                    items: [
-                        {
-                            label: "• Rule Reference",
-                            to: "/docs/rules",
-                        },
-                        {
-                            label: "💠 Rules for ts-extras",
-                            to: "/docs/rules/category/ts-extras",
-                        },
-                        {
-                            label: "✴️ Rules for type-fest",
-                            to: "/docs/rules/category/type-fest",
+                            to: "/docs/rules/category/adoption--rollout",
                         },
                     ],
                 },
@@ -596,14 +575,6 @@ const config = {
                             label: "🧪 Experimental",
                             to: "/docs/rules/presets/experimental",
                         },
-                        {
-                            label: "💠 type-fest",
-                            to: "/docs/rules/presets/type-fest-types",
-                        },
-                        {
-                            label: "✴️ ts-extras",
-                            to: "/docs/rules/presets/ts-extras-type-guards",
-                        },
                     ],
                 },
                 {
@@ -619,24 +590,6 @@ const config = {
                         {
                             href: `https://www.npmjs.com/package/${projectName}`,
                             label: "• \ue616 NPM",
-                        },
-                        {
-                            href: `https://github.com/sindresorhus/type-fest`,
-                            className: "navbar-dropdown-divider-before",
-                            label: "💠 \ue709 type-fest",
-                        },
-                        {
-                            href: `https://www.npmjs.com/package/type-fest`,
-                            label: "💠 \ue616 type-fest",
-                        },
-                        {
-                            href: `https://github.com/sindresorhus/ts-extras`,
-                            className: "navbar-dropdown-divider-before",
-                            label: "✴️ \ue709 ts-extras",
-                        },
-                        {
-                            href: `https://www.npmjs.com/package/ts-extras`,
-                            label: "✴️ \ue616 ts-extras",
                         },
                     ],
                 },

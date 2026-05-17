@@ -1,6 +1,6 @@
 ---
 title: ADR 0001 - @eslint/plugin-kit Adoption
-description: Decision record for whether eslint-plugin-typefest should adopt @eslint/plugin-kit for rule/runtime internals.
+description: Decision record for whether eslint-plugin-runtime-cleanup should adopt @eslint/plugin-kit for rule/runtime internals.
 sidebar_position: 1
 ---
 

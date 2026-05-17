@@ -1,6 +1,6 @@
 # Support
 
-Thanks for using `eslint-plugin-typefest`.
+Thanks for using `eslint-plugin-runtime-cleanup`.
 
 ## How to get help
 
@@ -8,9 +8,9 @@ Thanks for using `eslint-plugin-typefest`.
    - [README.md](./README.md)
    - [docs/](./docs/)
 2. Search existing issues:
-   - <https://github.com/Nick2bad4u/eslint-plugin-typefest/issues>
+- <https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues>
 3. Open a new issue if needed:
-   - <https://github.com/Nick2bad4u/eslint-plugin-typefest/issues/new>
+- <https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues/new>
 
 ## What to include in an issue
 
@@ -19,7 +19,7 @@ Please include:
 - Node.js version
 - TypeScript version
 - ESLint version
-- `eslint-plugin-typefest` version
+- `eslint-plugin-runtime-cleanup` version
 - Minimal reproduction snippet
 - Expected behavior and actual behavior
 

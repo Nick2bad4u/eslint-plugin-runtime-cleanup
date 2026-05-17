@@ -21,7 +21,7 @@ applyTo: "docs/**"
 
 Rule documentation files in `docs/rules/<rule-id>.md` should follow this structure closely:
 
-1.  **Title:** The bare rule ID as the H1 header (e.g., `# prefer-type-fest-arrayable`).
+1.  **Title:** The bare rule ID as the H1 header (e.g., `# require-timer-cleanup`).
 2.  **Description:** A short, one-sentence description of what the rule does.
 3.  **Meta Badges (Optional):** Badges for `Recommended`, `Fixable`, or `Type Checked` only if the repository’s current docs pattern uses them.
 4.  **Rule Details:** An explanation of the problem the rule solves. Why is this pattern bad?
@@ -63,7 +63,7 @@ Rule documentation files in `docs/rules/<rule-id>.md` should follow this structu
 - **The "Fix":** If the rule is `fixable`, explicitly state what the auto-fixer does (e.g., "The auto-fixer will replace `var` with `let`.").
 - **Type Information:** If the rule requires type information (`parserServices`), add a specific note at the top of the docs:
   > ⚠️ This rule requires type information to run. It will not work without `projectService` (or equivalent typed parser setup) configured.
-- **Preset awareness:** Repository presets such as `etc-misc.configs["recommended-type-checked"]`, `etc-misc.configs.strict`, and `etc-misc.configs.all` already wire the typed parser setup for you; do not imply that users must always configure it manually.
+- **Preset awareness:** Repository presets such as `runtimeCleanup.configs["recommended-type-checked"]`, `runtimeCleanup.configs.strict`, and `runtimeCleanup.configs.all` already wire the typed parser setup for you; do not imply that users must always configure it manually.
 - **Consistency:** Ensure the examples actually trigger the rule. Do not use hypothetical examples that strictly wouldn't fail the specific AST selector of the rule.
 
   </guidelines>
@@ -73,82 +73,99 @@ Rule documentation files in `docs/rules/<rule-id>.md` should follow this structu
 ## Example Doc
 
 ```markdown
-# prefer-ts-extras-array-find-last-index
+# require-timer-cleanup
 
-Prefer [`arrayFindLastIndex`](https://github.com/sindresorhus/ts-extras/blob/main/source/array-find-last-index.ts) from `ts-extras` over `array.findLastIndex(...)`.
+Require timers created in long-lived scopes to be cleaned up before the owning scope exits.
 
-`arrayFindLastIndex(...)` improves predicate inference in typed arrays.
+Uncleared timers keep callbacks reachable and can continue mutating state after the owner is disposed.
 
 ## Targeted pattern scope
 
-This rule focuses on direct `array.findLastIndex(predicate)` calls that can be migrated to `arrayFindLastIndex(array, predicate)` with deterministic fixes.
+This rule focuses on timer handles created by `setTimeout` or `setInterval` in effect, lifecycle, or setup scopes.
 
-- `array.findLastIndex(predicate)` call sites that can use `arrayFindLastIndex(array, predicate)`.
+- Timer handles assigned to variables.
+- Timer handles returned from helper functions.
+- Cleanup functions that call `clearTimeout` or `clearInterval`.
 
-Alias indirection, wrapper helpers, and non-canonical call shapes are excluded to keep `arrayFindLastIndex(array, predicate)` migrations safe.
+Alias indirection and custom scheduler abstractions are excluded unless the rule explicitly documents support for them.
 
 ## What this rule reports
 
-This rule reports `array.findLastIndex(predicate)` call sites when `arrayFindLastIndex(array, predicate)` is the intended replacement.
+This rule reports timer handles that are created without a matching cleanup call.
 
-- `array.findLastIndex(predicate)` call sites that can use `arrayFindLastIndex(array, predicate)`.
+- `setTimeout(...)` handles that are never passed to `clearTimeout(...)`.
+- `setInterval(...)` handles that are never passed to `clearInterval(...)`.
 
 ## Why this rule exists
 
-`arrayFindLastIndex` standardizes reverse index lookup and keeps call signatures aligned with other `ts-extras` search helpers.
+Timers are process and browser resources. When code creates them without a cleanup path, callbacks can run after teardown and keep captured values alive longer than intended.
 
-- Reverse index scans are explicit at the call site.
-- Search code avoids mixed native/helper patterns.
-- Index-based follow-up logic stays uniform across modules.
+- Tests can leak pending timers.
+- UI code can update disposed components.
+- Long-running services can retain stale closures.
 
 ## ❌ Incorrect
 
 ```ts
-const index = monitors.findLastIndex((entry) => entry.id === targetId);
+const interval = setInterval(refreshCache, 1000);
 ```
 
 ## ✅ Correct
 
 ```ts
-const index = arrayFindLastIndex(monitors, (entry) => entry.id === targetId);
+const interval = setInterval(refreshCache, 1000);
+
+disposeCallbacks.push(() => {
+    clearInterval(interval);
+});
 ```
 
 ## Behavior and migration notes
 
-- Runtime behavior matches native `Array.prototype.findLastIndex`.
-- Search still proceeds from right to left.
-- If no element matches, the result is `-1`.
+- Cleanup must use the corresponding clear function.
+- Rules should avoid reporting intentionally detached timers unless the configured policy forbids them.
+- Autofixes should only add cleanup code when the owning cleanup scope is unambiguous.
 
 ## Additional examples
 
 ### ❌ Incorrect — Additional example
 
 ```ts
-const index = logs.findLastIndex((entry) => entry.level === "warn");
+setTimeout(flushMetrics, 250);
 ```
 
 ### ✅ Correct — Additional example
 
 ```ts
-const index = arrayFindLastIndex(logs, (entry) => entry.level === "warn");
+const timeout = setTimeout(flushMetrics, 250);
+
+return () => {
+    clearTimeout(timeout);
+};
 ```
 
 ### ✅ Correct — Repository-wide usage
 
 ```ts
-const retryIndex = arrayFindLastIndex(attempts, (attempt) => !attempt.success);
+const timeout = setTimeout(retryLater, delay);
+
+using cleanup = {
+    [Symbol.dispose]() {
+        clearTimeout(timeout);
+    },
+};
 ```
 
 ## ESLint flat config example
 
 ```ts
-import etc-misc from "eslint-plugin-etc-misc";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [
     {
-        plugins: { etc-misc },
+        plugins: { "runtime-cleanup": runtimeCleanup },
         rules: {
-            "etc-misc/prefer-ts-extras-array-find-last-index": "error",
+            "runtime-cleanup/require-timer-cleanup": "error",
         },
     },
 ];
@@ -156,31 +173,20 @@ export default [
 
 ## When not to use it
 
-Disable this rule if your codebase has standardized on native `.findLastIndex()`.
-
-## Package documentation
-
-ts-extras package documentation:
-
-`ts-extras@0.17.x` does not currently expose `arrayFindLastIndex` in its published API, so there is no canonical `source/*.ts` link for this helper yet.
-
-Reference links:
-
-- [`ts-extras` API list (README)](https://github.com/sindresorhus/ts-extras/blob/main/readme.md#api)
-- [`ts-extras` source directory](https://github.com/sindresorhus/ts-extras/tree/main/source)
+Disable this rule in short-lived scripts where timers intentionally run until process exit and the codebase accepts that lifecycle.
 
 > **Rule catalog ID:** R005
 
 ## Further reading
 
-- [`ts-extras` README](https://github.com/sindresorhus/ts-extras)
-- [`ts-extras` package reference](https://www.npmjs.com/package/ts-extras)
-- [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [MDN: setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout)
+- [MDN: setInterval](https://developer.mozilla.org/en-US/docs/Web/API/Window/setInterval)
+- [TypeScript 5.2: Explicit Resource Management](https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/)
 
 ## Adoption resources
 
-- [Rule adoption checklist](https://nick2bad4u.github.io/eslint-plugin-etc-misc/docs/rules/guides/adoption-checklist)
-- [Rollout and fix safety](https://nick2bad4u.github.io/eslint-plugin-etc-misc/docs/rules/guides/rollout-and-fix-safety)
+- [Rule adoption checklist](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/guides/adoption-checklist)
+- [Preset selection strategy](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/guides/preset-selection-strategy)
 
   </examples>
 </instructions>

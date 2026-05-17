@@ -1,6 +1,6 @@
 ---
 title: System Architecture Overview
-description: High-level architecture of eslint-plugin-typefest runtime, rules, docs, and integration layers.
+description: High-level architecture of eslint-plugin-runtime-cleanup runtime, rules, docs, and integration layers.
 sidebar_position: 1
 ---
 

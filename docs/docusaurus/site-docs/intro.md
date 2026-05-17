@@ -2,16 +2,18 @@
 sidebar_position: 1
 ---
 
-# eslint-plugin-typefest
+# eslint-plugin-runtime-cleanup
 
-`eslint-plugin-typefest` helps TypeScript codebases adopt more explicit, safer patterns with:
+`eslint-plugin-runtime-cleanup` helps TypeScript codebases enforce explicit cleanup for runtime resources such as:
 
-- [`type-fest`](https://github.com/sindresorhus/type-fest) utility types.
-- [`ts-extras`](https://github.com/sindresorhus/ts-extras) runtime helpers.
+- timers and intervals
+- event listeners and observers
+- abort controllers
+- workers, streams, child processes, and disposables
 
 ## What this documentation includes
 
-- A complete **rule reference** with examples for every rule.
+- A **rule reference** that will grow as cleanup rules are added.
 - **Getting Started** guidance for Flat Config projects.
 - A small **Developer API** section generated with TypeDoc.
 

@@ -4,7 +4,7 @@
  */
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
-const packageName = "eslint-plugin-typefest";
+const packageName = "eslint-plugin-runtime-cleanup";
 
 /** Main sidebar configuration for the default docs plugin instance. */
 const sidebars = {
@@ -45,20 +45,20 @@ const sidebars = {
                 },
                 {
                     className: "sb-api-overview-item",
-                    id: "developer/api/plugin/type-aliases/TypefestPlugin",
-                    label: "🧠 Type aliases · TypefestPlugin",
+                    id: "developer/api/plugin/type-aliases/RuntimeCleanupPlugin",
+                    label: "🧠 Type aliases · RuntimeCleanupPlugin",
                     type: "doc",
                 },
                 {
                     className: "sb-api-overview-item",
-                    id: "developer/api/plugin/variables/typefestPlugin",
-                    label: "⚙️ Runtime exports · typefestPlugin",
+                    id: "developer/api/plugin/variables/runtimeCleanupPlugin",
+                    label: "⚙️ Runtime exports · runtimeCleanupPlugin",
                     type: "doc",
                 },
                 {
                     className: "sb-api-overview-item",
-                    id: "developer/api/plugin/variables/typefestConfigs",
-                    label: "⚙️ Runtime exports · typefestConfigs",
+                    id: "developer/api/plugin/variables/runtimeCleanupConfigs",
+                    label: "⚙️ Runtime exports · runtimeCleanupConfigs",
                     type: "doc",
                 },
             ],
@@ -342,37 +342,17 @@ const sidebars = {
                 "External package docs, project blog resources, and issue tracker links.",
             items: [
                 {
-                    href: "https://github.com/sindresorhus/ts-extras",
-                    label: "💠 \ue709 ts-extras",
-                    type: "link",
-                },
-                {
-                    href: "https://www.npmjs.com/package/ts-extras",
-                    label: "💠 \ue616 ts-extras",
-                    type: "link",
-                },
-                {
-                    href: "https://github.com/sindresorhus/type-fest",
-                    label: "✴️ \ue709 type-fest",
-                    type: "link",
-                },
-                {
-                    href: "https://www.npmjs.com/package/type-fest",
-                    label: "✴️ \ue616 type-fest",
-                    type: "link",
-                },
-                {
                     href: "/blog",
                     label: "📰 Blog posts",
                     type: "link",
                 },
                 {
-                    href: "/blog/the-thinking-behind-eslint-plugin-typefest",
+                    href: "/blog/the-thinking-behind-eslint-plugin-runtime-cleanup",
                     label: "🧠 Blog · Thinking behind plugin",
                     type: "link",
                 },
                 {
-                    href: "/blog/designing-safe-autofixes-for-eslint-plugin-typefest",
+                    href: "/blog/designing-safe-autofixes-for-eslint-plugin-runtime-cleanup",
                     label: "🛡️ Blog · Designing safe autofixes",
                     type: "link",
                 },

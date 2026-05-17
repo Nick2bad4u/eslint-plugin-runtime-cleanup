@@ -23,7 +23,7 @@ sequenceDiagram
     participant TS as TypeChecker
     end
     box LightGreen Reporting and rewriting
-    participant Report as reportWithTypefestPolicy
+    participant Report as reportWithRuntimeCleanupPolicy
     participant Fix as Fix/Suggestion Builder
     end
 

@@ -59,4 +59,4 @@ flowchart TB
 
 - [Typed service path inventory](../typed-paths.md)
 - [Typed rule semantic analysis flow](./typed-rule-semantic-analysis-flow.md)
-- [Type-aware linting readiness guide](https://nick2bad4u.github.io/eslint-plugin-typefest/docs/rules/guides/type-aware-linting-readiness)
+- [Type-aware linting readiness guide](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/guides/type-aware-linting-readiness)

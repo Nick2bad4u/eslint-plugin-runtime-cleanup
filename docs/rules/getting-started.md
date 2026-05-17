@@ -1,75 +1,29 @@
----
-title: Getting Started
-description: Enable eslint-plugin-typefest quickly in Flat Config.
----
+# Getting started
 
-# Getting Started
+`eslint-plugin-runtime-cleanup` is an ESLint plugin scaffold for enforcing
+explicit cleanup of runtime resources in TypeScript projects.
 
-Install the plugin:
+The initial package intentionally ships no rules. This keeps the repository
+clean after template conversion and prevents unrelated rule behavior from being
+published under the runtime-cleanup name.
 
-```bash
-npm install --save-dev eslint-plugin-typefest typescript
+## Installation
+
+```sh
+npm install --save-dev eslint-plugin-runtime-cleanup typescript
 ```
 
-Enable one preset in your Flat Config:
+## Flat config
 
-```ts
-import typefest from "eslint-plugin-typefest";
+```js
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    typefest.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
-`recommended` does not require type information.
+## Current status
 
-If you want the same baseline plus type-aware helper rules, use
-`typefest.configs["recommended-type-checked"]`.
-
-## Alternative: manual scoped setup
-
-If you prefer to apply plugin rules inside your own file-scoped config object, spread the preset rules manually.
-
-```ts
-import tsParser from "@typescript-eslint/parser";
-import typefest from "eslint-plugin-typefest";
-
-export default [
-    {
-        files: ["**/*.{ts,tsx,mts,cts}"],
-        languageOptions: {
-            parser: tsParser,
-            parserOptions: {
-                ecmaVersion: "latest",
-                // Enable only when using a type-aware preset.
-                // projectService: true,
-                sourceType: "module",
-            },
-        },
-        plugins: {
-            typefest,
-        },
-        rules: {
-            ...typefest.configs.recommended.rules,
-        },
-    },
-];
-```
-
-Use this pattern when you only extend rules and want full control over parser setup per scope.
-
-## Recommended rollout
-
-1. Start with `recommended` (or `minimal` if you want low initial noise).
-2. Fix violations in small batches.
-3. Move to `recommended-type-checked` when you are ready for typed rules.
-4. Move to `strict` once your baseline is stable.
-5. Use `all` when you want every stable rule.
-6. Use `experimental` only when you want report-only candidate rules under active evaluation.
-
-## Need a subset instead of a full preset?
-
-- 💠 `typefest.configs["type-fest/types"]`
-- ✴️ `typefest.configs["ts-extras/type-guards"]`
-
-See the **Presets** section in this sidebar for details and examples.
+The plugin exports stable preset keys, parser defaults, package metadata, and
+documentation structure. Add concrete rules only when the resource pattern,
+cleanup expectation, false-positive boundaries, and fix or suggestion strategy
+are defined.

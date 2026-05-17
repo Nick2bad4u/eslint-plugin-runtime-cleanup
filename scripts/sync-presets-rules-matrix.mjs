@@ -2,6 +2,7 @@
  * Synchronize or validate presets documentation tables from canonical rule
  * metadata.
  */
+/* eslint-disable jsdoc/require-throws -- Sync script failures intentionally surface as thrown CLI errors. */
 // @ts-check
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -14,13 +15,13 @@ import { generateReadmeRulesSectionFromRules } from "./sync-readme-rules-table.m
 /**
  * @typedef {Readonly<{
  *     meta?: {
- *         docs?: {
- *             typefestConfigs?: readonly string[] | string;
- *             url?: string;
- *         };
- *         fixable?: string;
- *         hasSuggestions?: boolean;
- *     };
+ *         docs?: ({
+ *             runtimeCleanupConfigs?: readonly string[] | string;
+ *             url?: string | undefined;
+ *         } | undefined);
+ *         fixable?: string | undefined;
+ *         hasSuggestions?: boolean | undefined;
+ *     } | undefined;
  * }>} RuleModule
  */
 
@@ -32,9 +33,7 @@ import { generateReadmeRulesSectionFromRules } from "./sync-readme-rules-table.m
  *     | "minimal"
  *     | "recommended"
  *     | "recommended-type-checked"
- *     | "strict"
- *     | "ts-extras/type-guards"
- *     | "type-fest/types"} PresetConfigName
+ *     | "strict"} PresetConfigName
  */
 
 const matrixSectionHeading = "## Rule matrix";
@@ -69,8 +68,6 @@ const presetDocSlugByConfigName = {
     recommended: "recommended",
     "recommended-type-checked": "recommended-type-checked",
     strict: "strict",
-    "ts-extras/type-guards": "ts-extras-type-guards",
-    "type-fest/types": "type-fest-types",
 };
 
 /** @type {readonly PresetConfigName[]} */
@@ -79,8 +76,6 @@ const standardPresetConfigNames = [
     "minimal",
     "recommended",
     "strict",
-    "ts-extras/type-guards",
-    "type-fest/types",
 ];
 
 /**
@@ -105,20 +100,17 @@ const sortStrings = (values) =>
  * @returns {null | string}
  */
 const toPluginRuleName = (configRuleKey) => {
-    if (!configRuleKey.startsWith("typefest/")) {
+    if (!configRuleKey.startsWith("runtime-cleanup/")) {
         return null;
     }
 
-    return configRuleKey.slice("typefest/".length);
+    return configRuleKey.slice("runtime-cleanup/".length);
 };
 
 /**
  * @param {PresetConfigName} presetConfigName
  *
  * @returns {readonly string[]}
- *
- * @throws {TypeError} When the built plugin preset config is missing or
- *   malformed.
  */
 const collectPresetRuleNames = (presetConfigName) => {
     const presetConfig = builtPlugin.configs[presetConfigName];
@@ -145,33 +137,31 @@ const collectPresetRuleNames = (presetConfigName) => {
 /**
  * @param {RuleModule} ruleModule
  *
- * @returns {"—" | "💡" | "🔧" | "🔧 💡"}
+ * @returns {"-" | "fix" | "suggest" | "fix suggest"}
  */
 const getRuleFixIndicator = (ruleModule) => {
     const fixable = ruleModule.meta?.fixable === "code";
     const hasSuggestions = ruleModule.meta?.hasSuggestions === true;
 
     if (fixable && hasSuggestions) {
-        return "🔧 💡";
+        return "fix suggest";
     }
 
     if (fixable) {
-        return "🔧";
+        return "fix";
     }
 
     if (hasSuggestions) {
-        return "💡";
+        return "suggest";
     }
 
-    return "—";
+    return "-";
 };
 
 /**
  * @param {string} ruleName
  *
  * @returns {RuleModule}
- *
- * @throws {TypeError} When the built plugin does not expose the requested rule.
  */
 const getRuleModuleByName = (ruleName) => {
     const candidate = builtPlugin.rules[ruleName];
@@ -187,8 +177,6 @@ const getRuleModuleByName = (ruleName) => {
  * @param {string} ruleName
  *
  * @returns {string}
- *
- * @throws {TypeError} When rule metadata is missing the documentation URL.
  */
 const toPresetRuleRow = (ruleName) => {
     const ruleModule = getRuleModuleByName(ruleName);
@@ -211,7 +199,7 @@ const createPresetRulesTable = (ruleNames) => {
         return [
             "| Rule | Fix |",
             "| --- | :-: |",
-            "| — | — |",
+            "| - | - |",
         ].join("\n");
     }
 
@@ -227,9 +215,9 @@ const createPresetRulesTable = (ruleNames) => {
  */
 const createFixLegendLines = () => [
     "- `Fix` legend:",
-    "  - `🔧` = autofixable",
-    "  - `💡` = suggestions available",
-    "  - `—` = report only",
+    "  - `fix` = autofixable",
+    "  - `suggest` = suggestions available",
+    "  - `-` = report only",
 ];
 
 /**
@@ -239,9 +227,15 @@ const createFixLegendLines = () => [
  */
 const generateStandardPresetRulesSection = (presetConfigName) => {
     const presetRuleNames = collectPresetRuleNames(presetConfigName);
+    const intro =
+        presetRuleNames.length === 0
+            ? "No rules are currently enabled by this preset."
+            : "This preset enables the following rules.";
 
     return [
         presetRulesSectionHeading,
+        "",
+        intro,
         "",
         ...createFixLegendLines(),
         "",
@@ -262,9 +256,15 @@ const generateRecommendedTypeCheckedRulesSection = () => {
     const additionalTypeAwareRuleNames = recommendedTypeCheckedRuleNames.filter(
         (ruleName) => !recommendedRuleNameSet.has(ruleName)
     );
+    const intro =
+        recommendedTypeCheckedRuleNames.length === 0
+            ? "No type-aware rules are currently enabled by this preset."
+            : "This preset enables recommended rules and any type-aware recommended additions.";
 
     return [
         presetRulesSectionHeading,
+        "",
+        intro,
         "",
         ...createFixLegendLines(),
         "",
@@ -289,9 +289,15 @@ const generateExperimentalRulesSection = () => {
     const experimentalOnlyRuleNames = experimentalRuleNames.filter(
         (ruleName) => !allRuleNameSet.has(ruleName)
     );
+    const intro =
+        experimentalRuleNames.length === 0
+            ? "No experimental rules are currently enabled by this preset."
+            : "This preset enables experimental rules and the stable baseline.";
 
     return [
         presetRulesSectionHeading,
+        "",
+        intro,
         "",
         ...createFixLegendLines(),
         "",
@@ -311,8 +317,6 @@ const generateExperimentalRulesSection = () => {
  * @param {readonly string[]} headingCandidates
  *
  * @returns {{ headingOffset: number; sectionEndOffset: number }}
- *
- * @throws {Error} When none of the candidate headings exist in the markdown.
  */
 const findSectionBoundsByHeadings = (markdown, headingCandidates) => {
     /** @type {number[]} */
@@ -570,9 +574,7 @@ const syncPresetPageRuleTables = async ({ workspaceRoot, writeChanges }) => {
         markdown: recommendedTypeCheckedMarkdown,
     });
 
-    if (!recommendedTypeCheckedReplacementResult.changed) {
-        // Continue on to the experimental preset page update below.
-    } else {
+    if (recommendedTypeCheckedReplacementResult.changed) {
         changed = true;
 
         if (writeChanges) {
@@ -676,3 +678,5 @@ if (
 ) {
     await runCli();
 }
+
+/* eslint-enable jsdoc/require-throws */

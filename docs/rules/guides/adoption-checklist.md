@@ -1,37 +1,31 @@
 ---
-title: Rule adoption checklist
-description: Practical checklist for adopting eslint-plugin-typefest rules with low risk.
+description: Practical checklist for adopting eslint-plugin-runtime-cleanup rules with low risk.
 ---
 
-# Rule adoption checklist
+# Adoption checklist
 
-Use this checklist when rolling out one or more rules across an existing codebase.
+Use this checklist when concrete runtime-cleanup rules are added.
 
-## Before enabling rules
+## Before enabling a rule
 
-1. Identify the target package/folder scope.
-2. Run ESLint in report-only mode to estimate violation count.
-3. Confirm your CI, tests, and typecheck are green before refactoring.
-4. Decide whether this rollout is autofix-first or manual-first.
+- Confirm the rule targets a real resource lifetime problem in your codebase.
+- Read the rule docs and understand the cleanup pattern it expects.
+- Start with `runtime-cleanup.configs.recommended` or a single rule entry.
+- Run ESLint without `--fix` first and review every report category.
+- Enable type-aware presets only when your parser setup supports project
+  services.
 
-## During migration
+## During rollout
 
-1. Apply changes in small batches (per folder/package).
-2. Keep each PR focused on one rule family when possible.
-3. Re-run tests and typecheck after each batch.
-4. Flag behavior-sensitive replacements for reviewer attention.
+- Fix the highest-confidence findings first.
+- Prefer explicit cleanup near the resource allocation site.
+- Use suggestions where cleanup placement depends on program structure.
+- Avoid blanket disables. Use narrow `eslint-disable-next-line` comments only
+  when the resource is intentionally long-lived.
 
-## After migration
+## Before release
 
-1. Switch rule severity from `warn` to `error`.
-2. Remove local disables added during migration.
-3. Add one representative example to internal team docs.
-4. Track regressions by keeping the rule enabled in CI.
-
-## Suggested PR checklist
-
-- [ ] Only target files for this migration are changed.
-- [ ] Tests pass after each replacement batch.
-- [ ] Typecheck passes after each replacement batch.
-- [ ] Reviewer notes include runtime-sensitive replacements.
-- [ ] Final lint run has no new violations for the migrated rule(s).
+- Run `npm run lint:nocache`.
+- Run `npm run typecheck`.
+- Run `npm run test`.
+- Run the repository release gate when preparing a package release.

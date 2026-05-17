@@ -6,8 +6,6 @@ codecov:
     notify:
         wait_for_ci: true
     require_ci_to_pass: true
-    slug: Nick2bad4u/eslint-plugin-typefest
-
 comment:
     behavior: default
     layout: "header, diff, flags, files, footer"
@@ -88,3 +86,5 @@ ignore:
     - "**/*.d.ts"
     - "**/*.test.*"
     - "**/*.spec.*"
+slug: Nick2bad4u/eslint-plugin-runtime-cleanup
+

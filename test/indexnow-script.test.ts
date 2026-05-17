@@ -35,24 +35,24 @@ describe("indexnow script helpers", () => {
         expect.hasAssertions();
         expect(
             normalizeSiteUrl(
-                "https://nick2bad4u.github.io/eslint-plugin-typefest?ref=main#docs"
+                "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup?ref=main#docs"
             )
-        ).toBe("https://nick2bad4u.github.io/eslint-plugin-typefest/");
+        ).toBe("https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/");
     });
 
     it("derives sitemap and key-file URLs from a project site URL", () => {
         expect.hasAssertions();
         expect(
             deriveSiteConfiguration(
-                "https://nick2bad4u.github.io/eslint-plugin-typefest/"
+                "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/"
             )
         ).toStrictEqual({
             host: "nick2bad4u.github.io",
             keyFileUrl:
-                "https://nick2bad4u.github.io/eslint-plugin-typefest/indexnow-key.txt",
+                "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt",
             sitemapUrl:
-                "https://nick2bad4u.github.io/eslint-plugin-typefest/sitemap.xml",
-            siteUrl: "https://nick2bad4u.github.io/eslint-plugin-typefest/",
+                "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/sitemap.xml",
+            siteUrl: "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
         });
     });
 
@@ -69,9 +69,9 @@ describe("indexnow script helpers", () => {
         expect.hasAssertions();
         expect(
             normalizeDocusaurusSourcePath(
-                "@site/../rules/prefer-ts-extras-array-at.md"
+                "@site/../rules/getting-started.md"
             )
-        ).toBe("docs/rules/prefer-ts-extras-array-at.md");
+        ).toBe("docs/rules/getting-started.md");
         expect(normalizeDocusaurusSourcePath("@site/src/pages/index.jsx")).toBe(
             "docs/docusaurus/src/pages/index.tsx"
         );
@@ -134,11 +134,11 @@ describe("indexnow script helpers", () => {
                 host: "nick2bad4u.github.io",
                 key: "abcd1234-XYZ",
                 keyLocation:
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/indexnow-key.txt",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt",
                 urlList: [
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/",
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/docs/rules/foo",
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/blog/bar",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/foo",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/blog/bar",
                 ],
             })
         ).toStrictEqual([
@@ -146,19 +146,19 @@ describe("indexnow script helpers", () => {
                 host: "nick2bad4u.github.io",
                 key: "abcd1234-XYZ",
                 keyLocation:
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/indexnow-key.txt",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt",
                 urlList: [
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/",
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/docs/rules/foo",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/foo",
                 ],
             },
             {
                 host: "nick2bad4u.github.io",
                 key: "abcd1234-XYZ",
                 keyLocation:
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/indexnow-key.txt",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt",
                 urlList: [
-                    "https://nick2bad4u.github.io/eslint-plugin-typefest/blog/bar",
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/blog/bar",
                 ],
             },
         ]);
@@ -172,12 +172,12 @@ describe("indexnow script helpers", () => {
                     entries: [
                         {
                             permalink:
-                                "/eslint-plugin-typefest/docs/rules/getting-started",
+                                "/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
                             source: "@site/../rules/getting-started.md",
                         },
                         {
                             permalink:
-                                "/eslint-plugin-typefest/docs/developer/",
+                                "/eslint-plugin-runtime-cleanup/docs/developer/",
                             source: "@site/site-docs/developer/index.md",
                         },
                     ],
@@ -185,11 +185,11 @@ describe("indexnow script helpers", () => {
             })
         ).toStrictEqual([
             {
-                permalink: "/eslint-plugin-typefest/docs/developer/",
+                permalink: "/eslint-plugin-runtime-cleanup/docs/developer/",
                 sourcePath: "docs/docusaurus/site-docs/developer/index.md",
             },
             {
-                permalink: "/eslint-plugin-typefest/docs/rules/getting-started",
+                permalink: "/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
                 sourcePath: "docs/rules/getting-started.md",
             },
         ]);
@@ -225,20 +225,20 @@ describe("indexnow script helpers", () => {
                 manifestEntries: [
                     {
                         permalink:
-                            "/eslint-plugin-typefest/docs/rules/getting-started",
+                            "/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
                         sourcePath: "docs/rules/getting-started.md",
                     },
                     {
-                        permalink: "/eslint-plugin-typefest/docs/developer/",
+                        permalink: "/eslint-plugin-runtime-cleanup/docs/developer/",
                         sourcePath:
                             "docs/docusaurus/site-docs/developer/index.md",
                     },
                 ],
-                siteUrl: "https://nick2bad4u.github.io/eslint-plugin-typefest/",
+                siteUrl: "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
             })
         ).toStrictEqual([
-            "https://nick2bad4u.github.io/eslint-plugin-typefest/docs/rules/getting-started",
-            "https://nick2bad4u.github.io/eslint-plugin-typefest/docs/developer/",
+            "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
+            "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/developer/",
         ]);
     });
 

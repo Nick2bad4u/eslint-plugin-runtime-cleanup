@@ -1,6 +1,7 @@
 /**
  * Synchronize or validate the README rules matrix from canonical rule metadata.
  */
+/* eslint-disable jsdoc/require-throws -- Sync script failures intentionally surface as thrown CLI errors. */
 // @ts-check
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -9,34 +10,34 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import builtPlugin from "../dist/plugin.js";
 import {
-    typefestConfigMetadataByName,
-    typefestConfigNamesByReadmeOrder,
-    typefestConfigReferenceToName,
-} from "../dist/_internal/typefest-config-references.js";
+    runtimeCleanupConfigMetadataByName,
+    runtimeCleanupConfigNamesByReadmeOrder,
+    runtimeCleanupConfigReferenceToName,
+} from "../dist/_internal/runtime-cleanup-config-references.js";
 
 /**
  * @typedef {Readonly<{
  *     meta?: {
- *         docs?: {
- *             typefestConfigs?: readonly string[] | string;
- *             url?: string;
- *         };
- *         fixable?: string;
- *         hasSuggestions?: boolean;
- *     };
+ *         docs?: ({
+ *             runtimeCleanupConfigs?: readonly string[] | string;
+ *             url?: string | undefined;
+ *         } | undefined);
+ *         fixable?: string | undefined;
+ *         hasSuggestions?: boolean | undefined;
+ *     } | undefined;
  * }>} ReadmeRuleModule
  */
 
 /** @typedef {Readonly<Record<string, ReadmeRuleModule>>} ReadmeRulesMap */
 
-/** @typedef {import("../dist/_internal/typefest-config-references.js").TypefestConfigName} PresetName */
+/** @typedef {import("../dist/_internal/runtime-cleanup-config-references.js").RuntimeCleanupConfigName} PresetName */
 
-const presetOrder = [...typefestConfigNamesByReadmeOrder];
+const presetOrder = [...runtimeCleanupConfigNamesByReadmeOrder];
 const presetNameSet = new Set(presetOrder);
 
 const rulesSectionHeading = "## Rules";
 const PRESET_DOCS_URL_BASE =
-    "https://nick2bad4u.github.io/eslint-plugin-typefest/docs/rules/presets";
+    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/presets";
 
 /**
  * @param {string} markdown
@@ -61,9 +62,6 @@ const normalizeMarkdownLineEndings = (markdown, lineEnding) =>
  * @param {string} markdown
  *
  * @returns {Readonly<{ endOffset: number; startOffset: number }>}
- *
- * @throws {Error} When README content does not include the expected rules
- *   heading.
  */
 const getReadmeRulesSectionBounds = (markdown) => {
     const startOffset = markdown.indexOf(rulesSectionHeading);
@@ -157,20 +155,17 @@ const presetDocsSlugByName = {
     recommended: "recommended",
     "recommended-type-checked": "recommended-type-checked",
     strict: "strict",
-    "ts-extras/type-guards": "ts-extras-type-guards",
-    "type-fest/types": "type-fest-types",
 };
 
 /** @type {Readonly<Record<PresetName, string>>} */
 const presetConfigReferenceByName = {
-    all: "typefest.configs.all",
-    experimental: "typefest.configs.experimental",
-    minimal: "typefest.configs.minimal",
-    recommended: "typefest.configs.recommended",
-    "recommended-type-checked": 'typefest.configs["recommended-type-checked"]',
-    strict: "typefest.configs.strict",
-    "ts-extras/type-guards": 'typefest.configs["ts-extras/type-guards"]',
-    "type-fest/types": 'typefest.configs["type-fest/types"]',
+    all: "runtime-cleanup.configs.all",
+    experimental: "runtime-cleanup.configs.experimental",
+    minimal: "runtime-cleanup.configs.minimal",
+    recommended: "runtime-cleanup.configs.recommended",
+    "recommended-type-checked":
+        'runtime-cleanup.configs["recommended-type-checked"]',
+    strict: "runtime-cleanup.configs.strict",
 };
 
 /**
@@ -187,10 +182,10 @@ const createPresetDocsUrl = (presetName) =>
 const createPresetLegendLines = () =>
     presetOrder.map((presetName) => {
         const docsUrl = createPresetDocsUrl(presetName);
-        const presetIcon = typefestConfigMetadataByName[presetName].icon;
+        const presetIcon = runtimeCleanupConfigMetadataByName[presetName].icon;
         const configReference = presetConfigReferenceByName[presetName];
 
-        return `  - [${presetIcon}](${docsUrl}) — [\`${configReference}\`](${docsUrl})`;
+        return `  - [${presetIcon}](${docsUrl}) - [\`${configReference}\`](${docsUrl})`;
     });
 
 /**
@@ -198,14 +193,14 @@ const createPresetLegendLines = () =>
  *
  * @returns {null | PresetName}
  */
-const normalizeTypefestConfigName = (reference) => {
-    if (Object.hasOwn(typefestConfigReferenceToName, reference)) {
+const normalizeRuntimeCleanupConfigName = (reference) => {
+    if (Object.hasOwn(runtimeCleanupConfigReferenceToName, reference)) {
         const referenceKey =
-            /** @type {keyof typeof typefestConfigReferenceToName} */ (
+            /** @type {keyof typeof runtimeCleanupConfigReferenceToName} */ (
                 reference
             );
 
-        return typefestConfigReferenceToName[referenceKey];
+        return runtimeCleanupConfigReferenceToName[referenceKey];
     }
 
     const presetName = /** @type {PresetName} */ (reference);
@@ -214,14 +209,14 @@ const normalizeTypefestConfigName = (reference) => {
 };
 
 /**
- * @param {readonly string[] | string | undefined} typefestConfigs
+ * @param {readonly string[] | string | undefined} runtimeCleanupConfigs
  *
  * @returns {readonly PresetName[]}
  */
-const normalizeTypefestConfigNames = (typefestConfigs) => {
-    const references = Array.isArray(typefestConfigs)
-        ? typefestConfigs
-        : [typefestConfigs];
+const normalizeRuntimeCleanupConfigNames = (runtimeCleanupConfigs) => {
+    const references = Array.isArray(runtimeCleanupConfigs)
+        ? runtimeCleanupConfigs
+        : [runtimeCleanupConfigs];
 
     /** @type {PresetName[]} */
     const names = [];
@@ -233,13 +228,9 @@ const normalizeTypefestConfigNames = (typefestConfigs) => {
             continue;
         }
 
-        const configName = normalizeTypefestConfigName(reference);
+        const configName = normalizeRuntimeCleanupConfigName(reference);
 
-        if (configName === null) {
-            continue;
-        }
-
-        if (!presetNameSet.has(configName)) {
+        if (configName === null || !presetNameSet.has(configName)) {
             continue;
         }
 
@@ -255,25 +246,25 @@ const normalizeTypefestConfigNames = (typefestConfigs) => {
 /**
  * @param {ReadmeRuleModule} ruleModule
  *
- * @returns {"—" | "💡" | "🔧" | "🔧 💡"}
+ * @returns {"-" | "fix" | "suggest" | "fix suggest"}
  */
 const getRuleFixIndicator = (ruleModule) => {
     const fixable = ruleModule.meta?.fixable === "code";
     const hasSuggestions = ruleModule.meta?.hasSuggestions === true;
 
     if (fixable && hasSuggestions) {
-        return "🔧 💡";
+        return "fix suggest";
     }
 
     if (fixable) {
-        return "🔧";
+        return "fix";
     }
 
     if (hasSuggestions) {
-        return "💡";
+        return "suggest";
     }
 
-    return "—";
+    return "-";
 };
 
 /**
@@ -282,8 +273,11 @@ const getRuleFixIndicator = (ruleModule) => {
  * @returns {string}
  */
 const getPresetIndicator = (ruleModule) => {
-    const docsTypefestConfigs = ruleModule.meta?.docs?.typefestConfigs;
-    const presetNames = normalizeTypefestConfigNames(docsTypefestConfigs);
+    const docsRuntimeCleanupConfigs =
+        ruleModule.meta?.docs?.runtimeCleanupConfigs;
+    const presetNames = normalizeRuntimeCleanupConfigNames(
+        docsRuntimeCleanupConfigs
+    );
     const presetNamesSet = new Set(presetNames);
 
     /** @type {string[]} */
@@ -292,21 +286,20 @@ const getPresetIndicator = (ruleModule) => {
     for (const presetName of presetOrder) {
         if (presetNamesSet.has(presetName)) {
             const docsUrl = createPresetDocsUrl(presetName);
-            const presetIcon = typefestConfigMetadataByName[presetName].icon;
+            const presetIcon =
+                runtimeCleanupConfigMetadataByName[presetName].icon;
 
             icons.push(`[${presetIcon}](${docsUrl})`);
         }
     }
 
-    return icons.length === 0 ? "—" : icons.join(" ");
+    return icons.length === 0 ? "-" : icons.join(" ");
 };
 
 /**
  * @param {readonly [string, ReadmeRuleModule]} entry
  *
  * @returns {string}
- *
- * @throws {TypeError} When a rule is missing a valid docs URL.
  */
 const toRuleTableRow = ([ruleName, ruleModule]) => {
     const docsUrl = ruleModule.meta?.docs?.url;
@@ -331,20 +324,26 @@ export const generateReadmeRulesSectionFromRules = (rules) => {
     );
 
     const rows = ruleEntries.map(toRuleTableRow);
+    const intro =
+        rows.length === 0
+            ? "No runtime-cleanup rules are published yet. The package currently exposes the plugin runtime, preset surfaces, docs structure, and quality gates without carrying over template rule behavior."
+            : "Runtime-cleanup rules are listed below. Each rule documents the exact resource-lifetime pattern it enforces.";
 
     return [
         "## Rules",
         "",
+        intro,
+        "",
         "- `Fix` legend:",
-        "  - `🔧` = autofixable",
-        "  - `💡` = suggestions available",
-        "  - `—` = report only",
+        "  - `fix` = autofixable",
+        "  - `suggest` = suggestions available",
+        "  - `-` = report only",
         "- `Preset key` legend:",
         ...createPresetLegendLines(),
         "",
         "| Rule | Fix | Preset key |",
         "| --- | :-: | :-- |",
-        ...rows,
+        ...(rows.length === 0 ? ["| - | - | - |"] : rows),
         "",
     ].join("\n");
 };
@@ -433,3 +432,5 @@ if (
 ) {
     await runCli();
 }
+
+/* eslint-enable jsdoc/require-throws */

@@ -10,7 +10,7 @@ import {
     generateReadmeRulesSectionFromRules,
     syncReadmeRulesTable,
 } from "../scripts/sync-readme-rules-table.mjs";
-import typefestPlugin from "../src/plugin";
+import runtimeCleanupPlugin from "../src/plugin";
 
 const RULES_SECTION_HEADING = "## Rules";
 const RULES_SECTION_SNAPSHOT_PATH = path.join(
@@ -21,7 +21,7 @@ const processEnvironment = globalThis.process.env;
 const SHOULD_SYNC_README_IN_UPDATE_MODE =
     process.argv.includes("-u") ||
     process.argv.includes("--update") ||
-    processEnvironment["TYPEFEST_UPDATE_GENERATED_DOCS"] === "1";
+    processEnvironment["RUNTIME_CLEANUP_UPDATE_GENERATED_DOCS"] === "1";
 
 const syncReadmeRulesTableIfRequested = async (): Promise<void> => {
     if (!SHOULD_SYNC_README_IN_UPDATE_MODE) {
@@ -115,9 +115,12 @@ describe("readme rules table synchronization", () => {
         const readmeMarkdown = await fs.readFile(readmePath, "utf8");
 
         const readmeRulesSection = extractRulesSection(readmeMarkdown);
-        const expectedRulesSection = generateReadmeRulesSectionFromRules(
-            typefestPlugin.rules
-        );
+        const runtimeCleanupRules =
+            runtimeCleanupPlugin.rules as Parameters<
+                typeof generateReadmeRulesSectionFromRules
+            >[0];
+        const expectedRulesSection =
+            generateReadmeRulesSectionFromRules(runtimeCleanupRules);
 
         expect(normalizeMarkdownTableSpacing(readmeRulesSection)).toBe(
             normalizeMarkdownTableSpacing(expectedRulesSection)
@@ -127,9 +130,12 @@ describe("readme rules table synchronization", () => {
     it("keeps generated rules markdown snapshot-stable", async () => {
         expect.hasAssertions();
 
-        const generatedRulesSection = generateReadmeRulesSectionFromRules(
-            typefestPlugin.rules
-        );
+        const runtimeCleanupRules =
+            runtimeCleanupPlugin.rules as Parameters<
+                typeof generateReadmeRulesSectionFromRules
+            >[0];
+        const generatedRulesSection =
+            generateReadmeRulesSectionFromRules(runtimeCleanupRules);
 
         await expect(generatedRulesSection).toMatchFileSnapshot(
             RULES_SECTION_SNAPSHOT_PATH

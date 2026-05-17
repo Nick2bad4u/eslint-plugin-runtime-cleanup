@@ -32,37 +32,37 @@ export const runtimeCleanupConfigMetadataByName: Readonly<
     Record<RuntimeCleanupConfigName, RuntimeCleanupConfigMetadata>
 > = {
     all: {
-        icon: "A",
+        icon: "🟣",
         presetName: "runtime-cleanup:all",
         readmeOrder: 5,
         requiresTypeChecking: true,
     },
     experimental: {
-        icon: "E",
+        icon: "🧪",
         presetName: "runtime-cleanup:experimental",
         readmeOrder: 6,
         requiresTypeChecking: false,
     },
     minimal: {
-        icon: "M",
+        icon: "🟢",
         presetName: "runtime-cleanup:minimal",
         readmeOrder: 1,
         requiresTypeChecking: false,
     },
     recommended: {
-        icon: "R",
+        icon: "🟡",
         presetName: "runtime-cleanup:recommended",
         readmeOrder: 2,
         requiresTypeChecking: false,
     },
     "recommended-type-checked": {
-        icon: "T",
+        icon: "🧬",
         presetName: "runtime-cleanup:recommended-type-checked",
         readmeOrder: 3,
         requiresTypeChecking: true,
     },
     strict: {
-        icon: "S",
+        icon: "🔴",
         presetName: "runtime-cleanup:strict",
         readmeOrder: 4,
         requiresTypeChecking: true,

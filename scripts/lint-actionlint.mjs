@@ -11,7 +11,7 @@
  * - Use config/linting/ActionLintConfig.yaml unless -config-file is provided.
  */
 
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
 import pc from "picocolors";
@@ -69,6 +69,30 @@ const hasAnyFlag = (flags) => flags.some((flag) => hasFlag(flag));
 const useDefaultFiles =
     fileArgs.length === 0 && !hasAnyFlag(["-version", "-init-config"]);
 
+const localActionlintExecutableCandidates =
+    process.platform === "win32"
+        ? [
+              path.join(repoRoot, "node_modules", ".bin", "actionlint.exe"),
+              path.join(repoRoot, "node_modules", ".bin", "actionlint.cmd"),
+              "C:\\Program Files\\WinGet\\Links\\actionlint.exe",
+          ]
+        : [
+              path.join(repoRoot, "node_modules", ".bin", "actionlint"),
+              "/opt/homebrew/bin/actionlint",
+              "/usr/local/bin/actionlint",
+              "/usr/bin/actionlint",
+          ];
+
+const resolveActionlintExecutable = () => {
+    for (const executablePath of localActionlintExecutableCandidates) {
+        if (existsSync(executablePath)) {
+            return executablePath;
+        }
+    }
+
+    return null;
+};
+
 if (!hasFlag("-config-file")) {
     userArgs.push("-config-file", path.join(repoRoot, "ActionLintConfig.yaml"));
 }
@@ -112,9 +136,10 @@ if (useDefaultFiles && targetFiles.length === 0) {
 }
 
 if (useDefaultFiles) {
+    const excludedFileList = pc.magenta([...excludedFiles].join(", "));
     const scopeText = overrideExcluded
-        ? "including" + ` ${pc.magenta([...excludedFiles].join(", "))}`
-        : "excluding" + ` ${pc.magenta([...excludedFiles].join(", "))}`;
+        ? `including ${excludedFileList}`
+        : `excluding ${excludedFileList}`;
     console.log(
         `${pc.bold(pc.cyan("Running actionlint on"))} ${pc.magenta(
             String(targetFiles.length)
@@ -122,9 +147,20 @@ if (useDefaultFiles) {
     );
 }
 
-const result = spawnSync("actionlint", [...userArgs, ...targetFiles], {
-    stdio: "inherit",
-});
+const actionlintExecutablePath = resolveActionlintExecutable();
+
+if (actionlintExecutablePath === null) {
+    console.error(pc.red("Unable to locate actionlint executable."));
+    process.exit(1);
+}
+
+const result = spawnSync(
+    actionlintExecutablePath,
+    [...userArgs, ...targetFiles],
+    {
+        stdio: "inherit",
+    }
+);
 
 if (result.error) {
     console.error(pc.red("Failed to run actionlint:"), result.error);

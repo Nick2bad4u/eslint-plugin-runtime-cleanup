@@ -13,8 +13,19 @@ This preset enables the following rules.
 
 | Rule | Fix |
 | --- | :-: |
+| [`no-floating-abort-controllers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-abort-controllers) | - |
+| [`no-floating-broadcast-channels`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-broadcast-channels) | - |
 | [`no-floating-child-processes`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-child-processes) | - |
+| [`no-floating-disposable-stacks`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-disposable-stacks) | - |
+| [`no-floating-file-watchers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-file-watchers) | - |
+| [`no-floating-geolocation-watches`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-geolocation-watches) | - |
+| [`no-floating-media-streams`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-media-streams) | - |
+| [`no-floating-message-channels`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-message-channels) | - |
+| [`no-floating-network-connections`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-network-connections) | - |
 | [`no-floating-observers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-observers) | - |
+| [`no-floating-servers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-servers) | - |
+| [`no-floating-streams`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-streams) | - |
 | [`no-floating-timers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-timers) | - |
+| [`no-floating-wake-locks`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-wake-locks) | - |
 | [`no-floating-workers`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-floating-workers) | - |
 | [`no-unmanaged-event-listeners`](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/no-unmanaged-event-listeners) | - |

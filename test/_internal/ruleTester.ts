@@ -232,19 +232,19 @@ const withGeneratedRuleCaseNames = (
  *
  * @returns Patched RuleTester instance.
  */
+/* eslint-disable @typescript-eslint/prefer-readonly-parameter-types -- RuleTester instances are patched in place in this helper. */
 const patchRuleTesterRunWithGeneratedCaseNames = (
-    tester: Readonly<RuleTester>
+    tester: RuleTester
 ): RuleTester => {
-    const writableTester = tester as RuleTester;
-    const originalRun = writableTester.run.bind(writableTester);
-    writableTester.run = (ruleName, ruleModule, runCases) => {
+    const originalRun = tester.run.bind(tester);
+    tester.run = (ruleName, ruleModule, runCases) => {
         (originalRun as (...args: readonly unknown[]) => void)(
             ruleName,
             ruleModule,
             withGeneratedRuleCaseNames(ruleName, runCases)
         );
     };
-    return writableTester;
+    return tester;
 };
 
 /**
@@ -256,8 +256,9 @@ const patchRuleTesterRunWithGeneratedCaseNames = (
  * @returns Patched tester instance.
  */
 export const applySharedRuleTesterRunBehavior = (
-    tester: Readonly<RuleTester>
+    tester: RuleTester
 ): RuleTester => patchRuleTesterRunWithGeneratedCaseNames(tester);
+/* eslint-enable @typescript-eslint/prefer-readonly-parameter-types -- Re-enable after mutable RuleTester patch helpers. */
 
 /**
  * Resolve an absolute repository path from optional relative segments.

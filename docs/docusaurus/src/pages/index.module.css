@@ -134,7 +134,7 @@
     &:hover,
     &:focus {
         border-color: rgb(255 255 255 / 74%);
-        background: rgb(255 255 255 / 16%);
+        background: rgb(15 23 42 / 58%);
         color: #ffffff;
         text-decoration: none;
         transform: translateY(-1px);
@@ -168,7 +168,7 @@
     &:hover,
     &:focus {
         border-color: rgb(103 232 249 / 82%);
-        background: rgb(8 145 178 / 38%);
+        background: rgb(8 47 73 / 64%);
         color: rgb(240 249 255);
     }
 }

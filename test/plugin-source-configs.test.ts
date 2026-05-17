@@ -21,52 +21,126 @@ describe("source plugin config wiring", () => {
         expect.hasAssertions();
 
         const plugin = await loadSourcePlugin();
+        const noFloatingAbortControllersRuleId =
+            "runtime-cleanup/no-floating-abort-controllers";
+        const noFloatingBroadcastChannelsRuleId =
+            "runtime-cleanup/no-floating-broadcast-channels";
+        const noFloatingDisposableStacksRuleId =
+            "runtime-cleanup/no-floating-disposable-stacks";
+        const noFloatingFileWatchersRuleId =
+            "runtime-cleanup/no-floating-file-watchers";
+        const noFloatingGeolocationWatchesRuleId =
+            "runtime-cleanup/no-floating-geolocation-watches";
+        const noFloatingMessageChannelsRuleId =
+            "runtime-cleanup/no-floating-message-channels";
+        const noFloatingMediaStreamsRuleId =
+            "runtime-cleanup/no-floating-media-streams";
+        const noFloatingNetworkConnectionsRuleId =
+            "runtime-cleanup/no-floating-network-connections";
         const noFloatingObserversRuleId =
             "runtime-cleanup/no-floating-observers";
+        const noFloatingServersRuleId = "runtime-cleanup/no-floating-servers";
+        const noFloatingStreamsRuleId = "runtime-cleanup/no-floating-streams";
         const noFloatingChildProcessesRuleId =
             "runtime-cleanup/no-floating-child-processes";
         const noFloatingTimersRuleId = "runtime-cleanup/no-floating-timers";
-        const noFloatingWorkersRuleId =
-            "runtime-cleanup/no-floating-workers";
+        const noFloatingWakeLocksRuleId =
+            "runtime-cleanup/no-floating-wake-locks";
+        const noFloatingWorkersRuleId = "runtime-cleanup/no-floating-workers";
         const noUnmanagedEventListenersRuleId =
             "runtime-cleanup/no-unmanaged-event-listeners";
         const expectedRulesByConfig = {
             all: {
+                [noFloatingAbortControllersRuleId]: "error",
+                [noFloatingBroadcastChannelsRuleId]: "error",
                 [noFloatingChildProcessesRuleId]: "error",
+                [noFloatingDisposableStacksRuleId]: "error",
+                [noFloatingFileWatchersRuleId]: "error",
+                [noFloatingGeolocationWatchesRuleId]: "error",
+                [noFloatingMediaStreamsRuleId]: "error",
+                [noFloatingMessageChannelsRuleId]: "error",
+                [noFloatingNetworkConnectionsRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
+                [noFloatingServersRuleId]: "error",
+                [noFloatingStreamsRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWakeLocksRuleId]: "error",
                 [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             experimental: {},
             minimal: {},
             recommended: {
+                [noFloatingAbortControllersRuleId]: "error",
+                [noFloatingBroadcastChannelsRuleId]: "error",
                 [noFloatingChildProcessesRuleId]: "error",
+                [noFloatingDisposableStacksRuleId]: "error",
+                [noFloatingFileWatchersRuleId]: "error",
+                [noFloatingGeolocationWatchesRuleId]: "error",
+                [noFloatingMediaStreamsRuleId]: "error",
+                [noFloatingMessageChannelsRuleId]: "error",
+                [noFloatingNetworkConnectionsRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
+                [noFloatingServersRuleId]: "error",
+                [noFloatingStreamsRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWakeLocksRuleId]: "error",
                 [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             "recommended-type-checked": {
+                [noFloatingAbortControllersRuleId]: "error",
+                [noFloatingBroadcastChannelsRuleId]: "error",
                 [noFloatingChildProcessesRuleId]: "error",
+                [noFloatingDisposableStacksRuleId]: "error",
+                [noFloatingFileWatchersRuleId]: "error",
+                [noFloatingGeolocationWatchesRuleId]: "error",
+                [noFloatingMediaStreamsRuleId]: "error",
+                [noFloatingMessageChannelsRuleId]: "error",
+                [noFloatingNetworkConnectionsRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
+                [noFloatingServersRuleId]: "error",
+                [noFloatingStreamsRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWakeLocksRuleId]: "error",
                 [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
             strict: {
+                [noFloatingAbortControllersRuleId]: "error",
+                [noFloatingBroadcastChannelsRuleId]: "error",
                 [noFloatingChildProcessesRuleId]: "error",
+                [noFloatingDisposableStacksRuleId]: "error",
+                [noFloatingFileWatchersRuleId]: "error",
+                [noFloatingGeolocationWatchesRuleId]: "error",
+                [noFloatingMediaStreamsRuleId]: "error",
+                [noFloatingMessageChannelsRuleId]: "error",
+                [noFloatingNetworkConnectionsRuleId]: "error",
                 [noFloatingObserversRuleId]: "error",
+                [noFloatingServersRuleId]: "error",
+                [noFloatingStreamsRuleId]: "error",
                 [noFloatingTimersRuleId]: "error",
+                [noFloatingWakeLocksRuleId]: "error",
                 [noFloatingWorkersRuleId]: "error",
                 [noUnmanagedEventListenersRuleId]: "error",
             },
         } as const;
 
         expect(Object.keys(plugin.rules)).toStrictEqual([
+            "no-floating-abort-controllers",
+            "no-floating-broadcast-channels",
             "no-floating-child-processes",
+            "no-floating-disposable-stacks",
+			"no-floating-file-watchers",
+			"no-floating-geolocation-watches",
+			"no-floating-media-streams",
+			"no-floating-message-channels",
+			"no-floating-network-connections",
             "no-floating-observers",
+            "no-floating-servers",
+            "no-floating-streams",
             "no-floating-timers",
+            "no-floating-wake-locks",
             "no-floating-workers",
             "no-unmanaged-event-listeners",
         ]);

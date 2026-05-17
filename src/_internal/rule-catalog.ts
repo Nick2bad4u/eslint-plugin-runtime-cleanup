@@ -31,12 +31,21 @@ const orderedRuleNames = [
     "no-floating-observers",
     "no-floating-workers",
     "no-floating-child-processes",
+    "no-floating-abort-controllers",
+    "no-floating-streams",
+    "no-floating-disposable-stacks",
+    "no-floating-network-connections",
+    "no-floating-file-watchers",
+    "no-floating-broadcast-channels",
+    "no-floating-message-channels",
+    "no-floating-servers",
+    "no-floating-geolocation-watches",
+    "no-floating-media-streams",
+    "no-floating-wake-locks",
 ] as const satisfies readonly string[];
 /* eslint-enable perfectionist/sort-arrays -- Re-enable sorting outside the stable rule catalog. */
 
-const toRuleCatalogId = (
-    ruleNumber: number
-): RuntimeCleanupRuleCatalogId =>
+const toRuleCatalogId = (ruleNumber: number): RuntimeCleanupRuleCatalogId =>
     `R${String(ruleNumber).padStart(3, "0")}`;
 
 /**

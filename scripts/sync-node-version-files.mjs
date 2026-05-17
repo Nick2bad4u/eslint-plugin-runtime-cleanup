@@ -84,13 +84,7 @@ const parseArguments = (argumentList) => {
     let explicitVersion = null;
 
     for (let index = 0; index < argumentList.length; index += 1) {
-        const argument = argumentList[index];
-
-        if (typeof argument !== "string") {
-            throw new TypeError(
-                `Expected a string command-line argument at index ${index}.`
-            );
-        }
+        const argument = argumentList[index] ?? "";
 
         if (argument === "--check") {
             checkOnly = true;

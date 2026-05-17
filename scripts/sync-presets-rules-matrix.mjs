@@ -14,14 +14,18 @@ import { generateReadmeRulesSectionFromRules } from "./sync-readme-rules-table.m
 
 /**
  * @typedef {Readonly<{
- *     meta?: {
- *         docs?: ({
- *             runtimeCleanupConfigs?: readonly string[] | string;
- *             url?: string | undefined;
- *         } | undefined);
- *         fixable?: string | undefined;
- *         hasSuggestions?: boolean | undefined;
- *     } | undefined;
+ *     meta?:
+ *         | {
+ *               docs?:
+ *                   | {
+ *                         runtimeCleanupConfigs?: readonly string[] | string;
+ *                         url?: string | undefined;
+ *                     }
+ *                   | undefined;
+ *               fixable?: string | undefined;
+ *               hasSuggestions?: boolean | undefined;
+ *           }
+ *         | undefined;
  * }>} RuleModule
  */
 
@@ -454,7 +458,7 @@ const normalizeMarkdownTableSpacing = (markdown) =>
  */
 export const generatePresetsRulesMatrixSectionFromRules = (rules) => {
     const readmeRulesSection = generateReadmeRulesSectionFromRules(rules)
-        .replace(/\r\n/gv, "\n")
+        .replaceAll("\r\n", "\n")
         .split("\n");
 
     const rulesBodyWithoutHeading = readmeRulesSection.slice(2);

@@ -17,14 +17,18 @@ import {
 
 /**
  * @typedef {Readonly<{
- *     meta?: {
- *         docs?: ({
- *             runtimeCleanupConfigs?: readonly string[] | string;
- *             url?: string | undefined;
- *         } | undefined);
- *         fixable?: string | undefined;
- *         hasSuggestions?: boolean | undefined;
- *     } | undefined;
+ *     meta?:
+ *         | {
+ *               docs?:
+ *                   | {
+ *                         runtimeCleanupConfigs?: readonly string[] | string;
+ *                         url?: string | undefined;
+ *                     }
+ *                   | undefined;
+ *               fixable?: string | undefined;
+ *               hasSuggestions?: boolean | undefined;
+ *           }
+ *         | undefined;
  * }>} ReadmeRuleModule
  */
 
@@ -105,7 +109,7 @@ export const extractReadmeRulesSection = (markdown) => {
  */
 export const normalizeRulesSectionMarkdown = (markdown) =>
     markdown
-        .replace(/\r\n/gv, "\n")
+        .replaceAll("\r\n", "\n")
         .split("\n")
         .map((line) => {
             const trimmedLine = line.trimEnd();

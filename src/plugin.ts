@@ -54,10 +54,7 @@ type RuntimeCleanupConfigsContract = Record<
 >;
 
 /** Fully assembled plugin contract used by the runtime default export. */
-type RuntimeCleanupPluginContract = Omit<
-    ESLint.Plugin,
-    "configs" | "rules"
-> & {
+type RuntimeCleanupPluginContract = Omit<ESLint.Plugin, "configs" | "rules"> & {
     configs: RuntimeCleanupConfigsContract;
     meta: {
         name: string;
@@ -113,8 +110,7 @@ const normalizeParserOptions = (
  * Consumers typically use this when building strongly typed rule maps or helper
  * utilities that require namespaced rule identifiers.
  */
-export type RuntimeCleanupRuleId =
-    `runtime-cleanup/${RuntimeCleanupRuleName}`;
+export type RuntimeCleanupRuleId = `runtime-cleanup/${RuntimeCleanupRuleName}`;
 
 /** Unqualified rule name supported by `eslint-plugin-runtime-cleanup`. */
 export type RuntimeCleanupRuleName = keyof typeof runtimeCleanupRules;
@@ -152,32 +148,76 @@ const effectivePresetRuleNamesByConfig: Readonly<
     Record<RuntimeCleanupConfigName, readonly RuntimeCleanupRuleName[]>
 > = {
     all: [
+        "no-floating-abort-controllers",
+        "no-floating-broadcast-channels",
         "no-floating-child-processes",
+        "no-floating-disposable-stacks",
+        "no-floating-file-watchers",
+        "no-floating-geolocation-watches",
+        "no-floating-message-channels",
+        "no-floating-media-streams",
+        "no-floating-network-connections",
         "no-floating-observers",
+        "no-floating-servers",
+        "no-floating-streams",
         "no-floating-timers",
+        "no-floating-wake-locks",
         "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     experimental: [],
     minimal: [],
     recommended: [
+        "no-floating-abort-controllers",
+        "no-floating-broadcast-channels",
         "no-floating-child-processes",
+        "no-floating-disposable-stacks",
+        "no-floating-file-watchers",
+        "no-floating-geolocation-watches",
+        "no-floating-message-channels",
+        "no-floating-media-streams",
+        "no-floating-network-connections",
         "no-floating-observers",
+        "no-floating-servers",
+        "no-floating-streams",
         "no-floating-timers",
+        "no-floating-wake-locks",
         "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     "recommended-type-checked": [
+        "no-floating-abort-controllers",
+        "no-floating-broadcast-channels",
         "no-floating-child-processes",
+        "no-floating-disposable-stacks",
+        "no-floating-file-watchers",
+        "no-floating-geolocation-watches",
+        "no-floating-message-channels",
+        "no-floating-media-streams",
+        "no-floating-network-connections",
         "no-floating-observers",
+        "no-floating-servers",
+        "no-floating-streams",
         "no-floating-timers",
+        "no-floating-wake-locks",
         "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
     strict: [
+        "no-floating-abort-controllers",
+        "no-floating-broadcast-channels",
         "no-floating-child-processes",
+        "no-floating-disposable-stacks",
+        "no-floating-file-watchers",
+        "no-floating-geolocation-watches",
+        "no-floating-message-channels",
+        "no-floating-media-streams",
+        "no-floating-network-connections",
         "no-floating-observers",
+        "no-floating-servers",
+        "no-floating-streams",
         "no-floating-timers",
+        "no-floating-wake-locks",
         "no-floating-workers",
         "no-unmanaged-event-listeners",
     ],
@@ -187,7 +227,8 @@ const effectivePresetRuleNamesByConfig: Readonly<
  * Apply parser and plugin metadata required by all plugin presets.
  *
  * @param config - Preset-specific config fragment.
- * @param plugin - Plugin object registered under the `runtime-cleanup` namespace.
+ * @param plugin - Plugin object registered under the `runtime-cleanup`
+ *   namespace.
  * @param options - Preset-level wiring options.
  *
  * @returns Normalized preset config.
@@ -260,8 +301,7 @@ const createRuntimeCleanupConfigsDefinition =
             ])
         ) as RuntimeCleanupConfigsContract;
 
-const runtimeCleanupConfigsDefinition =
-    createRuntimeCleanupConfigsDefinition();
+const runtimeCleanupConfigsDefinition = createRuntimeCleanupConfigsDefinition();
 
 /** Finalized typed view of all exported preset configurations. */
 const runtimeCleanupConfigs: RuntimeCleanupConfigsContract =

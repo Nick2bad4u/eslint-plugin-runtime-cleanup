@@ -9,6 +9,55 @@ import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 import { getParentNode } from "./ast-node.js";
 import { isTransparentExpressionWrapper } from "./value-rewrite-autofix-safety.js";
 
+const isLogicalExpressionOperand = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    parentNode.type === AST_NODE_TYPES.LogicalExpression &&
+    (parentNode.left === currentNode || parentNode.right === currentNode);
+
+const isConditionalTest = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    parentNode.type === AST_NODE_TYPES.ConditionalExpression &&
+    parentNode.test === currentNode;
+
+const isLoopOrIfTest = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    (parentNode.type === AST_NODE_TYPES.DoWhileStatement ||
+        parentNode.type === AST_NODE_TYPES.ForStatement ||
+        parentNode.type === AST_NODE_TYPES.IfStatement ||
+        parentNode.type === AST_NODE_TYPES.WhileStatement) &&
+    parentNode.test === currentNode;
+
+const isSwitchCaseTest = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    parentNode.type === AST_NODE_TYPES.SwitchCase &&
+    parentNode.test === currentNode;
+
+const isUnaryNotArgument = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    parentNode.type === AST_NODE_TYPES.UnaryExpression &&
+    parentNode.operator === "!" &&
+    parentNode.argument === currentNode;
+
+const isBooleanGuardContext = (
+    parentNode: Readonly<TSESTree.Node>,
+    currentNode: Readonly<TSESTree.Node>
+): boolean =>
+    isUnaryNotArgument(parentNode, currentNode) ||
+    isLogicalExpressionOperand(parentNode, currentNode) ||
+    isConditionalTest(parentNode, currentNode) ||
+    isLoopOrIfTest(parentNode, currentNode) ||
+    isSwitchCaseTest(parentNode, currentNode);
+
 /**
  * Determine whether a call-expression replacement to a type-predicate helper is
  * safe to apply as an autofix.
@@ -35,53 +84,7 @@ export const isTypePredicateExpressionAutofixSafe = (
             continue;
         }
 
-        if (
-            parentNode.type === AST_NODE_TYPES.UnaryExpression &&
-            parentNode.operator === "!" &&
-            parentNode.argument === currentNode
-        ) {
-            return false;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.LogicalExpression &&
-            (parentNode.left === currentNode ||
-                parentNode.right === currentNode)
-        ) {
-            return false;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.ConditionalExpression &&
-            parentNode.test === currentNode
-        ) {
-            return false;
-        }
-
-        if (
-            (parentNode.type === AST_NODE_TYPES.DoWhileStatement ||
-                parentNode.type === AST_NODE_TYPES.IfStatement ||
-                parentNode.type === AST_NODE_TYPES.WhileStatement) &&
-            parentNode.test === currentNode
-        ) {
-            return false;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.ForStatement &&
-            parentNode.test === currentNode
-        ) {
-            return false;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.SwitchCase &&
-            parentNode.test === currentNode
-        ) {
-            return false;
-        }
-
-        return true;
+        return !isBooleanGuardContext(parentNode, currentNode);
     }
 };
 

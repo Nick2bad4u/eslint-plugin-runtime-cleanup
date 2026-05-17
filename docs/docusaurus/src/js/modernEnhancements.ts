@@ -112,19 +112,23 @@ function getRuntimeSidebarKindPrefix(
 function getRuleNumberPrefix(
     label: string
 ): null | Readonly<{ numberToken: string; remainder: string }> {
-    const match = /^(\d{2,3})\s+(.+)$/.exec(label);
+    const separatorIndex = label.indexOf(" ");
 
-    if (match === null) {
+    if (separatorIndex === -1) {
         return null;
     }
 
-    const [
-        ,
-        numberToken,
-        remainder,
-    ] = match;
+    const numberToken = label.slice(0, separatorIndex);
+    const remainder = label.slice(separatorIndex + 1);
 
-    if (numberToken === undefined || remainder === undefined) {
+    if (
+        numberToken.length < 2 ||
+        numberToken.length > 3 ||
+        ![...numberToken].every(
+            (character) => character >= "0" && character <= "9"
+        ) ||
+        remainder.length === 0
+    ) {
         return null;
     }
 
@@ -180,6 +184,95 @@ function isSidebarLinkTokenized(link: HTMLAnchorElement): boolean {
     return tokenizedValue !== undefined && tokenizedValue.length > 0;
 }
 
+const rememberSidebarLabelMutation = (
+    mutations: SidebarLabelMutation[],
+    link: HTMLAnchorElement,
+    originalLabel: string
+): void => {
+    mutations.push({
+        element: link,
+        originalLabel,
+    });
+};
+
+const tokenizeRuntimeSidebarLabel = (
+    mutations: SidebarLabelMutation[],
+    link: HTMLAnchorElement,
+    linkLabel: string
+): boolean => {
+    if (!isRuntimeSidebarLink(link)) {
+        return false;
+    }
+
+    const runtimePrefix = getRuntimeSidebarKindPrefix(linkLabel);
+
+    if (runtimePrefix === null) {
+        return false;
+    }
+
+    const remainderText = linkLabel.slice(runtimePrefix.length).trimStart();
+
+    if (remainderText.length === 0) {
+        return true;
+    }
+
+    rememberSidebarLabelMutation(mutations, link, linkLabel);
+    setSidebarLeadingToken({
+        link,
+        remainderText,
+        separator: "",
+        tokenClassName: "sb-inline-runtime-kind",
+        tokenText: `${runtimePrefix}\u00A0`,
+    });
+
+    return true;
+};
+
+const tokenizeNumberedRuleSidebarLabel = (
+    mutations: SidebarLabelMutation[],
+    link: HTMLAnchorElement,
+    linkLabel: string
+): void => {
+    if (!isNumberedRuleSidebarLink(link)) {
+        return;
+    }
+
+    const ruleNumberPrefix = getRuleNumberPrefix(linkLabel);
+
+    if (ruleNumberPrefix === null) {
+        return;
+    }
+
+    rememberSidebarLabelMutation(mutations, link, linkLabel);
+    setSidebarLeadingToken({
+        link,
+        remainderText: ruleNumberPrefix.remainder,
+        tokenClassName: "sb-inline-rule-number",
+        tokenText: ruleNumberPrefix.numberToken,
+    });
+};
+
+const processSidebarLinkLabel = (
+    mutations: SidebarLabelMutation[],
+    link: HTMLAnchorElement
+): void => {
+    if (isSidebarLinkTokenized(link)) {
+        return;
+    }
+
+    const linkLabel = link.textContent?.trim();
+
+    if (!linkLabel) {
+        return;
+    }
+
+    if (tokenizeRuntimeSidebarLabel(mutations, link, linkLabel)) {
+        return;
+    }
+
+    tokenizeNumberedRuleSidebarLabel(mutations, link, linkLabel);
+};
+
 /**
  * Enhance sidebar readability by tinting leading label tokens.
  *
@@ -190,60 +283,7 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
 
     const processLinks = (sidebarLinks: readonly HTMLAnchorElement[]): void => {
         for (const link of sidebarLinks) {
-            if (isSidebarLinkTokenized(link)) {
-                continue;
-            }
-
-            const linkLabel = link.textContent?.trim();
-
-            if (!linkLabel) {
-                continue;
-            }
-
-            if (isRuntimeSidebarLink(link)) {
-                const runtimePrefix = getRuntimeSidebarKindPrefix(linkLabel);
-
-                if (runtimePrefix !== null) {
-                    const remainderText = linkLabel
-                        .slice(runtimePrefix.length)
-                        .trimStart();
-
-                    if (remainderText.length > 0) {
-                        mutations.push({
-                            element: link,
-                            originalLabel: linkLabel,
-                        });
-
-                        setSidebarLeadingToken({
-                            link,
-                            remainderText,
-                            separator: "",
-                            tokenClassName: "sb-inline-runtime-kind",
-                            tokenText: `${runtimePrefix}\u00A0`,
-                        });
-                    }
-
-                    continue;
-                }
-            }
-
-            if (isNumberedRuleSidebarLink(link)) {
-                const ruleNumberPrefix = getRuleNumberPrefix(linkLabel);
-
-                if (ruleNumberPrefix !== null) {
-                    mutations.push({
-                        element: link,
-                        originalLabel: linkLabel,
-                    });
-
-                    setSidebarLeadingToken({
-                        link,
-                        remainderText: ruleNumberPrefix.remainder,
-                        tokenClassName: "sb-inline-rule-number",
-                        tokenText: ruleNumberPrefix.numberToken,
-                    });
-                }
-            }
+            processSidebarLinkLabel(mutations, link);
         }
     };
 
@@ -361,19 +401,19 @@ function createScrollIndicator(): CleanupFunction {
 
     const update = (): void => {
         const scrollTop =
-            window.pageYOffset || document.documentElement.scrollTop;
+            globalThis.pageYOffset || document.documentElement.scrollTop;
         const docHeight =
-            document.documentElement.scrollHeight - window.innerHeight;
+            document.documentElement.scrollHeight - globalThis.innerHeight;
         const safeHeight = docHeight > 0 ? docHeight : 1;
         const scrollPercent = (scrollTop / safeHeight) * 100;
         indicator.style.width = `${Math.max(0, Math.min(100, scrollPercent))}%`;
     };
 
-    window.addEventListener("scroll", update, { passive: true });
+    globalThis.addEventListener("scroll", update, { passive: true });
     update();
 
     return (): void => {
-        window.removeEventListener("scroll", update);
+        globalThis.removeEventListener("scroll", update);
         indicator.remove();
     };
 }
@@ -428,13 +468,13 @@ function applyThemeToggleAnimation(): CleanupFunction {
  * @returns Cleanup callback for all registered enhancement handlers.
  */
 function initializeAdvancedFeatures(): CleanupFunction {
-    const prefersReducedMotion = window.matchMedia(
+    const prefersReducedMotion = globalThis.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
-    const cleanupFunctions: CleanupFunction[] = [];
-
-    cleanupFunctions.push(createScrollIndicator());
-    cleanupFunctions.push(applySidebarLabelTokenColoring());
+    const cleanupFunctions: CleanupFunction[] = [
+        createScrollIndicator(),
+        applySidebarLabelTokenColoring(),
+    ];
 
     if (!prefersReducedMotion) {
         cleanupFunctions.push(applyThemeToggleAnimation());
@@ -466,7 +506,7 @@ function initializeEnhancements(): CleanupFunction {
 
     const cancelInitialSetup = (): void => {
         if (initialSetupFrame !== null) {
-            window.cancelAnimationFrame(initialSetupFrame);
+            globalThis.cancelAnimationFrame(initialSetupFrame);
             initialSetupFrame = null;
         }
 
@@ -479,7 +519,7 @@ function initializeEnhancements(): CleanupFunction {
     const scheduleInitialSetup = (): void => {
         cancelInitialSetup();
 
-        initialSetupFrame = window.requestAnimationFrame(() => {
+        initialSetupFrame = globalThis.requestAnimationFrame(() => {
             initialSetupFrame = null;
 
             initialSetupTimer = setTimeout(() => {
@@ -490,14 +530,14 @@ function initializeEnhancements(): CleanupFunction {
     };
 
     const handleWindowLoad = (): void => {
-        window.removeEventListener("load", handleWindowLoad);
+        globalThis.removeEventListener("load", handleWindowLoad);
         scheduleInitialSetup();
     };
 
     if (document.readyState === "complete") {
         scheduleInitialSetup();
     } else {
-        window.addEventListener("load", handleWindowLoad, { once: true });
+        globalThis.addEventListener("load", handleWindowLoad, { once: true });
     }
 
     let routeChangeTimer: null | ReturnType<typeof setTimeout> = null;
@@ -523,7 +563,7 @@ function initializeEnhancements(): CleanupFunction {
     observer.observe(document.body, { childList: true, subtree: true });
 
     const handleBeforeUnload = (): void => {
-        window.removeEventListener("load", handleWindowLoad);
+        globalThis.removeEventListener("load", handleWindowLoad);
         cancelInitialSetup();
         cleanupRef.current?.();
 
@@ -535,17 +575,20 @@ function initializeEnhancements(): CleanupFunction {
         observer.disconnect();
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    globalThis.addEventListener("beforeunload", handleBeforeUnload);
 
     return (): void => {
-        window.removeEventListener("beforeunload", handleBeforeUnload);
+        globalThis.removeEventListener("beforeunload", handleBeforeUnload);
         handleBeforeUnload();
     };
 }
 
-if (typeof window !== "undefined" && typeof document !== "undefined") {
+if (
+    typeof globalThis.window !== "undefined" &&
+    typeof document !== "undefined"
+) {
     initializeEnhancements();
-    window.initializeAdvancedFeatures = initializeAdvancedFeatures;
+    globalThis.window.initializeAdvancedFeatures = initializeAdvancedFeatures;
 }
 
 export { initializeAdvancedFeatures, initializeEnhancements };

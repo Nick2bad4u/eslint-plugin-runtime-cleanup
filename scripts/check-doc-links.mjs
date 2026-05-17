@@ -67,10 +67,6 @@ const IGNORED_DIRECTORIES = new Set([
     ".stryker-tmp",
 ]);
 
-// Capture Markdown links like [text](url) and images ![alt](url)
-// NOTE: for more accuracy use a Markdown parser (remark) instead of regex.
-const LINK_PATTERN = /!?\[[^\]]*]\(([^)]+)\)/g;
-
 const EXTERNAL_PROTOCOLS = [
     "http:",
     "https:",
@@ -81,8 +77,6 @@ const EXTERNAL_PROTOCOLS = [
     "vscode:",
     "file:",
 ];
-
-const LEADING_BANG = /^!/;
 
 /**
  * Truncate safely keeping the last `max` code points.
@@ -223,6 +217,100 @@ const getPathCandidates = (
 };
 
 /**
+ * Find the closing parenthesis for a simple Markdown inline link payload.
+ *
+ * @param {string} line
+ * @param {number} startIndex
+ *
+ * @returns {number}
+ */
+const findClosingLinkParenthesis = (line, startIndex) => {
+    let index = startIndex;
+
+    while (index < line.length) {
+        const character = line.charAt(index);
+
+        if (character === "\\") {
+            index += 2;
+            continue;
+        }
+
+        if (character === ")") {
+            return index;
+        }
+
+        index += 1;
+    }
+
+    return -1;
+};
+
+/**
+ * Extract simple Markdown inline links from a single non-code line.
+ *
+ * @param {string} line
+ *
+ * @returns {{ isImage: boolean; link: string }[]}
+ */
+const extractInlineLinksFromLine = (line) => {
+    const links = [];
+    let index = 0;
+
+    while (index < line.length) {
+        const labelClose = line.indexOf("](", index);
+
+        if (labelClose === -1) {
+            break;
+        }
+
+        const labelOpen = line.lastIndexOf("[", labelClose);
+        const linkStart = labelClose + 2;
+        const linkEnd = findClosingLinkParenthesis(line, linkStart);
+
+        if (labelOpen === -1 || linkEnd === -1) {
+            index = labelClose + 2;
+            continue;
+        }
+
+        links.push({
+            isImage: labelOpen > 0 && line.charAt(labelOpen - 1) === "!",
+            link: line.slice(linkStart, linkEnd),
+        });
+        index = linkEnd + 1;
+    }
+
+    return links;
+};
+
+/**
+ * Extract simple Markdown inline links outside fenced code blocks.
+ *
+ * @param {string} content
+ *
+ * @returns {{ isImage: boolean; link: string }[]}
+ */
+const extractMarkdownLinks = (content) => {
+    const links = [];
+    let isInFence = false;
+
+    for (const line of content
+        .replaceAll("\r\n", "\n")
+        .replaceAll("\r", "\n")
+        .split("\n")) {
+        if (line.trimStart().startsWith("```")) {
+            isInFence = !isInFence;
+            continue;
+        }
+
+        if (!isInFence) {
+            links.push(...extractInlineLinksFromLine(line));
+        }
+    }
+
+    return links;
+};
+
+/**
  * Validate a single link and push to issues if broken. Returns true if broken
  * (so caller can optionally fail-fast).
  *
@@ -310,9 +398,7 @@ async function checkFile(markdownPath, issues, issueSet, metrics) {
     }
 
     const content = await readFile(markdownPath, "utf8");
-    // Skip fenced code blocks
-    const contentWithoutCodeBlocks = content.replaceAll(/```[\s\S]*?```/g, "");
-    const matches = Array.from(contentWithoutCodeBlocks.matchAll(LINK_PATTERN));
+    const matches = extractMarkdownLinks(content);
 
     if (matches.length === 0) {
         metrics.filesWithNoLinks++;
@@ -320,14 +406,12 @@ async function checkFile(markdownPath, issues, issueSet, metrics) {
         metrics.filesWithLinks++;
     }
 
-    for (const match of matches) {
-        const fullMatch = match[0];
-        const link = match[1];
-        if (LEADING_BANG.test(fullMatch)) {
+    for (const { isImage, link } of matches) {
+        if (isImage) {
             metrics.imageLinksIgnored++;
             continue;
         }
-        if (link) {
+        if (link.length > 0) {
             const broken = await validateLink(
                 markdownPathText,
                 link,

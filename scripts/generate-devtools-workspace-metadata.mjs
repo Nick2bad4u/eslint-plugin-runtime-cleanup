@@ -128,9 +128,9 @@ try {
     );
 } catch (error) {
     const message =
-        error instanceof Error
-            ? error.message
-            : String(error ?? "Unknown error");
+        error instanceof Error || typeof error === "string"
+            ? error.toString()
+            : "Unknown error";
 
     console.error(message);
     process.exitCode = 1;

@@ -50,45 +50,107 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 describe("runtime-cleanup plugin configs", () => {
-const configs = isObject(runtimeCleanupPlugin.configs)
+    const configs = isObject(runtimeCleanupPlugin.configs)
         ? runtimeCleanupPlugin.configs
         : null;
-    const noFloatingObserversRuleId =
-        "runtime-cleanup/no-floating-observers";
+    const noFloatingAbortControllersRuleId =
+        "runtime-cleanup/no-floating-abort-controllers";
+    const noFloatingBroadcastChannelsRuleId =
+        "runtime-cleanup/no-floating-broadcast-channels";
+    const noFloatingDisposableStacksRuleId =
+        "runtime-cleanup/no-floating-disposable-stacks";
+    const noFloatingFileWatchersRuleId =
+        "runtime-cleanup/no-floating-file-watchers";
+    const noFloatingGeolocationWatchesRuleId =
+        "runtime-cleanup/no-floating-geolocation-watches";
+    const noFloatingMessageChannelsRuleId =
+        "runtime-cleanup/no-floating-message-channels";
+    const noFloatingMediaStreamsRuleId =
+        "runtime-cleanup/no-floating-media-streams";
+    const noFloatingNetworkConnectionsRuleId =
+        "runtime-cleanup/no-floating-network-connections";
+    const noFloatingObserversRuleId = "runtime-cleanup/no-floating-observers";
+    const noFloatingServersRuleId = "runtime-cleanup/no-floating-servers";
+    const noFloatingStreamsRuleId = "runtime-cleanup/no-floating-streams";
     const noFloatingChildProcessesRuleId =
         "runtime-cleanup/no-floating-child-processes";
     const noFloatingTimersRuleId = "runtime-cleanup/no-floating-timers";
+    const noFloatingWakeLocksRuleId = "runtime-cleanup/no-floating-wake-locks";
     const noFloatingWorkersRuleId = "runtime-cleanup/no-floating-workers";
     const noUnmanagedEventListenersRuleId =
         "runtime-cleanup/no-unmanaged-event-listeners";
     const expectedRulesByConfig = {
         all: {
+            [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
+            [noFloatingDisposableStacksRuleId]: "error",
+            [noFloatingFileWatchersRuleId]: "error",
+            [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingMediaStreamsRuleId]: "error",
+            [noFloatingMessageChannelsRuleId]: "error",
+            [noFloatingNetworkConnectionsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
+            [noFloatingServersRuleId]: "error",
+            [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWakeLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         experimental: {},
         minimal: {},
         recommended: {
+            [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
+            [noFloatingDisposableStacksRuleId]: "error",
+            [noFloatingFileWatchersRuleId]: "error",
+            [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingMediaStreamsRuleId]: "error",
+            [noFloatingMessageChannelsRuleId]: "error",
+            [noFloatingNetworkConnectionsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
+            [noFloatingServersRuleId]: "error",
+            [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWakeLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         "recommended-type-checked": {
+            [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
+            [noFloatingDisposableStacksRuleId]: "error",
+            [noFloatingFileWatchersRuleId]: "error",
+            [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingMediaStreamsRuleId]: "error",
+            [noFloatingMessageChannelsRuleId]: "error",
+            [noFloatingNetworkConnectionsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
+            [noFloatingServersRuleId]: "error",
+            [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWakeLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
         strict: {
+            [noFloatingAbortControllersRuleId]: "error",
+            [noFloatingBroadcastChannelsRuleId]: "error",
             [noFloatingChildProcessesRuleId]: "error",
+            [noFloatingDisposableStacksRuleId]: "error",
+            [noFloatingFileWatchersRuleId]: "error",
+            [noFloatingGeolocationWatchesRuleId]: "error",
+            [noFloatingMediaStreamsRuleId]: "error",
+            [noFloatingMessageChannelsRuleId]: "error",
+            [noFloatingNetworkConnectionsRuleId]: "error",
             [noFloatingObserversRuleId]: "error",
+            [noFloatingServersRuleId]: "error",
+            [noFloatingStreamsRuleId]: "error",
             [noFloatingTimersRuleId]: "error",
+            [noFloatingWakeLocksRuleId]: "error",
             [noFloatingWorkersRuleId]: "error",
             [noUnmanagedEventListenersRuleId]: "error",
         },
@@ -100,9 +162,7 @@ const configs = isObject(runtimeCleanupPlugin.configs)
         const keys = Object.keys(configs ?? {});
 
         expect(keys).toHaveLength(runtimeCleanupConfigNames.length);
-        expect(new Set(keys)).toStrictEqual(
-            new Set(runtimeCleanupConfigNames)
-        );
+        expect(new Set(keys)).toStrictEqual(new Set(runtimeCleanupConfigNames));
     });
 
     it("keeps languageOptions objects isolated per preset", () => {

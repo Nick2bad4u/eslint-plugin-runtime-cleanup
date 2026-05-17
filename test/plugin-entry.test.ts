@@ -62,9 +62,7 @@ describe("plugin entry module", () => {
     it("exports matching runtime plugin shape from plugin.mjs", async () => {
         expect.hasAssertions();
 
-        const runtimePluginModule = (await import("../plugin.mjs")) as {
-            default: unknown;
-        };
+        const runtimePluginModule = await import("../plugin.mjs");
 
         expect(runtimePluginModule.default).toStrictEqual(
             expect.objectContaining({

@@ -1,0 +1,22 @@
+{
+    "$schema": "https://www.schemastore.org/tsconfig.json",
+    "compilerOptions": {
+        "composite": false,
+        "declaration": true,
+        "emitDeclarationOnly": false,
+        "noEmit": true,
+        "types": [
+            "node"
+        ]
+    },
+    "exclude": [
+        "../../coverage/**",
+        "../../dist/**",
+        "../../node_modules/**",
+        "../../test/**"
+    ],
+    "extends": "../../tsconfig.json",
+    "include": [
+        "../../src/**/*.ts"
+    ]
+}

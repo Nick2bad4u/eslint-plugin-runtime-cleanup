@@ -28,7 +28,7 @@ The rule reports:
   `await navigator.wakeLock.request("screen");`
 
 It intentionally allows promise chains and lifecycle-manager calls that receive
-the sentinel. The rule focuses on obviously unowned wake lock handles.
+the sentinel. The rule focuses on directly unowned wake lock handles.
 
 ## Why this rule exists
 

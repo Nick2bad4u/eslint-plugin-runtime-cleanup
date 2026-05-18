@@ -3,8 +3,10 @@
  * Shared AST helpers for rules that reject unowned cleanup handles.
  */
 import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
+
 
 /**
  * Unwrap syntax that does not change whether a resource expression is owned.
@@ -78,9 +80,38 @@ export const collectStaticMemberPath = (
     const objectPath = collectStaticMemberPath(node.object);
     const propertyName = getStaticPropertyName(node.property, node.computed);
 
-    return objectPath === undefined || propertyName === undefined
+    return !isDefined(objectPath) || !isDefined(propertyName)
         ? undefined
         : [...objectPath, propertyName];
+};
+
+/**
+ * Walk through transparent syntax wrappers and return the first parent that
+ * changes ownership semantics.
+ */
+export const getFirstOpaqueParent = (
+    node: Readonly<TSESTree.Node>
+):
+    | Readonly<{
+          current: Readonly<TSESTree.Node>;
+          parent: Readonly<TSESTree.Node>;
+      }>
+    | undefined => {
+    let current: Readonly<TSESTree.Node> = node;
+    let parent = getParentNode(current);
+
+    while (isDefined(parent)) {
+        const wrappedExpression = getTransparentWrappedExpression(parent);
+
+        if (wrappedExpression !== current) {
+            return { current, parent };
+        }
+
+        current = parent;
+        parent = getParentNode(current);
+    }
+
+    return undefined;
 };
 
 /**
@@ -90,36 +121,29 @@ export const collectStaticMemberPath = (
 export const isDiscardedResourceExpression = (
     node: Readonly<TSESTree.Node>
 ): boolean => {
-    let current: Readonly<TSESTree.Node> = node;
-    let parent = getParentNode(current);
+    const opaqueParent = getFirstOpaqueParent(node);
 
-    while (parent !== undefined) {
-        const wrappedExpression = getTransparentWrappedExpression(parent);
-
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
+    if (!isDefined(opaqueParent)) {
         return false;
+    }
+
+    const { current, parent } = opaqueParent;
+
+    if (
+        parent.type === AST_NODE_TYPES.ExpressionStatement &&
+        parent.expression === current
+    ) {
+        return true;
+    }
+
+    if (
+        parent.type === AST_NODE_TYPES.UnaryExpression &&
+        parent.operator === "void" &&
+        parent.argument === current
+    ) {
+        const unaryParent = getParentNode(parent);
+
+        return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
     }
 
     return false;
@@ -134,36 +158,23 @@ export const isImmediateUnownedMemberReceiver = (
     node: Readonly<TSESTree.Node>,
     cleanupMemberNames: ReadonlySet<string>
 ): boolean => {
-    let current: Readonly<TSESTree.Node> = node;
-    let parent = getParentNode(current);
+    const opaqueParent = getFirstOpaqueParent(node);
 
-    while (parent !== undefined) {
-        const wrappedExpression = getTransparentWrappedExpression(parent);
-
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
-        }
-
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.optional
-        ) {
-            return false;
-        }
-
-        const propertyName = getStaticPropertyName(
-            parent.property,
-            parent.computed
-        );
-
-        return (
-            propertyName === undefined || !cleanupMemberNames.has(propertyName)
-        );
+    if (!isDefined(opaqueParent)) {
+        return false;
     }
 
-    return false;
-};
+    const { current, parent } = opaqueParent;
 
+    if (
+        parent.type !== AST_NODE_TYPES.MemberExpression ||
+        parent.object !== current ||
+        parent.optional
+    ) {
+        return false;
+    }
+
+    const propertyName = getStaticPropertyName(parent.property, parent.computed);
+
+    return !isDefined(propertyName) || !setHas(cleanupMemberNames, propertyName);
+};

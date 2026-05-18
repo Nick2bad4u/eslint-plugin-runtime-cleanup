@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require Node.js file stream handles to be retained so they can be closed during cleanup.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -22,7 +25,7 @@ const fileStreamFactoryNames = [
 ] as const;
 const fsModuleNames = ["fs", "node:fs"] as const;
 
-type FileStreamFactoryName = (typeof fileStreamFactoryNames)[number];
+type FileStreamFactoryName = ArrayValues<typeof fileStreamFactoryNames>;
 
 const fileStreamFactoryNameSet: ReadonlySet<string> = new Set(
     fileStreamFactoryNames
@@ -30,7 +33,7 @@ const fileStreamFactoryNameSet: ReadonlySet<string> = new Set(
 const fsModuleNameSet: ReadonlySet<string> = new Set(fsModuleNames);
 
 const isFileStreamFactoryName = (name: string): name is FileStreamFactoryName =>
-    fileStreamFactoryNameSet.has(name);
+    setHas(fileStreamFactoryNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -137,21 +140,19 @@ const getObjectPatternPropertyNameForIdentifier = (
 ): string | undefined => {
     for (const property of objectPattern.properties) {
         if (
-            property.type !== AST_NODE_TYPES.Property ||
-            property.value.type !== AST_NODE_TYPES.Identifier ||
-            property.value.name !== identifierName
+            property.type === AST_NODE_TYPES.Property &&
+            property.value.type === AST_NODE_TYPES.Identifier &&
+            property.value.name === identifierName
         ) {
-            continue;
+            return getStaticPropertyName(property.key);
         }
-
-        return getStaticPropertyName(property.key);
     }
 
     return undefined;
 };
 
 const isFsModuleSource = (source: string | undefined): boolean =>
-    source !== undefined && fsModuleNameSet.has(source);
+    isDefined(source) && setHas(fsModuleNameSet, source);
 
 const getDefinitionForIdentifier = (
     context: TypedRuleContext,
@@ -160,7 +161,7 @@ const getDefinitionForIdentifier = (
     const scope = context.sourceCode.getScope(identifier);
     const variable = getVariableInScopeChain(scope, identifier.name);
 
-    return variable?.defs[0];
+    return arrayFirst(variable?.defs ?? []);
 };
 
 const isFsModuleBinding = (
@@ -170,7 +171,7 @@ const isFsModuleBinding = (
     const definition = getDefinitionForIdentifier(context, identifier);
 
     return (
-        definition !== undefined &&
+        isDefined(definition) &&
         isFsModuleSource(getDefinitionModuleSource(definition.node))
     );
 };
@@ -181,7 +182,7 @@ const getNamedFileStreamFactoryBindingName = (
 ): FileStreamFactoryName | undefined => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    if (definition === undefined) {
+    if (!isDefined(definition)) {
         return undefined;
     }
 
@@ -194,7 +195,7 @@ const getNamedFileStreamFactoryBindingName = (
     if (definition.node.type === AST_NODE_TYPES.ImportSpecifier) {
         const importedName = getImportedSpecifierName(definition.node);
 
-        return importedName !== undefined &&
+        return isDefined(importedName) &&
             isFileStreamFactoryName(importedName)
             ? importedName
             : undefined;
@@ -209,7 +210,7 @@ const getNamedFileStreamFactoryBindingName = (
             identifier.name
         );
 
-        return propertyName !== undefined &&
+        return isDefined(propertyName) &&
             isFileStreamFactoryName(propertyName)
             ? propertyName
             : undefined;
@@ -275,33 +276,32 @@ const isDiscardedFileStreamHandle = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -319,7 +319,7 @@ const noFloatingStreams: TSESLint.RuleModule<"floatingStream", readonly []> =
                     );
 
                     if (
-                        factoryName === undefined ||
+                        !isDefined(factoryName) ||
                         !isDiscardedFileStreamHandle(node)
                     ) {
                         return;

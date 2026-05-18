@@ -1,16 +1,17 @@
-import type { TSESTree } from "@typescript-eslint/utils";
+import type { UnknownRecord } from "type-fest";
 
 /**
  * @packageDocumentation
  * Structural normalization and equivalence checks for expressions and type
  * nodes used by safe-fix heuristics.
  */
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { isDefined, not, objectHasOwn, objectKeys, setHas } from "ts-extras";
 
 /**
  * Object-like value that can participate in deep structural comparisons.
  */
-type ComparableObject = Readonly<Record<string, unknown>>;
+type ComparableObject = Readonly<UnknownRecord>;
 
 /**
  * ESTree metadata keys ignored during structural-equivalence checks.
@@ -43,7 +44,7 @@ const isComparableRecord = (value: unknown): value is ComparableObject =>
  * Return stable comparable keys after stripping metadata properties.
  */
 const getComparableKeys = (value: ComparableObject): readonly string[] =>
-    Object.keys(value).filter((key) => !ignoredPropertyKeys.has(key));
+    objectKeys(value).filter(not((key) => setHas(ignoredPropertyKeys, key)));
 
 /**
  * Read comparable keys with per-comparison caching to reduce repeated
@@ -59,7 +60,7 @@ const getCachedComparableKeys = (
     comparableKeysByObject: WeakMap<ComparableObject, readonly string[]>
 ): readonly string[] => {
     const existingComparableKeys = comparableKeysByObject.get(value);
-    if (existingComparableKeys !== undefined) {
+    if (isDefined(existingComparableKeys)) {
         return existingComparableKeys;
     }
 
@@ -76,41 +77,48 @@ const getCachedComparableKeys = (
  *
  * @returns The innermost wrapped expression.
  */
+const getTransparentExpression = (
+    expression: Readonly<TSESTree.Expression>
+): Readonly<TSESTree.Expression> | undefined => {
+    if (expression.type === AST_NODE_TYPES.TSAsExpression) {
+        return expression.expression;
+    }
+
+    if (expression.type === AST_NODE_TYPES.TSNonNullExpression) {
+        return expression.expression;
+    }
+
+    if (expression.type === AST_NODE_TYPES.TSSatisfiesExpression) {
+        return expression.expression;
+    }
+
+    if (expression.type === AST_NODE_TYPES.TSTypeAssertion) {
+        return expression.expression;
+    }
+
+    return undefined;
+};
+
 const unwrapTransparentExpression = (
     expression: Readonly<TSESTree.Expression>
 ): Readonly<TSESTree.Expression> => {
     let currentExpression = expression;
     const visitedExpressions = new Set<Readonly<TSESTree.Expression>>();
 
-    while (true) {
-        if (visitedExpressions.has(currentExpression)) {
+    while (!setHas(visitedExpressions, currentExpression)) {
+        visitedExpressions.add(currentExpression);
+
+        const transparentExpression =
+            getTransparentExpression(currentExpression);
+
+        if (!isDefined(transparentExpression)) {
             return currentExpression;
         }
 
-        visitedExpressions.add(currentExpression);
-
-        if (currentExpression.type === AST_NODE_TYPES.TSAsExpression) {
-            currentExpression = currentExpression.expression;
-            continue;
-        }
-
-        if (currentExpression.type === AST_NODE_TYPES.TSNonNullExpression) {
-            currentExpression = currentExpression.expression;
-            continue;
-        }
-
-        if (currentExpression.type === AST_NODE_TYPES.TSSatisfiesExpression) {
-            currentExpression = currentExpression.expression;
-            continue;
-        }
-
-        if (currentExpression.type === AST_NODE_TYPES.TSTypeAssertion) {
-            currentExpression = currentExpression.expression;
-            continue;
-        }
-
-        return currentExpression;
+        currentExpression = transparentExpression;
     }
+
+    return currentExpression;
 };
 
 /**
@@ -129,14 +137,14 @@ const markAndCheckSeenPair = (
     seenPairs: WeakMap<object, WeakSet<object>>
 ): boolean => {
     const seenRightNodes = seenPairs.get(left);
-    if (seenRightNodes?.has(right) === true) {
+    if (isDefined(seenRightNodes) && seenRightNodes.has(right)) {
         return true;
     }
 
-    if (seenRightNodes === undefined) {
-        seenPairs.set(left, new WeakSet([right]));
-    } else {
+    if (isDefined(seenRightNodes)) {
         seenRightNodes.add(right);
+    } else {
+        seenPairs.set(left, new WeakSet([right]));
     }
 
     return false;
@@ -219,12 +227,12 @@ const areEquivalentNodeValues = (
         return false;
     }
 
-    if (leftKeys.some((key) => !rightKeySet.has(key))) {
+    if (leftKeys.some((key) => !setHas(rightKeySet, key))) {
         return false;
     }
 
     return leftKeys.every((key) => {
-        if (!Object.hasOwn(left, key) || !Object.hasOwn(right, key)) {
+        if (!objectHasOwn(left, key) || !objectHasOwn(right, key)) {
             return false;
         }
 

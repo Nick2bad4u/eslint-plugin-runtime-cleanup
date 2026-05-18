@@ -26,7 +26,7 @@ The rule reports:
   lost
 
 Immediate `releaseLock()` calls are allowed. The rule focuses on cases where the
-lock owner is obviously unavailable to cleanup code.
+lock owner is unavailable to cleanup code.
 
 ## Why this rule exists
 
@@ -102,4 +102,3 @@ lifetime, use a narrow disable comment and document that ownership boundary.
 - [MDN: `ReadableStreamDefaultReader.releaseLock()`](https://developer.mozilla.org/docs/Web/API/ReadableStreamDefaultReader/releaseLock)
 - [MDN: `WritableStream.getWriter()`](https://developer.mozilla.org/docs/Web/API/WritableStream/getWriter)
 - [MDN: `WritableStreamDefaultWriter.releaseLock()`](https://developer.mozilla.org/docs/Web/API/WritableStreamDefaultWriter/releaseLock)
-

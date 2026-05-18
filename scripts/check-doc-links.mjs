@@ -120,21 +120,28 @@ async function collectMarkdownFiles(startDirectory) {
 
     while (stack.length > 0) {
         const current = stack.pop();
-        if (current === undefined) continue;
+        if (current === undefined) {
+            throw new Error("Expected a directory path while walking markdown files.");
+        }
+
         const entries = await readdir(current, { withFileTypes: true });
         for (const entry of entries) {
             const entryName = entry.name;
-            if (IGNORED_DIRECTORIES.has(entryName)) continue;
-            const entryPath = join(current, entryName);
-            if (entry.isDirectory()) {
-                stack.push(entryPath);
-                continue;
-            }
+
             if (
-                entry.isFile() &&
-                [".md", ".mdx"].includes(extname(entryName).toLowerCase())
+                !IGNORED_DIRECTORIES.has(entryName)
             ) {
-                results.push(entryPath);
+                const entryPath = join(current, entryName);
+                if (entry.isDirectory()) {
+                    stack.push(entryPath);
+                } else if (
+                    entry.isFile() &&
+                    [".md", ".mdx"].includes(extname(entryName).toLowerCase())
+                ) {
+                    results.push(entryPath);
+                } else {
+                    // Non-markdown files do not participate in link checks.
+                }
             }
         }
     }
@@ -269,14 +276,13 @@ const extractInlineLinksFromLine = (line) => {
 
         if (labelOpen === -1 || linkEnd === -1) {
             index = labelClose + 2;
-            continue;
+        } else {
+            links.push({
+                isImage: labelOpen > 0 && line.charAt(labelOpen - 1) === "!",
+                link: line.slice(linkStart, linkEnd),
+            });
+            index = linkEnd + 1;
         }
-
-        links.push({
-            isImage: labelOpen > 0 && line.charAt(labelOpen - 1) === "!",
-            link: line.slice(linkStart, linkEnd),
-        });
-        index = linkEnd + 1;
     }
 
     return links;

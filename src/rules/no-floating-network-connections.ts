@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require browser network connection handles to be retained so they can be closed.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -27,7 +30,7 @@ const globalReceiverNames = [
 ] as const;
 
 type NetworkConnectionConstructorName =
-    (typeof networkConnectionConstructorNames)[number];
+    ArrayValues<typeof networkConnectionConstructorNames>;
 
 const networkConnectionConstructorNameSet: ReadonlySet<string> = new Set(
     networkConnectionConstructorNames
@@ -39,10 +42,10 @@ const globalReceiverNameSet: ReadonlySet<string> = new Set(
 const isNetworkConnectionConstructorName = (
     name: string
 ): name is NetworkConnectionConstructorName =>
-    networkConnectionConstructorNameSet.has(name);
+    setHas(networkConnectionConstructorNameSet, name);
 
 const isGlobalReceiverName = (name: string): boolean =>
-    globalReceiverNameSet.has(name);
+    setHas(globalReceiverNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -131,7 +134,7 @@ const getMemberNetworkConnectionConstructorName = (
         callee.computed
     );
 
-    return constructorName !== undefined &&
+    return isDefined(constructorName) &&
         isNetworkConnectionConstructorName(constructorName)
         ? constructorName
         : undefined;
@@ -150,33 +153,32 @@ const isDiscardedNetworkConnection = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -188,35 +190,35 @@ const isImmediateNetworkConnectionMethodReceiver = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.optional
+            ) {
+                return false;
+            }
+
+            if (
+                getStaticPropertyName(parent.property, parent.computed) ===
+                "close"
+            ) {
+                return false;
+            }
+
+            const callExpression = getParentNode(parent);
+
+            return (
+                callExpression?.type === AST_NODE_TYPES.CallExpression &&
+                callExpression.callee === parent
+            );
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.optional
-        ) {
-            return false;
-        }
-
-        if (
-            getStaticPropertyName(parent.property, parent.computed) === "close"
-        ) {
-            return false;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return (
-            callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-        );
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -236,7 +238,7 @@ const noFloatingNetworkConnections: TSESLint.RuleModule<
                 );
 
                 if (
-                    connectionName === undefined ||
+                    !isDefined(connectionName) ||
                     (!isDiscardedNetworkConnection(node) &&
                         !isImmediateNetworkConnectionMethodReceiver(node))
                 ) {

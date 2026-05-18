@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import {
     collectStaticMemberPath,
@@ -48,12 +49,12 @@ const isShadowedIdentifier = (
 
 const isDirectUrlPath = (path: readonly string[]): boolean =>
     path.length === 2 &&
-    path[0] === "URL" &&
+    arrayFirst(path) === "URL" &&
     path[1] === "createObjectURL";
 
 const isGlobalUrlPath = (path: readonly string[]): boolean =>
     path.length === 3 &&
-    globalUrlReceiverNameSet.has(path[0] ?? "") &&
+        setHas(globalUrlReceiverNameSet, arrayFirst(path) ?? "") &&
     path[1] === "URL" &&
     path[2] === "createObjectURL";
 
@@ -67,7 +68,7 @@ const isObjectUrlCreateCall = (
 
     const path = collectStaticMemberPath(callee);
 
-    if (path === undefined || (!isDirectUrlPath(path) && !isGlobalUrlPath(path))) {
+    if (!isDefined(path) || (!isDirectUrlPath(path) && !isGlobalUrlPath(path))) {
         return false;
     }
 

@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayAt, isDefined } from "ts-extras";
 
 import {
     getStaticPropertyName,
@@ -169,11 +170,11 @@ const noFloatingInfiniteAnimations: TSESLint.RuleModule<
         return {
             CallExpression(node: Readonly<TSESTree.CallExpression>) {
                 const receiver = getAnimationReceiver(node.callee);
-                const timingOptions = node.arguments.at(1);
+                const timingOptions = arrayAt(node.arguments, 1);
 
                 if (
-                    receiver === undefined ||
-                    timingOptions === undefined ||
+                    !isDefined(receiver) ||
+                    !isDefined(timingOptions) ||
                     !hasInfiniteIterationsOption(context, timingOptions) ||
                     !isReceiverElement(context, receiver) ||
                     (!isDiscardedResourceExpression(node) &&

@@ -1,10 +1,8 @@
-import type { TSESTree } from "@typescript-eslint/utils";
-
 /**
  * @packageDocumentation
  * Predicate helpers for narrowing `TSTypeReference` nodes by identifier name.
  */
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
 
 const TS_PARENTHESIZED_TYPE = "TSParenthesizedType";
 
@@ -18,18 +16,18 @@ const isTypeNodeLike = (value: unknown): value is Readonly<TSESTree.TypeNode> =>
  * specific symbol name.
  *
  * @param node - Type node candidate.
- * @param identifierName - Expected referenced identifier name.
+ * @param expectedIdentifierName - Expected referenced identifier name.
  *
  * @returns `true` when the node is `TSTypeReference` and the referenced
  *   `typeName` identifier matches exactly.
  */
 export const isIdentifierTypeReference = (
     node: Readonly<TSESTree.TypeNode>,
-    identifierName: string
-): node is TSESTree.TSTypeReference & { typeName: TSESTree.Identifier } =>
+    expectedIdentifierName: string
+): node is TSESTree.TSTypeReference =>
     node.type === AST_NODE_TYPES.TSTypeReference &&
     node.typeName.type === AST_NODE_TYPES.Identifier &&
-    node.typeName.name === identifierName;
+    node.typeName.name === expectedIdentifierName;
 
 /**
  * Unwrap transparent parenthesized type nodes.
@@ -48,9 +46,9 @@ export const unwrapParenthesizedTypeNode = (
         return node;
     }
 
-    const typeAnnotation: unknown = Reflect.get(nodeObject, "typeAnnotation");
+    const annotation: unknown = Reflect.get(nodeObject, "typeAnnotation");
 
-    return isTypeNodeLike(typeAnnotation)
-        ? unwrapParenthesizedTypeNode(typeAnnotation)
+    return isTypeNodeLike(annotation)
+        ? unwrapParenthesizedTypeNode(annotation)
         : node;
 };

@@ -97,6 +97,8 @@ describe("presets rules matrix synchronization", () => {
         );
         const presetsMarkdown = await fs.readFile(presetsIndexPath, "utf8");
 
+        expect(presetsMarkdown).not.toContain("eslint-plugin-typefest");
+
         const presetsMatrixSection = extractMatrixSection(presetsMarkdown);
         const runtimeCleanupRules =
             runtimeCleanupPlugin.rules as Parameters<

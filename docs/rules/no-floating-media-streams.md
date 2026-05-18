@@ -30,7 +30,7 @@ The rule reports:
   expression
 
 It intentionally allows promise chains and lifecycle-manager calls that receive
-the stream. The rule focuses on obviously unowned stream handles, not on proving
+the stream. The rule focuses on directly unowned stream handles, not on proving
 that every possible owner eventually stops every track.
 
 ## Why this rule exists

@@ -1,3 +1,4 @@
+import type { UnknownArray } from "type-fest";
 /**
  * @packageDocumentation
  * Internal shared utilities used by eslint-plugin-runtime-cleanup rule modules
@@ -6,6 +7,7 @@
 import type ts from "typescript";
 
 import { ESLintUtils, type TSESLint } from "@typescript-eslint/utils";
+import { isDefined } from "ts-extras";
 
 import type { RuntimeCleanupConfigReference } from "./runtime-cleanup-config-references.js";
 
@@ -46,7 +48,7 @@ interface RuntimeCleanupRuleDocs {
 
 /** Shared typed-rule context contract used by helper utilities. */
 type TypedRuleContext = Readonly<
-    TSESLint.RuleContext<string, readonly unknown[]>
+    TSESLint.RuleContext<string, Readonly<UnknownArray>>
 >;
 
 export type { TypedRuleContext };
@@ -71,7 +73,7 @@ export const createTypedRule: RuntimeCleanupRuleCreator = (ruleDefinition) => {
     );
     const createdRule = ESLintUtils.RuleCreator.withoutDocs(ruleDefinition);
     const ruleDocs = createdRule.meta.docs;
-    if (ruleDocs === undefined) {
+    if (!isDefined(ruleDocs)) {
         throw new TypeError(
             `Rule '${ruleDefinition.name}' must declare meta.docs.`
         );
@@ -115,9 +117,9 @@ export const createTypedRule: RuntimeCleanupRuleCreator = (ruleDefinition) => {
         },
         meta: {
             ...createdRule.meta,
-            ...(metaDefaultOptions === undefined
-                ? {}
-                : { defaultOptions: metaDefaultOptions }),
+            ...(isDefined(metaDefaultOptions)
+                ? { defaultOptions: metaDefaultOptions }
+                : {}),
             docs: docsWithCatalog,
         },
         name: ruleDefinition.name,
@@ -201,7 +203,7 @@ export const getSignatureParameterTypeAt = (
     const { checker, index, location, signature } = options;
 
     const symbol = signature?.parameters[index];
-    if (symbol === undefined) {
+    if (!isDefined(symbol)) {
         return undefined;
     }
 

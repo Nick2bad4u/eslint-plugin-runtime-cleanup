@@ -2,9 +2,8 @@
  * @packageDocumentation
  * Shared helpers for parsing and flattening nullish comparison expressions.
  */
-import type { TSESTree } from "@typescript-eslint/utils";
-
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { arrayIncludes, isDefined } from "ts-extras";
 
 /**
  * Normalized representation of one binary comparison against null/undefined.
@@ -49,19 +48,16 @@ export const flattenLogicalTerms = ({
     while (pendingTerms.length > 0) {
         const currentTerm = pendingTerms.pop();
 
-        if (!currentTerm) {
-            continue;
+        if (currentTerm) {
+            if (
+                currentTerm.type === AST_NODE_TYPES.LogicalExpression &&
+                currentTerm.operator === operator
+            ) {
+                pendingTerms.push(currentTerm.right, currentTerm.left);
+            } else {
+                flattenedTerms.push(currentTerm);
+            }
         }
-
-        if (
-            currentTerm.type === AST_NODE_TYPES.LogicalExpression &&
-            currentTerm.operator === operator
-        ) {
-            pendingTerms.push(currentTerm.right, currentTerm.left);
-            continue;
-        }
-
-        flattenedTerms.push(currentTerm);
     }
 
     return flattenedTerms;
@@ -262,7 +258,7 @@ export const getNullishComparison = ({
 
     if (
         allowedOperators !== defaultNullishComparisonOperators &&
-        !allowedOperators.includes(expression.operator)
+        !arrayIncludes(allowedOperators, expression.operator)
     ) {
         return null;
     }
@@ -270,7 +266,7 @@ export const getNullishComparison = ({
     const matchesComparedExpression = (
         candidateExpression: Readonly<TSESTree.Expression>
     ): boolean =>
-        comparedIdentifierName === undefined ||
+        !isDefined(comparedIdentifierName) ||
         (candidateExpression.type === AST_NODE_TYPES.Identifier &&
             candidateExpression.name === comparedIdentifierName);
 
@@ -296,7 +292,7 @@ export const getNullishComparison = ({
     }
 
     if (
-        comparedIdentifierName === undefined ||
+        !isDefined(comparedIdentifierName) ||
         !allowTypeofComparedIdentifierForUndefined
     ) {
         return null;

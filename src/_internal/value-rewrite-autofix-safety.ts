@@ -1,12 +1,12 @@
-import type { TSESTree } from "@typescript-eslint/utils";
-
 /**
  * @packageDocumentation
  * Shared safety checks for value-expression autofixes.
  */
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { isDefined } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
+
 
 /**
  * Check whether a parent node is a transparent expression wrapper for `child`.
@@ -56,34 +56,22 @@ export const isDirectReturnLikeExpressionPosition = (
 ): boolean => {
     let currentNode: Readonly<TSESTree.Node> = node;
 
-    while (true) {
-        const parentNode = getParentNode(currentNode);
+    let parentNode = getParentNode(currentNode);
 
-        if (parentNode === undefined) {
-            return false;
-        }
-
-        if (isTransparentExpressionWrapper(parentNode, currentNode)) {
-            currentNode = parentNode;
-            continue;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.ReturnStatement &&
-            parentNode.argument === currentNode
-        ) {
-            return true;
-        }
-
-        if (
-            parentNode.type === AST_NODE_TYPES.ArrowFunctionExpression &&
-            parentNode.body === currentNode
-        ) {
-            return true;
-        }
-
-        return false;
+    while (
+        isDefined(parentNode) &&
+        isTransparentExpressionWrapper(parentNode, currentNode)
+    ) {
+        currentNode = parentNode;
+        parentNode = getParentNode(currentNode);
     }
+
+    return (
+        (parentNode?.type === AST_NODE_TYPES.ReturnStatement &&
+            parentNode.argument === currentNode) ||
+        (parentNode?.type === AST_NODE_TYPES.ArrowFunctionExpression &&
+            parentNode.body === currentNode)
+    );
 };
 
 /**

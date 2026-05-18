@@ -4,6 +4,8 @@
  */
 import type { TSESLint } from "@typescript-eslint/utils";
 
+import { isDefined } from "ts-extras";
+
 import { resolveFirstValueInLinkedStructure } from "./cycle-safe-linked-search.js";
 
 /**
@@ -30,13 +32,13 @@ export const getVariableInScopeChain = (
         resolveValue: (currentScope: Readonly<TSESLint.Scope.Scope>) => {
             const variable = currentScope.set.get(variableName);
 
-            return variable === undefined
+            return isDefined(variable)
                 ? {
-                      found: false,
-                  }
-                : {
                       found: true,
                       value: variable,
+                  }
+                : {
+                      found: false,
                   };
         },
         startNode: scope,

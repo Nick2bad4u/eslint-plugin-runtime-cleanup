@@ -2,10 +2,8 @@
  * @packageDocumentation
  * Unit tests for shared nullish comparison parsing helpers.
  */
-import type { TSESTree } from "@typescript-eslint/utils";
-
 import parser from "@typescript-eslint/parser";
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -122,6 +120,7 @@ describe(getNullishComparison, () => {
             isGlobalUndefinedIdentifier: () => false,
         });
 
+        expect({ comparison }).not.toStrictEqual({ comparison: null });
         expect(comparison).toStrictEqual({
             comparedExpression: expect.objectContaining({
                 name: "value",
@@ -165,7 +164,7 @@ describe(getNullishComparison, () => {
             isGlobalUndefinedIdentifier: () => true,
         });
 
-        expect(comparison).toBeNull();
+        expect({ actual: comparison }).toStrictEqual({ actual: null });
     });
 
     it("supports typeof guards when explicitly enabled", () => {
@@ -201,7 +200,7 @@ describe(getNullishComparison, () => {
             isGlobalUndefinedIdentifier: () => false,
         });
 
-        expect(comparison).toBeNull();
+        expect({ actual: comparison }).toStrictEqual({ actual: null });
     });
 
     it("obeys allowed-operator constraints", () => {
@@ -215,6 +214,6 @@ describe(getNullishComparison, () => {
             isGlobalUndefinedIdentifier: () => false,
         });
 
-        expect(comparison).toBeNull();
+        expect({ actual: comparison }).toStrictEqual({ actual: null });
     });
 });

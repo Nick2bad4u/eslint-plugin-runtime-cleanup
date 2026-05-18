@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -32,10 +33,10 @@ const messagePortPropertyNameSet: ReadonlySet<string> = new Set(
 );
 
 const isGlobalReceiverName = (name: string): boolean =>
-    globalReceiverNameSet.has(name);
+    setHas(globalReceiverNameSet, name);
 
 const isMessagePortPropertyName = (name: string): boolean =>
-    messagePortPropertyNameSet.has(name);
+    setHas(messagePortPropertyNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -123,33 +124,32 @@ const isDiscardedMessageChannel = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -161,31 +161,31 @@ const isImmediateMessagePortAccess = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.optional
+            ) {
+                return false;
+            }
+
+            const propertyName = getStaticPropertyName(
+                parent.property,
+                parent.computed
+            );
+
+            return (
+                isDefined(propertyName) &&
+                isMessagePortPropertyName(propertyName)
+            );
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.optional
-        ) {
-            return false;
-        }
-
-        const propertyName = getStaticPropertyName(
-            parent.property,
-            parent.computed
-        );
-
-        return (
-            propertyName !== undefined && isMessagePortPropertyName(propertyName)
-        );
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;

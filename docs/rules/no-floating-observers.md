@@ -32,7 +32,7 @@ The rule reports:
   `new IntersectionObserver(callback).observe(element);`
 
 It intentionally does not require same-function `disconnect()` calls. That is a
-separate ownership question, and many valid designs transfer observer ownership
+separate ownership question, and valid designs transfer observer ownership
 to a manager, component instance, returned disposable, or framework lifecycle.
 
 ## Why this rule exists

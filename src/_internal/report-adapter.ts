@@ -3,13 +3,16 @@
  * Explicit report-adapter utilities for rule-level autofix policy handling.
  */
 import type { TSESLint } from "@typescript-eslint/utils";
+import type { UnknownArray } from "type-fest";
+
+import { isDefined, objectHasOwn } from "ts-extras";
 
 /**
  * Report callback type for a given message/options pair.
  */
 type ReportCallback<
     MessageIds extends string,
-    Options extends readonly unknown[],
+    Options extends Readonly<UnknownArray>,
 > = TSESLint.RuleContext<MessageIds, Options>["report"];
 
 /**
@@ -17,7 +20,7 @@ type ReportCallback<
  */
 type ReportDescriptor<
     MessageIds extends string,
-    Options extends readonly unknown[],
+    Options extends Readonly<UnknownArray>,
 > = Parameters<ReportCallback<MessageIds, Options>>[0];
 
 /**
@@ -26,16 +29,16 @@ type ReportDescriptor<
  */
 const hasCallableOwnFixDataProperty = <
     MessageIds extends string,
-    Options extends readonly unknown[],
+    Options extends Readonly<UnknownArray>,
 >(
     descriptor: Readonly<ReportDescriptor<MessageIds, Options>>
 ): boolean => {
     const ownFixDescriptor = Object.getOwnPropertyDescriptor(descriptor, "fix");
-    if (ownFixDescriptor === undefined) {
+    if (!isDefined(ownFixDescriptor)) {
         return false;
     }
 
-    if (!Object.hasOwn(ownFixDescriptor, "value")) {
+    if (!objectHasOwn(ownFixDescriptor, "value")) {
         return false;
     }
 
@@ -48,7 +51,7 @@ const hasCallableOwnFixDataProperty = <
  */
 export const omitAutofixFromReportDescriptor = <
     MessageIds extends string,
-    Options extends readonly unknown[],
+    Options extends Readonly<UnknownArray>,
 >(
     descriptor: Readonly<ReportDescriptor<MessageIds, Options>>
 ): ReportDescriptor<MessageIds, Options> => {
@@ -69,7 +72,7 @@ export const omitAutofixFromReportDescriptor = <
  * Build a report callback that enforces no-top-level-autofix semantics.
  */
 export const createReportWithoutAutofixes =
-    <MessageIds extends string, Options extends readonly unknown[]>(
+    <MessageIds extends string, Options extends Readonly<UnknownArray>>(
         report: ReportCallback<MessageIds, Options>
     ): ReportCallback<MessageIds, Options> =>
     (descriptor) => {

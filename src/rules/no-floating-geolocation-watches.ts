@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -82,7 +83,7 @@ const collectStaticMemberPath = (
     const objectPath = collectStaticMemberPath(node.object);
     const propertyName = getStaticPropertyName(node.property, node.computed);
 
-    return objectPath === undefined || propertyName === undefined
+    return !isDefined(objectPath) || !isDefined(propertyName)
         ? undefined
         : [...objectPath, propertyName];
 };
@@ -127,11 +128,11 @@ const isNavigatorPathShadowed = (
 
 const isGeolocationWatchPath = (path: readonly string[]): boolean =>
     (path.length === 3 &&
-        path[0] === "navigator" &&
+        arrayFirst(path) === "navigator" &&
         path[1] === "geolocation" &&
         path[2] === geolocationWatchFunctionName) ||
     (path.length === 4 &&
-        globalNavigatorReceiverNameSet.has(path[0] ?? "") &&
+        setHas(globalNavigatorReceiverNameSet, arrayFirst(path) ?? "") &&
         path[1] === "navigator" &&
         path[2] === "geolocation" &&
         path[3] === geolocationWatchFunctionName);
@@ -149,7 +150,7 @@ const isGeolocationWatchCall = (
 
     const path = collectStaticMemberPath(callee);
 
-    return path !== undefined && isGeolocationWatchPath(path);
+    return isDefined(path) && isGeolocationWatchPath(path);
 };
 
 const isDiscardedWatchId = (
@@ -158,33 +159,32 @@ const isDiscardedWatchId = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;

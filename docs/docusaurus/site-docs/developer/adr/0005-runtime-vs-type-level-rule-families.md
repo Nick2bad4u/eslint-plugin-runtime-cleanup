@@ -11,7 +11,7 @@ sidebar_position: 5
 
 ## Context
 
-The plugin enforces cleanup obligations for several resource families:
+The plugin enforces cleanup obligations for runtime resource families:
 
 - timers and animation callbacks,
 - DOM and Node event listeners,

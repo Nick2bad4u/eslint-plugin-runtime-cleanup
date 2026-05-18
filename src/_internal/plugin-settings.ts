@@ -3,6 +3,9 @@
  * Parsing and memoization helpers for plugin-level runtime settings.
  */
 import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
+import type { UnknownArray, UnknownRecord  } from "type-fest";
+
+import { isDefined, objectHasOwn } from "ts-extras";
 
 import { getProgramNode } from "./ast-node.js";
 
@@ -33,7 +36,7 @@ const settingsByProgram = new WeakMap<TSESTree.Program, ProgramSettings>();
  */
 const isObject = (
     value: unknown
-): value is Readonly<Record<string, unknown>> =>
+): value is Readonly<UnknownRecord> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
@@ -45,7 +48,7 @@ const isObject = (
  */
 const getRuntimeCleanupSettings = (
     settings: unknown
-): null | Readonly<Record<string, unknown>> => {
+): null | Readonly<UnknownRecord> => {
     if (!isObject(settings)) {
         return null;
     }
@@ -64,9 +67,9 @@ const getRuntimeCleanupSettings = (
  * @returns `true` only when the key exists and equals literal `true`.
  */
 const readBooleanFlag = (
-    object: Readonly<Record<string, unknown>>,
+    object: Readonly<UnknownRecord>,
     key: string
-): boolean => Object.hasOwn(object, key) && object[key] === true;
+): boolean => objectHasOwn(object, key) && object[key] === true;
 
 /**
  * Reads the global autofix disable flag from plugin settings.
@@ -92,7 +95,7 @@ const readDisableAllAutofixesFromSettings = (settings: unknown): boolean => {
  * @returns Memoized immutable settings for the context's program node.
  */
 export const registerProgramSettingsForContext = (
-    context: Readonly<TSESLint.RuleContext<string, readonly unknown[]>>
+    context: Readonly<TSESLint.RuleContext<string, Readonly<UnknownArray>>>
 ): Readonly<ProgramSettings> => {
     const programNode = context.sourceCode.ast;
 
@@ -103,7 +106,7 @@ export const registerProgramSettingsForContext = (
     });
 
     const existingProgramSettings = settingsByProgram.get(programNode);
-    if (existingProgramSettings !== undefined) {
+    if (isDefined(existingProgramSettings)) {
         return existingProgramSettings;
     }
 

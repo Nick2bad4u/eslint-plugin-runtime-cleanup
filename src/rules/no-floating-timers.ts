@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require timer handles to be retained so they can be cleared during cleanup.
@@ -7,8 +9,9 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
-import { getParentNode } from "../_internal/ast-node.js";
+import { isDiscardedResourceExpression } from "../_internal/floating-resource.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
 import { getVariableInScopeChain } from "../_internal/scope-variable.js";
 import {
@@ -31,7 +34,7 @@ const globalReceiverNames = [
     "window",
 ] as const;
 
-type TimerFunctionName = (typeof timerFunctionNames)[number];
+type TimerFunctionName = ArrayValues<typeof timerFunctionNames>;
 
 const timerFunctionNameSet: ReadonlySet<string> = new Set(timerFunctionNames);
 const globalReceiverNameSet: ReadonlySet<string> = new Set(
@@ -39,74 +42,14 @@ const globalReceiverNameSet: ReadonlySet<string> = new Set(
 );
 
 const isTimerFunctionName = (name: string): name is TimerFunctionName =>
-    timerFunctionNameSet.has(name);
+    setHas(timerFunctionNameSet, name);
 
 const isGlobalReceiverName = (name: string): boolean =>
-    globalReceiverNameSet.has(name);
-
-const getTransparentWrappedExpression = (
-    node: Readonly<TSESTree.Node>
-): Readonly<TSESTree.Node> | undefined => {
-    if (node.type === AST_NODE_TYPES.ChainExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSAsExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSNonNullExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSSatisfiesExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSTypeAssertion) {
-        return node.expression;
-    }
-
-    return undefined;
-};
+    setHas(globalReceiverNameSet, name);
 
 const isDiscardedTimerHandle = (
     node: Readonly<TSESTree.CallExpression>
-): boolean => {
-    let current: Readonly<TSESTree.Node> = node;
-    let parent = getParentNode(current);
-
-    while (parent !== undefined) {
-        const wrappedExpression = getTransparentWrappedExpression(parent);
-
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
-    }
-
-    return false;
-};
+): boolean => isDiscardedResourceExpression(node);
 
 const isShadowedIdentifier = (
     context: TypedRuleContext,
@@ -178,7 +121,7 @@ const noFloatingTimers: TSESLint.RuleModule<
             ) {
                 const timerName = getDirectTimerName(context, node.callee);
 
-                if (timerName !== undefined) {
+                if (isDefined(timerName)) {
                     reportFloatingTimer(node, timerName);
                 }
             },
@@ -187,7 +130,7 @@ const noFloatingTimers: TSESLint.RuleModule<
             ) {
                 const timerName = getMemberTimerName(node.callee);
 
-                if (timerName !== undefined) {
+                if (isDefined(timerName)) {
                     reportFloatingTimer(node, timerName);
                 }
             },

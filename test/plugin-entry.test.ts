@@ -39,6 +39,10 @@ const expectedRuleRegistryShape = expect.objectContaining({
 describe("plugin entry module", () => {
     it("exports default plugin object with rule and config registries", () => {
         expect.hasAssertions();
+        expect(Object.keys(runtimeCleanupPlugin.rules)).not.toContain(
+            "prefer-type-fest-json-value"
+        );
+
         expect(runtimeCleanupPlugin).toStrictEqual(
             expect.objectContaining({
                 configs: expect.any(Object),

@@ -94,6 +94,13 @@ const getPresetContractSnapshot = (): readonly PresetContractSnapshot[] =>
 describe("plugin contract snapshots", () => {
     it("keeps stable exported rule names", () => {
         expect.hasAssertions();
+        expect(Object.keys(runtimeCleanupPlugin.rules)).toContain(
+            "no-floating-timers"
+        );
+        expect(Object.keys(runtimeCleanupPlugin.rules)).not.toContain(
+            "prefer-ts-extras-key-in"
+        );
+
         expect({
             ruleCount: Object.keys(runtimeCleanupPlugin.rules).length,
             ruleNames: Object.keys(runtimeCleanupPlugin.rules).toSorted(
@@ -130,6 +137,8 @@ describe("plugin contract snapshots", () => {
 
     it("keeps stable preset contract matrix", () => {
         expect.hasAssertions();
+        expect(getPresetContractSnapshot()).toHaveLength(6);
+
         // eslint-disable-next-line vitest/no-large-snapshots -- The preset contract is intentionally reviewed as one stable matrix.
         expect(getPresetContractSnapshot()).toMatchInlineSnapshot(`
           [
@@ -287,6 +296,11 @@ describe("plugin contract snapshots", () => {
 
     it("keeps stable plugin identity metadata", () => {
         expect.hasAssertions();
+        expect(runtimeCleanupPlugin.meta.name).toBe(
+            "eslint-plugin-runtime-cleanup"
+        );
+        expect(runtimeCleanupPlugin.meta.namespace).toBe("runtime-cleanup");
+
         expect({
             name: runtimeCleanupPlugin.meta.name,
             namespace: runtimeCleanupPlugin.meta.namespace,

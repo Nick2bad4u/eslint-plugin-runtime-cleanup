@@ -2,27 +2,30 @@
  * @packageDocumentation
  * Shared TypeScript checker helpers for low-noise type-aware rules.
  */
-import type ts from "typescript";
+import type { Type, TypeChecker } from "typescript";
+
+import { setHas } from "ts-extras";
 
 /**
  * Check whether a type or any type in its base hierarchy has a given symbol
  * name.
  */
 export const hasTypeNameInHierarchy = (
-    checker: ts.TypeChecker,
-    type: ts.Type,
+    checker: TypeChecker,
+    candidate: Type,
     expectedTypeName: string,
-    seenTypes: ReadonlySet<ts.Type> = new Set()
+    seenTypes: ReadonlySet<Type> = new Set()
 ): boolean => {
-    if (seenTypes.has(type)) {
+    const seenCandidate: unknown = candidate;
+    if (setHas(seenTypes, seenCandidate)) {
         return false;
     }
 
     const nextSeenTypes = new Set(seenTypes);
-    nextSeenTypes.add(type);
+    nextSeenTypes.add(candidate);
 
-    if (type.isUnionOrIntersection()) {
-        return type.types.some((entry) =>
+    if (candidate.isUnionOrIntersection()) {
+        return candidate.types.some((entry: Type) =>
             hasTypeNameInHierarchy(
                 checker,
                 entry,
@@ -32,10 +35,10 @@ export const hasTypeNameInHierarchy = (
         );
     }
 
-    const apparentType = checker.getApparentType(type);
-    const typeName = apparentType.symbol.getName();
+    const apparentType = checker.getApparentType(candidate);
+    const candidateName = apparentType.symbol.getName();
 
-    if (typeName === expectedTypeName) {
+    if (candidateName === expectedTypeName) {
         return true;
     }
 

@@ -228,19 +228,17 @@ const normalizeRuntimeCleanupConfigNames = (runtimeCleanupConfigs) => {
     const seenPresetNames = new Set();
 
     for (const reference of references) {
-        if (typeof reference !== "string") {
-            continue;
-        }
+        if (typeof reference === "string") {
+            const configName = normalizeRuntimeCleanupConfigName(reference);
 
-        const configName = normalizeRuntimeCleanupConfigName(reference);
-
-        if (configName === null || !presetNameSet.has(configName)) {
-            continue;
-        }
-
-        if (!seenPresetNames.has(configName)) {
-            seenPresetNames.add(configName);
-            names.push(configName);
+            if (
+                configName !== null &&
+                presetNameSet.has(configName) &&
+                !seenPresetNames.has(configName)
+            ) {
+                seenPresetNames.add(configName);
+                names.push(configName);
+            }
         }
     }
 

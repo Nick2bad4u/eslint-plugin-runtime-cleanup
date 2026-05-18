@@ -25,9 +25,9 @@ The rule reports:
 - `void URL.createObjectURL(...)`
 - static computed global forms such as:
 
-```ts
-window["URL"]["createObjectURL"](blob);
-```
+  ```ts
+  window["URL"]["createObjectURL"](blob);
+  ```
 
 The rule intentionally allows object URLs that are stored, returned, or passed to
 a lifecycle manager. It does not try to prove that every retained URL is later

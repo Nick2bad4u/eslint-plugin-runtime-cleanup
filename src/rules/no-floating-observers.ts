@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require observer instances to be retained so they can be disconnected.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -30,7 +33,7 @@ const globalReceiverNames = [
     "window",
 ] as const;
 
-type ObserverConstructorName = (typeof observerConstructorNames)[number];
+type ObserverConstructorName = ArrayValues<typeof observerConstructorNames>;
 
 const globalReceiverNameSet: ReadonlySet<string> = new Set(
     globalReceiverNames
@@ -40,11 +43,11 @@ const observerConstructorNameSet: ReadonlySet<string> = new Set(
 );
 
 const isGlobalReceiverName = (name: string): boolean =>
-    globalReceiverNameSet.has(name);
+    setHas(globalReceiverNameSet, name);
 
 const isObserverConstructorName = (
     name: string
-): name is ObserverConstructorName => observerConstructorNameSet.has(name);
+): name is ObserverConstructorName => setHas(observerConstructorNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -128,31 +131,30 @@ const isObserveMethodCallReceiver = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.computed ||
+                parent.property.type !== AST_NODE_TYPES.Identifier ||
+                parent.property.name !== "observe"
+            ) {
+                return false;
+            }
+
+            const callExpression = getParentNode(parent);
+
+            return (
+                callExpression?.type === AST_NODE_TYPES.CallExpression &&
+                callExpression.callee === parent
+            );
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.computed ||
-            parent.property.type !== AST_NODE_TYPES.Identifier ||
-            parent.property.name !== "observe"
-        ) {
-            return false;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return (
-            callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-        );
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -164,33 +166,32 @@ const isDiscardedObserverInstance = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -210,7 +211,7 @@ const noFloatingObservers: TSESLint.RuleModule<
                 );
 
                 if (
-                    observerName === undefined ||
+                    !isDefined(observerName) ||
                     (!isDiscardedObserverInstance(node) &&
                         !isObserveMethodCallReceiver(node))
                 ) {

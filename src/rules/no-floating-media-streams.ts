@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require captured MediaStream handles to be retained so their tracks can be stopped.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayAt, arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -22,7 +25,7 @@ const mediaCaptureFunctionNames = [
 ] as const;
 const globalNavigatorReceiverNames = ["globalThis", "window"] as const;
 
-type MediaCaptureFunctionName = (typeof mediaCaptureFunctionNames)[number];
+type MediaCaptureFunctionName = ArrayValues<typeof mediaCaptureFunctionNames>;
 
 const mediaCaptureFunctionNameSet: ReadonlySet<string> = new Set(
     mediaCaptureFunctionNames
@@ -34,7 +37,7 @@ const globalNavigatorReceiverNameSet: ReadonlySet<string> = new Set(
 const isMediaCaptureFunctionName = (
     name: string
 ): name is MediaCaptureFunctionName =>
-    mediaCaptureFunctionNameSet.has(name);
+    setHas(mediaCaptureFunctionNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -99,7 +102,7 @@ const collectStaticMemberPath = (
     const objectPath = collectStaticMemberPath(node.object);
     const propertyName = getStaticPropertyName(node.property, node.computed);
 
-    return objectPath === undefined || propertyName === undefined
+    return !isDefined(objectPath) || !isDefined(propertyName)
         ? undefined
         : [...objectPath, propertyName];
 };
@@ -145,15 +148,15 @@ const isNavigatorPathShadowed = (
 const getMediaCaptureNameFromPath = (
     path: readonly string[]
 ): MediaCaptureFunctionName | undefined => {
-    const captureName = path.at(-1);
+    const captureName = arrayAt(path, -1);
 
-    if (captureName === undefined || !isMediaCaptureFunctionName(captureName)) {
+    if (!isDefined(captureName) || !isMediaCaptureFunctionName(captureName)) {
         return undefined;
     }
 
     if (
         path.length === 3 &&
-        path[0] === "navigator" &&
+        arrayFirst(path) === "navigator" &&
         path[1] === "mediaDevices"
     ) {
         return captureName;
@@ -161,7 +164,7 @@ const getMediaCaptureNameFromPath = (
 
     if (
         path.length === 4 &&
-        globalNavigatorReceiverNameSet.has(path[0] ?? "") &&
+        setHas(globalNavigatorReceiverNameSet, arrayFirst(path) ?? "") &&
         path[1] === "navigator" &&
         path[2] === "mediaDevices"
     ) {
@@ -184,7 +187,7 @@ const getMediaCaptureFunctionName = (
 
     const path = collectStaticMemberPath(callee);
 
-    return path === undefined ? undefined : getMediaCaptureNameFromPath(path);
+    return isDefined(path) ? getMediaCaptureNameFromPath(path) : undefined;
 };
 
 const isDiscardedMediaStreamRequest = (
@@ -193,33 +196,32 @@ const isDiscardedMediaStreamRequest = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -239,7 +241,7 @@ const noFloatingMediaStreams: TSESLint.RuleModule<
                 );
 
                 if (
-                    captureName === undefined ||
+                    !isDefined(captureName) ||
                     !isDiscardedMediaStreamRequest(node)
                 ) {
                     return;

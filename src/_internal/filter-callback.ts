@@ -1,10 +1,9 @@
-import type { TSESTree } from "@typescript-eslint/utils";
-
 /**
  * @packageDocumentation
  * Utilities for detecting nodes that live inside `.filter(...)` callbacks.
  */
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { arrayAt, setHas } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
 
@@ -96,7 +95,7 @@ const isSingleParameterExpressionArrowFunction = (
         return false;
     }
 
-    const firstParameter = callback.params.at(0);
+    const firstParameter = arrayAt(callback.params, 0);
 
     return firstParameter?.type === AST_NODE_TYPES.Identifier;
 };
@@ -144,7 +143,7 @@ export const isWithinFilterCallback = (
     const visitedNodes = new Set<TSESTree.Node>();
 
     while (currentNode) {
-        if (visitedNodes.has(currentNode)) {
+        if (setHas(visitedNodes, currentNode)) {
             return false;
         }
 
@@ -152,18 +151,15 @@ export const isWithinFilterCallback = (
 
         if (isFunctionCallbackNode(currentNode)) {
             const callbackParent = getParentNode(currentNode);
-            if (callbackParent?.type !== AST_NODE_TYPES.CallExpression) {
-                currentNode = getParentNode(currentNode);
-                continue;
-            }
+            if (callbackParent?.type === AST_NODE_TYPES.CallExpression) {
+                const [firstArgument] = callbackParent.arguments;
 
-            const [firstArgument] = callbackParent.arguments;
-
-            if (
-                firstArgument === currentNode &&
-                isFilterCallExpression(callbackParent)
-            ) {
-                return true;
+                if (
+                    firstArgument === currentNode &&
+                    isFilterCallExpression(callbackParent)
+                ) {
+                    return true;
+                }
             }
         }
 

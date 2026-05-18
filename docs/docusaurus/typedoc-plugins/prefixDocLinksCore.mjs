@@ -50,6 +50,8 @@ function findInlineLinkLabelOpenBracket(line, closeBracketIndex) {
                 }
 
                 depth -= 1;
+            } else {
+                // Other characters do not affect bracket depth.
             }
         }
     }
@@ -207,12 +209,14 @@ function splitRawDestination(core) {
             depth -= 1;
         } else if (character === "\\") {
             index += 2;
-            continue;
         } else if (depth === 0 && isWhitespaceCharacter(character)) {
             return {
                 destination: core.slice(0, index),
                 remainder: core.slice(index),
             };
+        } else {
+            index += 1;
+            continue;
         }
 
         index += 1;
@@ -430,6 +434,8 @@ export function prefixBareMarkdownFileLinksInMarkdown(input) {
                 length >= fenceState.length
             ) {
                 fenceState = null;
+            } else {
+                // Fence runs with a different marker or shorter length stay inside the current fence.
             }
 
             return line;

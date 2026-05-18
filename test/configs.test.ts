@@ -49,6 +49,19 @@ function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
 
+function requireConfig(
+    configs: Readonly<null | Record<string, unknown>>,
+    configName: string
+): FlatConfigLike {
+    const config = getConfig(configs, configName);
+
+    if (config === undefined) {
+        throw new TypeError(`Expected config '${configName}' to be exported.`);
+    }
+
+    return config;
+}
+
 describe("runtime-cleanup plugin configs", () => {
     const configs = isObject(runtimeCleanupPlugin.configs)
         ? runtimeCleanupPlugin.configs
@@ -190,17 +203,9 @@ describe("runtime-cleanup plugin configs", () => {
     it("keeps languageOptions objects isolated per preset", () => {
         expect.hasAssertions();
 
-        const recommendedConfig = getConfig(configs, "recommended");
-        const strictConfig = getConfig(configs, "strict");
-        const allConfig = getConfig(configs, "all");
-
-        expect(recommendedConfig).toBeDefined();
-        expect(strictConfig).toBeDefined();
-        expect(allConfig).toBeDefined();
-
-        const recommendedPresetConfig = recommendedConfig!;
-        const strictPresetConfig = strictConfig!;
-        const allPresetConfig = allConfig!;
+        const recommendedPresetConfig = requireConfig(configs, "recommended");
+        const strictPresetConfig = requireConfig(configs, "strict");
+        const allPresetConfig = requireConfig(configs, "all");
 
         expect(recommendedPresetConfig.languageOptions).not.toBe(
             strictPresetConfig.languageOptions
@@ -247,10 +252,9 @@ describe("runtime-cleanup plugin configs", () => {
         expect.hasAssertions();
 
         for (const configName of runtimeCleanupConfigNames) {
-            const config = getConfig(configs, configName);
+            const config = requireConfig(configs, configName);
 
-            expect(config).toBeDefined();
-            expect(config?.rules).toStrictEqual(
+            expect(config.rules).toStrictEqual(
                 expectedRulesByConfig[configName]
             );
         }
@@ -260,11 +264,9 @@ describe("runtime-cleanup plugin configs", () => {
         expect.hasAssertions();
 
         for (const configName of runtimeCleanupConfigNames) {
-            const config = getConfig(configs, configName);
+            const config = requireConfig(configs, configName);
 
-            expect(config).toBeDefined();
-
-            const parserOptions = config?.languageOptions?.parserOptions;
+            const parserOptions = config.languageOptions?.parserOptions;
             const hasProjectServiceEnabled =
                 isObject(parserOptions) &&
                 parserOptions["projectService"] === true;

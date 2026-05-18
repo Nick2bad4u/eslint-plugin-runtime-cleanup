@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas, stringSplit } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -45,7 +46,7 @@ const getCleanupBoundary = (
 ): CleanupBoundary => {
     let current: Readonly<TSESTree.Node> | undefined = node;
 
-    while (current !== undefined) {
+    while (isDefined(current)) {
         if (isCleanupBoundary(current)) {
             return current;
         }
@@ -97,7 +98,7 @@ const getVariableInitializer = (
 ): TSESTree.Expression | undefined => {
     const scope = context.sourceCode.getScope(identifier);
     const variable = getVariableInScopeChain(scope, identifier.name);
-    const definition = variable?.defs[0];
+    const definition = arrayFirst(variable?.defs ?? []);
     const definitionNode = definition?.node;
 
     if (!isVariableDeclarator(definitionNode)) {
@@ -156,7 +157,7 @@ const hasAbortSignalOption = (
     context: TypedRuleContext,
     argument: Readonly<TSESTree.Expression | TSESTree.SpreadElement> | undefined
 ): boolean => {
-    if (argument === undefined) {
+    if (!isDefined(argument)) {
         return false;
     }
 
@@ -172,13 +173,13 @@ const getCaptureKey = (
     context: TypedRuleContext,
     argument: Readonly<TSESTree.Expression | TSESTree.SpreadElement> | undefined
 ): string => {
-    if (argument === undefined) {
+    if (!isDefined(argument)) {
         return "false";
     }
 
     const resolvedOptions = resolveOptionsExpression(context, argument);
 
-    if (resolvedOptions === undefined) {
+    if (!isDefined(resolvedOptions)) {
         return unknownCaptureKey;
     }
 
@@ -195,7 +196,7 @@ const getCaptureKey = (
             "capture"
         );
 
-        return captureValue === undefined ? "false" : String(captureValue);
+        return isDefined(captureValue) ? String(captureValue) : "false";
     }
 
     return unknownCaptureKey;
@@ -212,8 +213,8 @@ const getCleanupKey = (
     const [eventType, listener, options] = node.arguments;
 
     if (
-        eventType === undefined ||
-        listener === undefined ||
+        !isDefined(eventType) ||
+        !isDefined(listener) ||
         eventType.type === AST_NODE_TYPES.SpreadElement ||
         listener.type === AST_NODE_TYPES.SpreadElement
     ) {
@@ -231,15 +232,15 @@ const getCleanupKey = (
 const getWildcardCleanupKey = (
     cleanupKey: EventListenerCleanupKey
 ): EventListenerCleanupKey => {
-    const [targetText, eventTypeText, listenerText] = cleanupKey.split(
-        "\u0000",
-        3
+    const [targetText, eventTypeText, listenerText] = stringSplit(
+        cleanupKey,
+        "\u0000"
     );
 
     if (
-        targetText === undefined ||
-        eventTypeText === undefined ||
-        listenerText === undefined
+        !isDefined(targetText) ||
+        !isDefined(eventTypeText) ||
+        !isDefined(listenerText)
     ) {
         throw new TypeError("Expected a complete event listener cleanup key.");
     }
@@ -268,7 +269,7 @@ const noUnmanagedEventListeners: TSESLint.RuleModule<
         ): void => {
             const records = addsByBoundary.get(boundary);
 
-            if (records === undefined) {
+            if (!isDefined(records)) {
                 addsByBoundary.set(boundary, [record]);
                 return;
             }
@@ -282,7 +283,7 @@ const noUnmanagedEventListeners: TSESLint.RuleModule<
         ): void => {
             const cleanupKeys = removesByBoundary.get(boundary);
 
-            if (cleanupKeys === undefined) {
+            if (!isDefined(cleanupKeys)) {
                 removesByBoundary.set(boundary, new Set([cleanupKey]));
                 return;
             }
@@ -300,7 +301,7 @@ const noUnmanagedEventListeners: TSESLint.RuleModule<
                 ) {
                     const cleanupKey = getCleanupKey(context, node);
 
-                    if (cleanupKey !== undefined) {
+                    if (isDefined(cleanupKey)) {
                         addRecord(getCleanupBoundary(node), {
                             cleanupKey,
                             node,
@@ -311,7 +312,7 @@ const noUnmanagedEventListeners: TSESLint.RuleModule<
                 if (isMethodCallNamed(node.callee, "removeEventListener")) {
                     const cleanupKey = getCleanupKey(context, node);
 
-                    if (cleanupKey !== undefined) {
+                    if (isDefined(cleanupKey)) {
                         addRemoveKey(getCleanupBoundary(node), cleanupKey);
                     }
                 }
@@ -323,16 +324,17 @@ const noUnmanagedEventListeners: TSESLint.RuleModule<
 
                     for (const { cleanupKey, node } of addRecords) {
                         if (
-                            removeKeys.has(cleanupKey) ||
-                            removeKeys.has(getWildcardCleanupKey(cleanupKey))
+                            !setHas(removeKeys, cleanupKey) &&
+                            !setHas(
+                                removeKeys,
+                                getWildcardCleanupKey(cleanupKey)
+                            )
                         ) {
-                            continue;
+                            context.report({
+                                messageId: "unmanagedEventListener",
+                                node,
+                            });
                         }
-
-                        context.report({
-                            messageId: "unmanagedEventListener",
-                            node,
-                        });
                     }
                 }
             },

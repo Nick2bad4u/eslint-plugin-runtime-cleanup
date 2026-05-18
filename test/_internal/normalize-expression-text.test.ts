@@ -1,7 +1,5 @@
-import type { TSESTree } from "@typescript-eslint/utils";
-
 import parser from "@typescript-eslint/parser";
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -61,7 +59,7 @@ describe(areEquivalentExpressions, () => {
         const left = getInitializerExpression("user.profile.id");
         const right = getInitializerExpression("user.profile.id");
 
-        expect(areEquivalentExpressions(left, right)).toBeTruthy();
+        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual({ actual: true });
     });
 
     it("treats different expressions as non-equivalent", () => {
@@ -70,7 +68,7 @@ describe(areEquivalentExpressions, () => {
         const left = getInitializerExpression("user.profile.id");
         const right = getInitializerExpression("user.profile.name");
 
-        expect(areEquivalentExpressions(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("unwraps TS assertion wrappers for equivalence", () => {
@@ -79,7 +77,7 @@ describe(areEquivalentExpressions, () => {
         const left = getInitializerExpression("value as string");
         const right = getInitializerExpression("value");
 
-        expect(areEquivalentExpressions(left, right)).toBeTruthy();
+        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual({ actual: true });
     });
 
     it("unwraps non-null and satisfies wrappers for equivalence", () => {
@@ -88,7 +86,7 @@ describe(areEquivalentExpressions, () => {
         const left = getInitializerExpression("value!");
         const right = getInitializerExpression("value satisfies unknown");
 
-        expect(areEquivalentExpressions(left, right)).toBeTruthy();
+        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual({ actual: true });
     });
 
     it("unwraps TypeScript angle-bracket assertions for equivalence", () => {
@@ -97,14 +95,13 @@ describe(areEquivalentExpressions, () => {
         const left = getInitializerExpression("<string>value");
         const right = getInitializerExpression("value");
 
-        expect(areEquivalentExpressions(left, right)).toBeTruthy();
+        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual({ actual: true });
     });
 
     it("handles cyclic wrapper expressions without infinite recursion", () => {
         expect.hasAssertions();
 
         const cyclicAsExpression = {
-            expression: undefined,
             type: AST_NODE_TYPES.TSAsExpression,
         } as unknown as TSESTree.TSAsExpression;
 
@@ -116,12 +113,12 @@ describe(areEquivalentExpressions, () => {
 
         const plainIdentifier = getInitializerExpression("value");
 
-        expect(
-            areEquivalentExpressions(
-                cyclicAsExpression as unknown as TSESTree.Expression,
-                plainIdentifier
-            )
-        ).toBeFalsy();
+        const equivalent = areEquivalentExpressions(
+            cyclicAsExpression,
+            plainIdentifier
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: false });
     });
 });
 
@@ -132,7 +129,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = getAliasTypeAnnotation("Readonly<{ alpha: string }>");
         const right = getAliasTypeAnnotation("Readonly<{ alpha: string }>");
 
-        expect(areEquivalentTypeNodes(left, right)).toBeTruthy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: true });
     });
 
     it("treats different type nodes as non-equivalent", () => {
@@ -141,7 +138,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = getAliasTypeAnnotation("Readonly<{ alpha: string }>");
         const right = getAliasTypeAnnotation("Readonly<{ beta: string }>");
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for array-vs-non-array structures", () => {
@@ -150,7 +147,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = ["alpha"] as unknown as TSESTree.TypeNode;
         const right = { alpha: true } as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false when compared values have mismatched runtime types", () => {
@@ -159,7 +156,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = 42 as unknown as TSESTree.TypeNode;
         const right = "42" as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false when one side is null", () => {
@@ -168,7 +165,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = null as unknown as TSESTree.TypeNode;
         const right = { alpha: true } as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for arrays with different lengths", () => {
@@ -177,7 +174,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = ["alpha"] as unknown as TSESTree.TypeNode;
         const right = ["alpha", "beta"] as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for non-comparable primitive-like values", () => {
@@ -186,7 +183,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = 1 as unknown as TSESTree.TypeNode;
         const right = 2 as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for object nodes with different comparable key counts", () => {
@@ -195,7 +192,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = { alpha: 1, beta: 2 } as unknown as TSESTree.TypeNode;
         const right = { alpha: 1 } as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for object nodes with different comparable key names", () => {
@@ -204,7 +201,7 @@ describe(areEquivalentTypeNodes, () => {
         const left = { alpha: 1 } as unknown as TSESTree.TypeNode;
         const right = { beta: 1 } as unknown as TSESTree.TypeNode;
 
-        expect(areEquivalentTypeNodes(left, right)).toBeFalsy();
+        expect({ actual: areEquivalentTypeNodes(left, right) }).toStrictEqual({ actual: false });
     });
 
     it("supports cyclic object graphs by reusing seen-pair tracking", () => {
@@ -216,12 +213,12 @@ describe(areEquivalentTypeNodes, () => {
         left.self = left;
         right.self = right;
 
-        expect(
-            areEquivalentTypeNodes(
-                left as unknown as TSESTree.TypeNode,
-                right as unknown as TSESTree.TypeNode
-            )
-        ).toBeTruthy();
+        const equivalent = areEquivalentTypeNodes(
+            left as unknown as TSESTree.TypeNode,
+            right as unknown as TSESTree.TypeNode
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: true });
     });
 
     it("supports repeated array pair checks through seen-pair tracking", () => {
@@ -233,12 +230,12 @@ describe(areEquivalentTypeNodes, () => {
         left.push(left, left);
         right.push(right, right);
 
-        expect(
-            areEquivalentTypeNodes(
-                left as unknown as TSESTree.TypeNode,
-                right as unknown as TSESTree.TypeNode
-            )
-        ).toBeTruthy();
+        const equivalent = areEquivalentTypeNodes(
+            left as unknown as TSESTree.TypeNode,
+            right as unknown as TSESTree.TypeNode
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: true });
     });
 
     it("returns false when right-side own keys are removed between key scan and property comparison", () => {
@@ -263,7 +260,7 @@ describe(areEquivalentTypeNodes, () => {
                         Reflect.getOwnPropertyDescriptor(target, property) ?? {
                             configurable: true,
                             enumerable: true,
-                            value: undefined,
+                            value: null,
                             writable: true,
                         }
                     );
@@ -271,12 +268,12 @@ describe(areEquivalentTypeNodes, () => {
             }
         );
 
-        expect(
-            areEquivalentTypeNodes(
-                left as unknown as TSESTree.TypeNode,
-                right as unknown as TSESTree.TypeNode
-            )
-        ).toBeFalsy();
+        const equivalent = areEquivalentTypeNodes(
+            left as unknown as TSESTree.TypeNode,
+            right as unknown as TSESTree.TypeNode
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: false });
     });
 
     it("tracks multiple right-side pairs for the same left-side node", () => {
@@ -301,12 +298,12 @@ describe(areEquivalentTypeNodes, () => {
             second: rightSecond,
         };
 
-        expect(
-            areEquivalentTypeNodes(
-                left as unknown as TSESTree.TypeNode,
-                right as unknown as TSESTree.TypeNode
-            )
-        ).toBeTruthy();
+        const equivalent = areEquivalentTypeNodes(
+            left as unknown as TSESTree.TypeNode,
+            right as unknown as TSESTree.TypeNode
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: true });
     });
 
     it("fails closed for deeply nested structures to avoid stack overflows", () => {
@@ -329,11 +326,11 @@ describe(areEquivalentTypeNodes, () => {
             rightCursor = nextRight;
         }
 
-        expect(
-            areEquivalentTypeNodes(
-                leftRoot as unknown as TSESTree.TypeNode,
-                rightRoot as unknown as TSESTree.TypeNode
-            )
-        ).toBeFalsy();
+        const equivalent = areEquivalentTypeNodes(
+            leftRoot as unknown as TSESTree.TypeNode,
+            rightRoot as unknown as TSESTree.TypeNode
+        );
+
+        expect({ equivalent }).toStrictEqual({ equivalent: false });
     });
 });

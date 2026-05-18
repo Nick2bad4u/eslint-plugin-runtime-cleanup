@@ -7,8 +7,10 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
+import { getFirstOpaqueParent } from "../_internal/floating-resource.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
 import { getVariableInScopeChain } from "../_internal/scope-variable.js";
 import {
@@ -28,33 +30,7 @@ const globalReceiverNameSet: ReadonlySet<string> = new Set(
 );
 
 const isGlobalReceiverName = (name: string): boolean =>
-    globalReceiverNameSet.has(name);
-
-const getTransparentWrappedExpression = (
-    node: Readonly<TSESTree.Node>
-): Readonly<TSESTree.Node> | undefined => {
-    if (node.type === AST_NODE_TYPES.ChainExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSAsExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSNonNullExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSSatisfiesExpression) {
-        return node.expression;
-    }
-
-    if (node.type === AST_NODE_TYPES.TSTypeAssertion) {
-        return node.expression;
-    }
-
-    return undefined;
-};
+    setHas(globalReceiverNameSet, name);
 
 const getStaticPropertyName = (
     node: Readonly<TSESTree.MemberExpression["property"]>,
@@ -113,36 +89,29 @@ const isBroadcastChannelConstructor = (
 const isDiscardedBroadcastChannel = (
     node: Readonly<TSESTree.NewExpression>
 ): boolean => {
-    let current: Readonly<TSESTree.Node> = node;
-    let parent = getParentNode(current);
+    const opaqueParent = getFirstOpaqueParent(node);
 
-    while (parent !== undefined) {
-        const wrappedExpression = getTransparentWrappedExpression(parent);
-
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
+    if (!isDefined(opaqueParent)) {
         return false;
+    }
+
+    const { current, parent } = opaqueParent;
+
+    if (
+        parent.type === AST_NODE_TYPES.ExpressionStatement &&
+        parent.expression === current
+    ) {
+        return true;
+    }
+
+    if (
+        parent.type === AST_NODE_TYPES.UnaryExpression &&
+        parent.operator === "void" &&
+        parent.argument === current
+    ) {
+        const unaryParent = getParentNode(parent);
+
+        return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
     }
 
     return false;
@@ -151,41 +120,32 @@ const isDiscardedBroadcastChannel = (
 const isImmediateBroadcastChannelMethodReceiver = (
     node: Readonly<TSESTree.NewExpression>
 ): boolean => {
-    let current: Readonly<TSESTree.Node> = node;
-    let parent = getParentNode(current);
+    const opaqueParent = getFirstOpaqueParent(node);
 
-    while (parent !== undefined) {
-        const wrappedExpression = getTransparentWrappedExpression(parent);
-
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
-        }
-
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.optional
-        ) {
-            return false;
-        }
-
-        if (
-            getStaticPropertyName(parent.property, parent.computed) === "close"
-        ) {
-            return false;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return (
-            callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-        );
+    if (!isDefined(opaqueParent)) {
+        return false;
     }
 
-    return false;
+    const { current, parent } = opaqueParent;
+
+    if (
+        parent.type !== AST_NODE_TYPES.MemberExpression ||
+        parent.object !== current ||
+        parent.optional
+    ) {
+        return false;
+    }
+
+    if (getStaticPropertyName(parent.property, parent.computed) === "close") {
+        return false;
+    }
+
+    const callExpression = getParentNode(parent);
+
+    return (
+        callExpression?.type === AST_NODE_TYPES.CallExpression &&
+        callExpression.callee === parent
+    );
 };
 
 /** Rule implementation for `runtime-cleanup/no-floating-broadcast-channels`. */

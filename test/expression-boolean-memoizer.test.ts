@@ -25,9 +25,13 @@ describe(memoizeExpressionBooleanPredicate, () => {
 
         const memoizedPredicate = memoizeExpressionBooleanPredicate(evaluate);
         const expressionNode = createIdentifierExpression("value");
+        const firstResult = memoizedPredicate(expressionNode);
+        const secondResult = memoizedPredicate(expressionNode);
 
-        expect(memoizedPredicate(expressionNode)).toBeTruthy();
-        expect(memoizedPredicate(expressionNode)).toBeTruthy();
+        expect({ firstResult, secondResult }).toStrictEqual({
+            firstResult: true,
+            secondResult: true,
+        });
         expect(evaluate).toHaveBeenCalledOnce();
     });
 
@@ -38,9 +42,13 @@ describe(memoizeExpressionBooleanPredicate, () => {
 
         const memoizedPredicate = memoizeExpressionBooleanPredicate(evaluate);
         const expressionNode = createIdentifierExpression("other");
+        const firstResult = memoizedPredicate(expressionNode);
+        const secondResult = memoizedPredicate(expressionNode);
 
-        expect(memoizedPredicate(expressionNode)).toBeFalsy();
-        expect(memoizedPredicate(expressionNode)).toBeFalsy();
+        expect({ firstResult, secondResult }).toStrictEqual({
+            firstResult: false,
+            secondResult: false,
+        });
         expect(evaluate).toHaveBeenCalledOnce();
     });
 
@@ -60,8 +68,8 @@ describe(memoizeExpressionBooleanPredicate, () => {
         const firstExpression = createIdentifierExpression("longName");
         const secondExpression = createIdentifierExpression("id");
 
-        expect(memoizedPredicate(firstExpression)).toBeTruthy();
-        expect(memoizedPredicate(secondExpression)).toBeFalsy();
+        expect({ actual: memoizedPredicate(firstExpression) }).toStrictEqual({ actual: true });
+        expect({ actual: memoizedPredicate(secondExpression) }).toStrictEqual({ actual: false });
         expect(evaluate).toHaveBeenCalledTimes(2);
     });
 });

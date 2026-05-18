@@ -42,7 +42,7 @@ A candidate is a good experimental rule when most of the following are true:
 
 ## Explicitly skipped examples
 
-The following candidate shapes are intentionally not good initial rules unless a future design narrows them substantially:
+The following candidate shapes are intentionally not good initial rules unless a future design narrows them to explicit syntax:
 
 - generic “resource was opened but not closed somewhere later” checks that require whole-program ownership tracking,
 - event listener pairing across different modules,

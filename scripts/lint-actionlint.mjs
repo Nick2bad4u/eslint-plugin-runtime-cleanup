@@ -38,27 +38,19 @@ const fileArgs = [];
 for (let index = 0; index < rawArgs.length; index += 1) {
     const arg = rawArgs[index];
 
-    if (arg === undefined) {
-        continue;
-    }
-
-    if (arg === "--include-excluded") {
-        continue;
-    }
-
-    if (arg === "-" || !arg.startsWith("-")) {
+    if (arg === undefined || arg === "--include-excluded") {
+        // Ignore consumed wrapper-only arguments.
+    } else if (arg === "-" || !arg.startsWith("-")) {
         fileArgs.push(arg);
-        continue;
-    }
-
-    userArgs.push(arg);
-
-    if (flagsWithValues.has(arg)) {
+    } else if (flagsWithValues.has(arg)) {
+        userArgs.push(arg);
         const value = rawArgs[index + 1];
         if (typeof value === "string") {
             userArgs.push(value);
             index += 1;
         }
+    } else {
+        userArgs.push(arg);
     }
 }
 
@@ -140,10 +132,10 @@ if (useDefaultFiles) {
     const scopeText = overrideExcluded
         ? `including ${excludedFileList}`
         : `excluding ${excludedFileList}`;
+    const workflowFileCount = pc.magenta(String(targetFiles.length));
+    const scopeSummary = pc.cyan(`workflow file(s), ${scopeText}.`);
     console.log(
-        `${pc.bold(pc.cyan("Running actionlint on"))} ${pc.magenta(
-            String(targetFiles.length)
-        )} ${pc.cyan(`workflow file(s), ${scopeText}.`)}`
+        `${pc.bold(pc.cyan("Running actionlint on"))} ${workflowFileCount} ${scopeSummary}`
     );
 }
 

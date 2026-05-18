@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require Web Stream readers and writers to be retained so their locks can be released.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { isDefined, setHas } from "ts-extras";
 
 import {
     getStaticPropertyName,
@@ -29,7 +32,7 @@ type LockFactoryMetadata = Readonly<{
     streamTypeName: "ReadableStream" | "WritableStream";
 }>;
 
-type LockFactoryName = (typeof lockFactoryNames)[number];
+type LockFactoryName = ArrayValues<typeof lockFactoryNames>;
 
 const lockFactoryMetadataByName: Readonly<
     Record<LockFactoryName, LockFactoryMetadata>
@@ -46,7 +49,7 @@ const lockFactoryMetadataByName: Readonly<
 const lockFactoryNameSet: ReadonlySet<string> = new Set(lockFactoryNames);
 
 const isLockFactoryName = (name: string): name is LockFactoryName =>
-    lockFactoryNameSet.has(name);
+    setHas(lockFactoryNameSet, name);
 
 const getLockFactoryMetadata = (
     callee: Readonly<TSESTree.CallExpression["callee"]>
@@ -64,7 +67,7 @@ const getLockFactoryMetadata = (
 
     const factoryName = getStaticPropertyName(callee.property, callee.computed);
 
-    if (factoryName === undefined || !isLockFactoryName(factoryName)) {
+    if (!isDefined(factoryName) || !isLockFactoryName(factoryName)) {
         return undefined;
     }
 
@@ -98,7 +101,7 @@ const noFloatingWebStreamLocks: TSESLint.RuleModule<
                 const metadata = getLockFactoryMetadata(node.callee);
 
                 if (
-                    metadata === undefined ||
+                    !isDefined(metadata) ||
                     !isReceiverExpectedWebStream(
                         context,
                         metadata.receiver,

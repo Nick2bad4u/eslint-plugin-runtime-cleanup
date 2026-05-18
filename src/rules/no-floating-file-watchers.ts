@@ -7,6 +7,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -26,7 +27,7 @@ const immediateCleanupMethodNameSet: ReadonlySet<string> = new Set(
 );
 
 const isImmediateCleanupMethodName = (name: string): boolean =>
-    immediateCleanupMethodNameSet.has(name);
+    setHas(immediateCleanupMethodNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -124,7 +125,7 @@ const getDefinitionModuleSource = (
 };
 
 const isFsModuleSource = (source: string | undefined): boolean =>
-    source !== undefined && fsModuleNameSet.has(source);
+    isDefined(source) && setHas(fsModuleNameSet, source);
 
 const getDefinitionForIdentifier = (
     context: TypedRuleContext,
@@ -133,7 +134,7 @@ const getDefinitionForIdentifier = (
     const scope = context.sourceCode.getScope(identifier);
     const variable = getVariableInScopeChain(scope, identifier.name);
 
-    return variable?.defs[0];
+    return arrayFirst(variable?.defs ?? []);
 };
 
 const isFsModuleBinding = (
@@ -143,7 +144,7 @@ const isFsModuleBinding = (
     const definition = getDefinitionForIdentifier(context, identifier);
 
     return (
-        definition !== undefined &&
+        isDefined(definition) &&
         isFsModuleSource(getDefinitionModuleSource(definition.node))
     );
 };
@@ -158,14 +159,12 @@ const getObjectPatternPropertyNameForIdentifier = (
 ): string | undefined => {
     for (const property of objectPattern.properties) {
         if (
-            property.type !== AST_NODE_TYPES.Property ||
-            property.value.type !== AST_NODE_TYPES.Identifier ||
-            property.value.name !== identifierName
+            property.type === AST_NODE_TYPES.Property &&
+            property.value.type === AST_NODE_TYPES.Identifier &&
+            property.value.name === identifierName
         ) {
-            continue;
+            return getStaticPropertyName(property.key);
         }
-
-        return getStaticPropertyName(property.key);
     }
 
     return undefined;
@@ -177,7 +176,7 @@ const getNamedFileWatcherBindingName = (
 ): string | undefined => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    if (definition === undefined) {
+    if (!isDefined(definition)) {
         return undefined;
     }
 
@@ -266,33 +265,32 @@ const isDiscardedFileWatcherHandle = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -304,31 +302,30 @@ const isImmediateFileWatcherMethodReceiver = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.computed ||
+                parent.property.type !== AST_NODE_TYPES.Identifier ||
+                isImmediateCleanupMethodName(parent.property.name)
+            ) {
+                return false;
+            }
+
+            const callExpression = getParentNode(parent);
+
+            return (
+                callExpression?.type === AST_NODE_TYPES.CallExpression &&
+                callExpression.callee === parent
+            );
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.computed ||
-            parent.property.type !== AST_NODE_TYPES.Identifier ||
-            isImmediateCleanupMethodName(parent.property.name)
-        ) {
-            return false;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return (
-            callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-        );
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -348,7 +345,7 @@ const noFloatingFileWatchers: TSESLint.RuleModule<
                 );
 
                 if (
-                    factoryName === undefined ||
+                    !isDefined(factoryName) ||
                     (!isDiscardedFileWatcherHandle(node) &&
                         !isImmediateFileWatcherMethodReceiver(node))
                 ) {

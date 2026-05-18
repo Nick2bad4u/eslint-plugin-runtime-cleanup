@@ -88,15 +88,9 @@ const parseArguments = (argumentList) => {
 
         if (argument === "--check") {
             checkOnly = true;
-            continue;
-        }
-
-        if (argument === "--check-current") {
+        } else if (argument === "--check-current") {
             checkCurrent = true;
-            continue;
-        }
-
-        if (argument === "--version") {
+        } else if (argument === "--version") {
             const nextArgument = argumentList[index + 1];
 
             if (typeof nextArgument !== "string") {
@@ -105,17 +99,13 @@ const parseArguments = (argumentList) => {
 
             explicitVersion = normalizeNodeVersion(nextArgument);
             index += 1;
-            continue;
-        }
-
-        if (argument.startsWith("--version=")) {
+        } else if (argument.startsWith("--version=")) {
             explicitVersion = normalizeNodeVersion(
                 argument.slice("--version=".length)
             );
-            continue;
+        } else {
+            throw new TypeError(`Unknown argument: ${argument}`);
         }
-
-        throw new TypeError(`Unknown argument: ${argument}`);
     }
 
     if (checkOnly && checkCurrent) {

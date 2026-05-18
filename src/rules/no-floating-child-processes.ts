@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require child process handles to be retained so they can be killed during cleanup.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -31,7 +34,7 @@ const immediateCleanupMethodNames = [
     "kill",
 ] as const;
 
-type ChildProcessFactoryName = (typeof childProcessFactoryNames)[number];
+type ChildProcessFactoryName = ArrayValues<typeof childProcessFactoryNames>;
 
 const childProcessFactoryNameSet: ReadonlySet<string> = new Set(
     childProcessFactoryNames
@@ -45,10 +48,10 @@ const immediateCleanupMethodNameSet: ReadonlySet<string> = new Set(
 
 const isChildProcessFactoryName = (
     name: string
-): name is ChildProcessFactoryName => childProcessFactoryNameSet.has(name);
+): name is ChildProcessFactoryName => setHas(childProcessFactoryNameSet, name);
 
 const isImmediateCleanupMethodName = (name: string): boolean =>
-    immediateCleanupMethodNameSet.has(name);
+    setHas(immediateCleanupMethodNameSet, name);
 
 const getTransparentWrappedExpression = (
     node: Readonly<TSESTree.Node>
@@ -155,21 +158,19 @@ const getObjectPatternPropertyNameForIdentifier = (
 ): string | undefined => {
     for (const property of objectPattern.properties) {
         if (
-            property.type !== AST_NODE_TYPES.Property ||
-            property.value.type !== AST_NODE_TYPES.Identifier ||
-            property.value.name !== identifierName
+            property.type === AST_NODE_TYPES.Property &&
+            property.value.type === AST_NODE_TYPES.Identifier &&
+            property.value.name === identifierName
         ) {
-            continue;
+            return getStaticPropertyName(property.key);
         }
-
-        return getStaticPropertyName(property.key);
     }
 
     return undefined;
 };
 
 const isChildProcessModuleSource = (source: string | undefined): boolean =>
-    source !== undefined && childProcessModuleNameSet.has(source);
+    isDefined(source) && setHas(childProcessModuleNameSet, source);
 
 const getDefinitionForIdentifier = (
     context: TypedRuleContext,
@@ -178,7 +179,7 @@ const getDefinitionForIdentifier = (
     const scope = context.sourceCode.getScope(identifier);
     const variable = getVariableInScopeChain(scope, identifier.name);
 
-    return variable?.defs[0];
+    return arrayFirst(variable?.defs ?? []);
 };
 
 const isChildProcessModuleBinding = (
@@ -187,7 +188,7 @@ const isChildProcessModuleBinding = (
 ): boolean => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    if (definition === undefined) {
+    if (!isDefined(definition)) {
         return false;
     }
 
@@ -202,7 +203,7 @@ const getNamedChildProcessFactoryBindingName = (
 ): ChildProcessFactoryName | undefined => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    if (definition === undefined) {
+    if (!isDefined(definition)) {
         return undefined;
     }
 
@@ -215,7 +216,7 @@ const getNamedChildProcessFactoryBindingName = (
     if (definition.node.type === AST_NODE_TYPES.ImportSpecifier) {
         const importedName = getImportedSpecifierName(definition.node);
 
-        return importedName !== undefined &&
+        return isDefined(importedName) &&
             isChildProcessFactoryName(importedName)
             ? importedName
             : undefined;
@@ -230,7 +231,7 @@ const getNamedChildProcessFactoryBindingName = (
             identifier.name
         );
 
-        return propertyName !== undefined &&
+        return isDefined(propertyName) &&
             isChildProcessFactoryName(propertyName)
             ? propertyName
             : undefined;
@@ -296,33 +297,32 @@ const isDiscardedChildProcessHandle = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -334,31 +334,30 @@ const isImmediateChildProcessMethodReceiver = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.computed ||
+                parent.property.type !== AST_NODE_TYPES.Identifier ||
+                isImmediateCleanupMethodName(parent.property.name)
+            ) {
+                return false;
+            }
+
+            const callExpression = getParentNode(parent);
+
+            return (
+                callExpression?.type === AST_NODE_TYPES.CallExpression &&
+                callExpression.callee === parent
+            );
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.computed ||
-            parent.property.type !== AST_NODE_TYPES.Identifier ||
-            isImmediateCleanupMethodName(parent.property.name)
-        ) {
-            return false;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return (
-            callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-        );
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -378,7 +377,7 @@ const noFloatingChildProcesses: TSESLint.RuleModule<
                 );
 
                 if (
-                    factoryName === undefined ||
+                    !isDefined(factoryName) ||
                     (!isDiscardedChildProcessHandle(node) &&
                         !isImmediateChildProcessMethodReceiver(node))
                 ) {

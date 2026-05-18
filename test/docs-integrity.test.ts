@@ -32,11 +32,10 @@ const readMarkdownFiles = async (directory: string): Promise<string[]> => {
 
         if (entry.isDirectory()) {
             files.push(...(await readMarkdownFiles(entryPath)));
-            continue;
-        }
-
-        if (entry.isFile() && entry.name.endsWith(".md")) {
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
             files.push(entryPath);
+        } else {
+            // Non-markdown files do not participate in documentation integrity checks.
         }
     }
 

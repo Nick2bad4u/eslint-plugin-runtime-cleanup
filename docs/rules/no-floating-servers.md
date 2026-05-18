@@ -114,7 +114,7 @@ export default [
 
 ## When not to use it
 
-Do not enable this rule for tiny one-off scripts where the server is
+Do not enable this rule for one-off scripts where the server is
 intentionally process-lifetime and never needs graceful shutdown. Prefer a
 narrow disable comment with a reason in those files rather than weakening the
 rule globally.

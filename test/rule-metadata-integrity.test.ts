@@ -1,3 +1,5 @@
+import type { UnknownRecord } from "type-fest";
+
 /**
  * @packageDocumentation
  * Strong contract tests for required rule metadata across registered rules.
@@ -19,6 +21,30 @@ const getRuleSourceFileNames = (): readonly string[] => {
         .filter((entry) => entry.endsWith(".ts"))
         .map((entry) => entry.replace(/\.ts$/v, ""))
         .toSorted((left, right) => left.localeCompare(right));
+};
+
+type RuntimeCleanupDocsMetadata = Readonly<{
+    description: string;
+    recommended: boolean;
+    requiresTypeChecking: boolean;
+    ruleId: string;
+    ruleNumber: number;
+    runtimeCleanupConfigs: unknown;
+    url: string;
+}>;
+
+const isObject = (value: unknown): value is UnknownRecord =>
+    typeof value === "object" && value !== null;
+
+const requireRuntimeCleanupDocsMetadata = (
+    ruleName: string,
+    docs: unknown
+): RuntimeCleanupDocsMetadata => {
+    if (!isObject(docs)) {
+        throw new TypeError(`Rule '${ruleName}' is missing docs metadata.`);
+    }
+
+    return docs as unknown as RuntimeCleanupDocsMetadata;
 };
 
 describe("rule metadata integrity", () => {
@@ -46,25 +72,26 @@ describe("rule metadata integrity", () => {
         )) {
             const { meta } = ruleModule;
 
-            expect(meta).toBeDefined();
-
             if (meta === undefined) {
                 throw new TypeError(`Rule '${ruleName}' is missing meta.`);
             }
 
-            expect(meta.docs).toStrictEqual(
-                expect.objectContaining({
-                    description: expect.any(String),
-                    recommended: expect.any(Boolean),
-                    requiresTypeChecking: expect.any(Boolean),
-                    ruleId: expect.stringMatching(/^R\d{3}$/v),
-                    ruleNumber: expect.any(Number),
-                    runtimeCleanupConfigs: expect.any(Array),
-                    url: expect.stringContaining(`/rules/${ruleName}`),
-                })
+            const docs = requireRuntimeCleanupDocsMetadata(
+                ruleName,
+                meta.docs
             );
+
+            expect(docs.description).toBeTypeOf("string");
+            expect(docs.recommended).toBeTypeOf("boolean");
+            expect(docs.requiresTypeChecking).toBeTypeOf("boolean");
+            expect(docs.ruleId).toMatch(/^R\d{3}$/v);
+            expect(docs.ruleNumber).toBeTypeOf("number");
+            expect({
+                actual: Array.isArray(docs.runtimeCleanupConfigs),
+            }).toStrictEqual({ actual: true });
+            expect(docs.url).toContain(`/rules/${ruleName}`);
             expect(meta.messages).not.toStrictEqual({});
-            expect(meta.schema).toStrictEqual(expect.any(Array));
+            expect({ actual: Array.isArray(meta.schema) }).toStrictEqual({ actual: true });
         }
     });
 });

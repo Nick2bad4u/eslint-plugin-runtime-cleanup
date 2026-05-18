@@ -4,6 +4,7 @@
  */
 
 import type { TSESLint } from "@typescript-eslint/utils";
+import type { UnknownArray } from "type-fest";
 
 import noFloatingAbortControllers from "../rules/no-floating-abort-controllers.js";
 import noFloatingAudioContexts from "../rules/no-floating-audio-contexts.js";
@@ -27,7 +28,7 @@ import noFloatingWorkers from "../rules/no-floating-workers.js";
 import noUnmanagedEventListeners from "../rules/no-unmanaged-event-listeners.js";
 
 /** Runtime rule module shape used by registry/preset builders. */
-export type RuleWithDocs = TSESLint.RuleModule<string, readonly unknown[]>;
+export type RuleWithDocs = TSESLint.RuleModule<string, Readonly<UnknownArray>>;
 
 /**
  * Runtime map of all rule modules keyed by unqualified rule name.

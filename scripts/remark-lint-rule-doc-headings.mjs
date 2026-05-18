@@ -126,7 +126,7 @@ const optionalDetailAllowedParentHeadings = new Set([
 
 const defaultRuleCatalogIdLinePattern = /^> \*\*Rule catalog ID:\*\* R\d{3}$/u;
 const defaultPackageDocumentationLabelPattern =
-    /^[^\r\n]+ package documentation:$/mu;
+    /^[^\r\n]{1,200} package documentation:$/mu;
 const eslintPluginPackagePrefix = "eslint-plugin-";
 const excludedDefaultRuleDocNames = new Set([
     "getting-started.md",
@@ -482,23 +482,21 @@ const reportDuplicateH2HeadingIssues = (
         const headingDefinition =
             canonicalHeadingDefinitionsByTitle.get(headingName);
 
-        if (
-            headingDefinition !== undefined &&
-            !isHeadingEnabled(headingDefinition.key)
-        ) {
-            continue;
-        }
+        const headingEnabled =
+            headingDefinition === undefined ||
+            isHeadingEnabled(headingDefinition.key);
 
-        if (seenHeadings.has(headingName)) {
-            file.message(
-                `Duplicate H2 heading \`${headingName}\` is not allowed.`,
-                h2Headings[index],
-                "remark-lint:rule-doc-headings:duplicate-heading"
-            );
-            continue;
+        if (headingEnabled) {
+            if (seenHeadings.has(headingName)) {
+                file.message(
+                    `Duplicate H2 heading \`${headingName}\` is not allowed.`,
+                    h2Headings[index],
+                    "remark-lint:rule-doc-headings:duplicate-heading"
+                );
+            } else {
+                seenHeadings.add(headingName);
+            }
         }
-
-        seenHeadings.add(headingName);
     }
 };
 
@@ -513,46 +511,43 @@ const reportDetailHeadingIssues = (
     let matchedPatternsHeadingIndex = -1;
 
     for (const [index, node] of tree.children.entries()) {
-        if (!isHeadingNode(node)) {
-            continue;
-        }
+        if (isHeadingNode(node)) {
+            const headingName = getNodeText(node).trim();
 
-        const headingName = getNodeText(node).trim();
+            if (node.depth === 2) {
+                currentH2HeadingName = headingName;
+            } else {
+                const detailHeadingDefinition =
+                    optionalDetailHeadingDefinitionsByTitle.get(headingName);
+                const isTrackedDetailHeading =
+                    node.depth === 3 &&
+                    detailHeadingDefinition !== undefined &&
+                    isHeadingEnabled(detailHeadingDefinition.key) &&
+                    optionalDetailHeadings.has(headingName);
 
-        if (node.depth === 2) {
-            currentH2HeadingName = headingName;
-            continue;
-        }
+                if (isTrackedDetailHeading) {
+                    if (
+                        currentH2HeadingName === undefined ||
+                        !optionalDetailAllowedParentHeadings.has(
+                            currentH2HeadingName
+                        )
+                    ) {
+                        file.message(
+                            `\`### ${headingName}\` must be placed under \`## Targeted pattern scope\` or \`## What this rule reports\`.`,
+                            node,
+                            "remark-lint:rule-doc-headings:detail-heading-parent"
+                        );
+                    }
 
-        const detailHeadingDefinition =
-            optionalDetailHeadingDefinitionsByTitle.get(headingName);
+                    if (headingName === "Matched patterns") {
+                        matchedPatternsHeadingIndex = index;
+                    }
 
-        if (
-            node.depth !== 3 ||
-            detailHeadingDefinition === undefined ||
-            !isHeadingEnabled(detailHeadingDefinition.key) ||
-            !optionalDetailHeadings.has(headingName)
-        ) {
-            continue;
-        }
-
-        if (
-            currentH2HeadingName === undefined ||
-            !optionalDetailAllowedParentHeadings.has(currentH2HeadingName)
-        ) {
-            file.message(
-                `\`### ${headingName}\` must be placed under \`## Targeted pattern scope\` or \`## What this rule reports\`.`,
-                node,
-                "remark-lint:rule-doc-headings:detail-heading-parent"
-            );
-        }
-
-        if (headingName === "Matched patterns") {
-            matchedPatternsHeadingIndex = index;
-        }
-
-        if (headingName === "Detection boundaries") {
-            detectionBoundariesHeadingIndex = index;
+                    if (headingName === "Detection boundaries") {
+                        detectionBoundariesHeadingIndex = index;
+                    }
+                }
+            }
         }
     }
 
@@ -582,34 +577,32 @@ const reportH2OrderIssues = (
         const headingDefinition =
             canonicalHeadingDefinitionsByTitle.get(headingName);
 
-        if (
-            headingDefinition !== undefined &&
-            !isHeadingEnabled(headingDefinition.key)
-        ) {
-            continue;
+        const headingEnabled =
+            headingDefinition === undefined ||
+            isHeadingEnabled(headingDefinition.key);
+
+        if (headingEnabled) {
+            const headingOrder = headingOrderIndex.get(headingName);
+            const headingNode = h2Headings[index];
+
+            if (headingOrder === undefined) {
+                file.message(
+                    `Unexpected H2 heading \`${headingName}\`. Allowed helper-doc headings: ${canonicalHeadingOrder.join(", ")}.`,
+                    headingNode,
+                    "remark-lint:rule-doc-headings:unknown-heading"
+                );
+            } else {
+                if (headingOrder < lastOrder) {
+                    file.message(
+                        `Heading \`${headingName}\` is out of order. Follow the canonical helper-doc sequence.`,
+                        headingNode,
+                        "remark-lint:rule-doc-headings:order"
+                    );
+                }
+
+                lastOrder = headingOrder;
+            }
         }
-
-        const headingOrder = headingOrderIndex.get(headingName);
-        const headingNode = h2Headings[index];
-
-        if (headingOrder === undefined) {
-            file.message(
-                `Unexpected H2 heading \`${headingName}\`. Allowed helper-doc headings: ${canonicalHeadingOrder.join(", ")}.`,
-                headingNode,
-                "remark-lint:rule-doc-headings:unknown-heading"
-            );
-            continue;
-        }
-
-        if (headingOrder < lastOrder) {
-            file.message(
-                `Heading \`${headingName}\` is out of order. Follow the canonical helper-doc sequence.`,
-                headingNode,
-                "remark-lint:rule-doc-headings:order"
-            );
-        }
-
-        lastOrder = headingOrder;
     }
 };
 

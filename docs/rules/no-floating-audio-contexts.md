@@ -93,7 +93,7 @@ export default [
 
 ## When not to use it
 
-Do not enable this rule for tiny one-page demos where the browser page lifetime
+Do not enable this rule for one-page demos where the browser page lifetime
 is intentionally the cleanup boundary. Use narrow inline disables for those
 examples.
 
@@ -101,4 +101,3 @@ examples.
 
 - [MDN: `AudioContext`](https://developer.mozilla.org/docs/Web/API/AudioContext)
 - [MDN: `AudioContext.close()`](https://developer.mozilla.org/docs/Web/API/AudioContext/close)
-

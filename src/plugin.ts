@@ -3,8 +3,10 @@
  * Public plugin entrypoint for eslint-plugin-runtime-cleanup exports and preset wiring.
  */
 import type { ESLint, Linter } from "eslint";
+import type { Except } from "type-fest";
 
-import typeScriptParser from "@typescript-eslint/parser";
+import tsParser from "@typescript-eslint/parser";
+import { objectFromEntries, objectHasOwn } from "ts-extras";
 
 // eslint-disable-next-line import-x/extensions -- Avoid importing from the ESM entrypoint to preserve CJS compatibility
 import packageJson from "../package.json" with { type: "json" };
@@ -16,7 +18,7 @@ import {
 } from "./_internal/runtime-cleanup-config-references.js";
 
 /** Default file globs targeted by plugin presets when `files` is omitted. */
-const TYPE_SCRIPT_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
+const TS_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
 
 /**
  * Canonical flat-config preset keys exposed through `plugin.configs`.
@@ -54,7 +56,7 @@ type RuntimeCleanupConfigsContract = Record<
 >;
 
 /** Fully assembled plugin contract used by the runtime default export. */
-type RuntimeCleanupPluginContract = Omit<ESLint.Plugin, "configs" | "rules"> & {
+type RuntimeCleanupPluginContract = Except<ESLint.Plugin, "configs" | "rules"> & {
     configs: RuntimeCleanupConfigsContract;
     meta: {
         name: string;
@@ -83,7 +85,7 @@ function getPackageVersion(pkg: unknown): string {
 }
 
 /** Parser module reused across preset construction. */
-const typeScriptParserValue: FlatLanguageOptions["parser"] = typeScriptParser;
+const tsParserValue: FlatLanguageOptions["parser"] = tsParser;
 
 /** Default parser options applied when a preset omits parser options. */
 const defaultParserOptions = {
@@ -258,20 +260,20 @@ function withRuntimeCleanupPlugin(
 
     if (
         options.requiresTypeChecking &&
-        !Object.hasOwn(parserOptions, "projectService")
+        !objectHasOwn(parserOptions, "projectService")
     ) {
         Reflect.set(parserOptions, "projectService", true);
     }
 
     const languageOptions: FlatLanguageOptions = {
         ...existingLanguageOptions,
-        parser: existingLanguageOptions["parser"] ?? typeScriptParserValue,
+        parser: existingLanguageOptions["parser"] ?? tsParserValue,
         parserOptions,
     };
 
     return {
         ...config,
-        files: config.files ?? [...TYPE_SCRIPT_FILES],
+        files: config.files ?? [...TS_FILES],
         languageOptions,
         plugins: {
             ...config.plugins,
@@ -308,7 +310,7 @@ const createPresetConfig = (
 const createRuntimeCleanupConfigsDefinition =
     (): RuntimeCleanupConfigsContract =>
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Object.fromEntries cannot preserve the finite preset-key union.
-        Object.fromEntries(
+        objectFromEntries(
             runtimeCleanupConfigNames.map((configName) => [
                 configName,
                 createPresetConfig(configName),

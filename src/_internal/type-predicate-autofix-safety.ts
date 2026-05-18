@@ -1,13 +1,13 @@
-import type { TSESTree } from "@typescript-eslint/utils";
-
 /**
  * @packageDocumentation
  * Conservative safety checks for autofixes that introduce type predicates.
  */
-import { AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import { isDefined } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
 import { isTransparentExpressionWrapper } from "./value-rewrite-autofix-safety.js";
+
 
 const isLogicalExpressionOperand = (
     parentNode: Readonly<TSESTree.Node>,
@@ -72,20 +72,19 @@ export const isTypePredicateExpressionAutofixSafe = (
 ): boolean => {
     let currentNode: Readonly<TSESTree.Node> = node;
 
-    while (true) {
-        const parentNode = getParentNode(currentNode);
+    let parentNode = getParentNode(currentNode);
 
-        if (parentNode === undefined) {
-            return true;
-        }
-
-        if (isTransparentExpressionWrapper(parentNode, currentNode)) {
-            currentNode = parentNode;
-            continue;
-        }
-
-        return !isBooleanGuardContext(parentNode, currentNode);
+    while (
+        isDefined(parentNode) &&
+        isTransparentExpressionWrapper(parentNode, currentNode)
+    ) {
+        currentNode = parentNode;
+        parentNode = getParentNode(currentNode);
     }
+
+    return isDefined(parentNode)
+        ? !isBooleanGuardContext(parentNode, currentNode)
+        : true;
 };
 
 /**

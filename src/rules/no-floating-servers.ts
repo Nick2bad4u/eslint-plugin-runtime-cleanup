@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require Node.js server handles to be retained so they can be closed.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "../_internal/ast-node.js";
 import { createRuleDocsUrl } from "../_internal/rule-docs-url.js";
@@ -34,7 +37,7 @@ const serverModuleNames = [
 const http2ServerModuleNames = ["http2", "node:http2"] as const;
 const immediateCleanupMethodNames = ["close"] as const;
 
-type ServerFactoryName = (typeof serverFactoryNames)[number];
+type ServerFactoryName = ArrayValues<typeof serverFactoryNames>;
 
 const serverFactoryNameSet: ReadonlySet<string> = new Set(serverFactoryNames);
 const http2OnlyServerFactoryNameSet: ReadonlySet<string> = new Set(
@@ -49,19 +52,19 @@ const immediateCleanupMethodNameSet: ReadonlySet<string> = new Set(
 );
 
 const isServerFactoryName = (name: string): name is ServerFactoryName =>
-    serverFactoryNameSet.has(name);
+    setHas(serverFactoryNameSet, name);
 
 const isHttp2OnlyServerFactoryName = (name: string): boolean =>
-    http2OnlyServerFactoryNameSet.has(name);
+    setHas(http2OnlyServerFactoryNameSet, name);
 
 const isServerModuleSource = (source: string | undefined): boolean =>
-    source !== undefined && serverModuleNameSet.has(source);
+    isDefined(source) && setHas(serverModuleNameSet, source);
 
 const isHttp2ServerModuleSource = (source: string | undefined): boolean =>
-    source !== undefined && http2ServerModuleNameSet.has(source);
+    isDefined(source) && setHas(http2ServerModuleNameSet, source);
 
 const isImmediateCleanupMethodName = (name: string): boolean =>
-    immediateCleanupMethodNameSet.has(name);
+    setHas(immediateCleanupMethodNameSet, name);
 
 const isValidServerFactoryForSource = (
     source: string | undefined,
@@ -174,7 +177,7 @@ const getDefinitionForIdentifier = (
     const scope = context.sourceCode.getScope(identifier);
     const variable = getVariableInScopeChain(scope, identifier.name);
 
-    return variable?.defs[0];
+    return arrayFirst(variable?.defs ?? []);
 };
 
 const getImportedSpecifierName = (
@@ -187,14 +190,12 @@ const getObjectPatternPropertyNameForIdentifier = (
 ): string | undefined => {
     for (const property of objectPattern.properties) {
         if (
-            property.type !== AST_NODE_TYPES.Property ||
-            property.value.type !== AST_NODE_TYPES.Identifier ||
-            property.value.name !== identifierName
+            property.type === AST_NODE_TYPES.Property &&
+            property.value.type === AST_NODE_TYPES.Identifier &&
+            property.value.name === identifierName
         ) {
-            continue;
+            return getStaticPropertyName(property.key);
         }
-
-        return getStaticPropertyName(property.key);
     }
 
     return undefined;
@@ -206,9 +207,9 @@ const getModuleSourceForBinding = (
 ): string | undefined => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    return definition === undefined
-        ? undefined
-        : getDefinitionModuleSource(definition.node);
+    return isDefined(definition)
+        ? getDefinitionModuleSource(definition.node)
+        : undefined;
 };
 
 const getNamedServerFactoryBindingName = (
@@ -217,7 +218,7 @@ const getNamedServerFactoryBindingName = (
 ): ServerFactoryName | undefined => {
     const definition = getDefinitionForIdentifier(context, identifier);
 
-    if (definition === undefined) {
+    if (!isDefined(definition)) {
         return undefined;
     }
 
@@ -226,7 +227,7 @@ const getNamedServerFactoryBindingName = (
     if (definition.node.type === AST_NODE_TYPES.ImportSpecifier) {
         const importedName = getImportedSpecifierName(definition.node);
 
-        return importedName !== undefined &&
+        return isDefined(importedName) &&
             isValidServerFactoryForSource(source, importedName)
             ? importedName
             : undefined;
@@ -241,7 +242,7 @@ const getNamedServerFactoryBindingName = (
             identifier.name
         );
 
-        return propertyName !== undefined &&
+        return isDefined(propertyName) &&
             isValidServerFactoryForSource(source, propertyName)
             ? propertyName
             : undefined;
@@ -311,33 +312,32 @@ const isDiscardedExpression = (node: Readonly<TSESTree.Node>): boolean => {
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type === AST_NODE_TYPES.ExpressionStatement &&
+                parent.expression === current
+            ) {
+                return true;
+            }
+
+            if (
+                parent.type === AST_NODE_TYPES.UnaryExpression &&
+                parent.operator === "void" &&
+                parent.argument === current
+            ) {
+                const unaryParent = getParentNode(parent);
+
+                return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
+            }
+
+            return false;
         }
 
-        if (
-            parent.type === AST_NODE_TYPES.ExpressionStatement &&
-            parent.expression === current
-        ) {
-            return true;
-        }
-
-        if (
-            parent.type === AST_NODE_TYPES.UnaryExpression &&
-            parent.operator === "void" &&
-            parent.argument === current
-        ) {
-            const unaryParent = getParentNode(parent);
-
-            return unaryParent?.type === AST_NODE_TYPES.ExpressionStatement;
-        }
-
-        return false;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return false;
@@ -349,31 +349,30 @@ const getImmediateServerMethodCall = (
     let current: Readonly<TSESTree.Node> = node;
     let parent = getParentNode(current);
 
-    while (parent !== undefined) {
+    while (isDefined(parent)) {
         const wrappedExpression = getTransparentWrappedExpression(parent);
 
-        if (wrappedExpression === current) {
-            current = parent;
-            parent = getParentNode(current);
-            continue;
+        if (wrappedExpression !== current) {
+            if (
+                parent.type !== AST_NODE_TYPES.MemberExpression ||
+                parent.object !== current ||
+                parent.computed ||
+                parent.property.type !== AST_NODE_TYPES.Identifier ||
+                isImmediateCleanupMethodName(parent.property.name)
+            ) {
+                return undefined;
+            }
+
+            const callExpression = getParentNode(parent);
+
+            return callExpression?.type === AST_NODE_TYPES.CallExpression &&
+                callExpression.callee === parent
+                ? callExpression
+                : undefined;
         }
 
-        if (
-            parent.type !== AST_NODE_TYPES.MemberExpression ||
-            parent.object !== current ||
-            parent.computed ||
-            parent.property.type !== AST_NODE_TYPES.Identifier ||
-            isImmediateCleanupMethodName(parent.property.name)
-        ) {
-            return undefined;
-        }
-
-        const callExpression = getParentNode(parent);
-
-        return callExpression?.type === AST_NODE_TYPES.CallExpression &&
-            callExpression.callee === parent
-            ? callExpression
-            : undefined;
+        current = parent;
+        parent = getParentNode(current);
     }
 
     return undefined;
@@ -384,7 +383,7 @@ const isDiscardedImmediateServerMethodChain = (
 ): boolean => {
     let currentCall = getImmediateServerMethodCall(node);
 
-    while (currentCall !== undefined) {
+    while (isDefined(currentCall)) {
         if (isDiscardedExpression(currentCall)) {
             return true;
         }
@@ -411,7 +410,7 @@ const noFloatingServers: TSESLint.RuleModule<
                 const factoryName = getServerFactoryName(context, node.callee);
 
                 if (
-                    factoryName === undefined ||
+                    !isDefined(factoryName) ||
                     !isDiscardedServerHandle(node)
                 ) {
                     return;

@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 /**
  * @packageDocumentation
  * Require AudioContext instances to be retained so they can be closed.
@@ -7,6 +9,7 @@ import {
     type TSESLint,
     type TSESTree,
 } from "@typescript-eslint/utils";
+import { arrayFirst, isDefined, setHas } from "ts-extras";
 
 import {
     collectStaticMemberPath,
@@ -28,7 +31,7 @@ const cleanupMemberNames: ReadonlySet<string> = new Set(["close"]);
 const globalReceiverNames = ["globalThis", "self", "window"] as const;
 
 type AudioContextConstructorName =
-    (typeof audioContextConstructorNames)[number];
+    ArrayValues<typeof audioContextConstructorNames>;
 
 const audioContextConstructorNameSet: ReadonlySet<string> = new Set(
     audioContextConstructorNames
@@ -40,7 +43,7 @@ const globalReceiverNameSet: ReadonlySet<string> = new Set(
 const isAudioContextConstructorName = (
     name: string
 ): name is AudioContextConstructorName =>
-    audioContextConstructorNameSet.has(name);
+    setHas(audioContextConstructorNameSet, name);
 
 const isShadowedIdentifier = (
     context: TypedRuleContext,
@@ -80,18 +83,18 @@ const getMemberAudioContextConstructorName = (
         return undefined;
     }
 
-    const receiverName = path[0];
+    const receiverName = arrayFirst(path);
 
     if (
-        receiverName === undefined ||
-        !globalReceiverNameSet.has(receiverName)
+        !isDefined(receiverName) ||
+        !setHas(globalReceiverNameSet, receiverName)
     ) {
         return undefined;
     }
 
     const constructorName = path[1];
 
-    return constructorName !== undefined &&
+    return isDefined(constructorName) &&
         isAudioContextConstructorName(constructorName)
         ? constructorName
         : undefined;
@@ -118,7 +121,7 @@ const noFloatingAudioContexts: TSESLint.RuleModule<
                 );
 
                 if (
-                    constructorName === undefined ||
+                    !isDefined(constructorName) ||
                     (!isDiscardedResourceExpression(node) &&
                         !isImmediateUnownedMemberReceiver(
                             node,

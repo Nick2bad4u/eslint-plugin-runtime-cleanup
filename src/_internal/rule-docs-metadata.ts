@@ -3,6 +3,15 @@
  * Derivation helpers for canonical rule docs metadata.
  */
 import type { TSESLint } from "@typescript-eslint/utils";
+import type { UnknownArray, UnknownRecord  } from "type-fest";
+
+import {
+    arrayIncludes,
+    isDefined,
+    isEmpty,
+    isInteger,
+    objectEntries,
+} from "ts-extras";
 
 import { createRuleDocsUrl } from "./rule-docs-url.js";
 import {
@@ -31,7 +40,7 @@ export type RuleDocsMetadataByName = Readonly<
 
 /** Rule-map contract accepted by docs metadata derivation helpers. */
 type RuleMap = Readonly<
-    Record<string, TSESLint.RuleModule<string, readonly unknown[]>>
+    Record<string, TSESLint.RuleModule<string, Readonly<UnknownArray>>>
 >;
 
 /**
@@ -66,7 +75,7 @@ const isRuleIdInCanonicalFormat = (value: string): boolean => {
     for (const character of value.slice(RULE_ID_DIGIT_START_INDEX)) {
         const codePoint = character.codePointAt(0);
 
-        if (codePoint === undefined) {
+        if (!isDefined(codePoint)) {
             return false;
         }
 
@@ -86,7 +95,7 @@ const isRuleIdInCanonicalFormat = (value: string): boolean => {
  */
 const isUnknownRecord = (
     value: unknown
-): value is Readonly<Record<string, unknown>> =>
+): value is Readonly<UnknownRecord> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
@@ -111,20 +120,46 @@ const normalizeRuntimeCleanupConfigReferences = (
             );
         }
 
-        if (references.includes(candidate)) {
-            continue;
+        if (!arrayIncludes(references, candidate)) {
+            references.push(candidate);
         }
-
-        references.push(candidate);
     }
 
-    if (references.length === 0) {
+    if (isEmpty(references)) {
         throw new TypeError(
             `Rule '${ruleName}' must declare at least one docs.runtimeCleanupConfigs reference.`
         );
     }
 
     return references;
+};
+
+const getRequiredNonEmptyString = (
+    ruleName: string,
+    value: unknown,
+    propertyName: string
+): string => {
+    if (typeof value === "string" && value.trim().length > 0) {
+        return value;
+    }
+
+    throw new TypeError(
+        `Rule '${ruleName}' must declare a non-empty docs.${propertyName}.`
+    );
+};
+
+const getRequiredBoolean = (
+    ruleName: string,
+    value: unknown,
+    propertyName: string
+): boolean => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+
+    throw new TypeError(
+        `Rule '${ruleName}' must declare boolean docs.${propertyName}.`
+    );
 };
 
 /**
@@ -146,36 +181,30 @@ const getRuleDocsContract = (
     const runtimeCleanupConfigs = docs["runtimeCleanupConfigs"];
     const url = docs["url"];
 
-    if (typeof description !== "string" || description.trim().length === 0) {
-        throw new TypeError(
-            `Rule '${ruleName}' must declare a non-empty docs.description.`
-        );
-    }
-
-    if (typeof url !== "string" || url.trim().length === 0) {
-        throw new TypeError(
-            `Rule '${ruleName}' must declare a non-empty docs.url.`
-        );
-    }
+    const checkedDescription = getRequiredNonEmptyString(
+        ruleName,
+        description,
+        "description"
+    );
+    const checkedUrl = getRequiredNonEmptyString(ruleName, url, "url");
 
     const expectedRuleDocsUrl = createRuleDocsUrl(ruleName);
-    if (url !== expectedRuleDocsUrl) {
+    if (checkedUrl !== expectedRuleDocsUrl) {
         throw new TypeError(
             `Rule '${ruleName}' must declare docs.url as '${expectedRuleDocsUrl}'.`
         );
     }
 
-    if (typeof recommended !== "boolean") {
-        throw new TypeError(
-            `Rule '${ruleName}' must declare boolean docs.recommended.`
-        );
-    }
-
-    if (typeof requiresTypeChecking !== "boolean") {
-        throw new TypeError(
-            `Rule '${ruleName}' must declare boolean docs.requiresTypeChecking.`
-        );
-    }
+    const checkedRecommended = getRequiredBoolean(
+        ruleName,
+        recommended,
+        "recommended"
+    );
+    const checkedRequiresTypeChecking = getRequiredBoolean(
+        ruleName,
+        requiresTypeChecking,
+        "requiresTypeChecking"
+    );
 
     if (
         typeof ruleId !== "string" ||
@@ -189,7 +218,7 @@ const getRuleDocsContract = (
 
     if (
         typeof ruleNumber !== "number" ||
-        !Number.isInteger(ruleNumber) ||
+        !isInteger(ruleNumber) ||
         ruleNumber < 1
     ) {
         throw new TypeError(
@@ -205,13 +234,13 @@ const getRuleDocsContract = (
         }
 
         return {
-            description,
-            recommended,
-            requiresTypeChecking,
+            description: checkedDescription,
+            recommended: checkedRecommended,
+            requiresTypeChecking: checkedRequiresTypeChecking,
             ruleId,
             ruleNumber,
             runtimeCleanupConfigs,
-            url,
+            url: checkedUrl,
         };
     }
 
@@ -233,13 +262,13 @@ const getRuleDocsContract = (
     }
 
     return {
-        description,
-        recommended,
-        requiresTypeChecking,
+        description: checkedDescription,
+        recommended: checkedRecommended,
+        requiresTypeChecking: checkedRequiresTypeChecking,
         ruleId,
         ruleNumber,
         runtimeCleanupConfigs,
-        url,
+        url: checkedUrl,
     };
 };
 
@@ -254,7 +283,7 @@ export const deriveRuleDocsMetadataByName = (
         RuleDocsMetadata
     > = {};
 
-    for (const [ruleName, ruleModule] of Object.entries(rules)) {
+    for (const [ruleName, ruleModule] of objectEntries(rules)) {
         const ruleDocs = getRuleDocsContract(ruleName, ruleModule.meta.docs);
         const runtimeCleanupConfigReferences =
             normalizeRuntimeCleanupConfigReferences(
@@ -288,14 +317,12 @@ export const deriveTypeCheckedRuleNameSet = (
 ): ReadonlySet<string> => {
     const ruleNames: string[] = [];
 
-    for (const [ruleName, metadata] of Object.entries(
+    for (const [ruleName, metadata] of objectEntries(
         ruleDocsMetadataByName
     )) {
-        if (!metadata.requiresTypeChecking) {
-            continue;
+        if (metadata.requiresTypeChecking) {
+            ruleNames.push(ruleName);
         }
-
-        ruleNames.push(ruleName);
     }
 
     return new Set(ruleNames);
@@ -314,7 +341,7 @@ export const deriveRulePresetMembershipByRuleName = (
         readonly RuntimeCleanupConfigName[]
     > = {};
 
-    for (const [ruleName, metadata] of Object.entries(
+    for (const [ruleName, metadata] of objectEntries(
         ruleDocsMetadataByName
     )) {
         membershipByRuleName[ruleName] = metadata.runtimeCleanupConfigNames;
@@ -322,4 +349,3 @@ export const deriveRulePresetMembershipByRuleName = (
 
     return membershipByRuleName;
 };
-

@@ -617,31 +617,27 @@ export const parseSitemapUrls = (sitemapXml) => {
 
     let searchStart = 0;
 
-    while (true) {
+    while (searchStart < sitemapXml.length) {
         const locElementValue = findNextLocElementValue(
             sitemapXml,
             searchStart
         );
 
         if (locElementValue === undefined) {
-            break;
+            searchStart = sitemapXml.length;
+        } else {
+            searchStart = locElementValue.nextSearchStart;
+            const rawLocation = locElementValue.rawLocation.trim();
+
+            if (rawLocation.length > 0) {
+                const decodedLocation = decodeXmlEntities(rawLocation);
+
+                if (!seenUrls.has(decodedLocation)) {
+                    seenUrls.add(decodedLocation);
+                    urls.push(decodedLocation);
+                }
+            }
         }
-
-        searchStart = locElementValue.nextSearchStart;
-        const rawLocation = locElementValue.rawLocation.trim();
-
-        if (rawLocation.length === 0) {
-            continue;
-        }
-
-        const decodedLocation = decodeXmlEntities(rawLocation);
-
-        if (seenUrls.has(decodedLocation)) {
-            continue;
-        }
-
-        seenUrls.add(decodedLocation);
-        urls.push(decodedLocation);
     }
 
     if (urls.length === 0) {
@@ -789,27 +785,22 @@ export const collectRouteManifestEntriesFromData = (
 
         if (Array.isArray(currentValue)) {
             stack.push(...currentValue);
-            continue;
+        } else if (isRecord(currentValue)) {
+            const routeManifestEntryCandidate =
+                createRouteManifestEntryCandidate(currentValue, siteDirectory);
+
+            if (
+                routeManifestEntryCandidate !== undefined &&
+                !seenEntries.has(routeManifestEntryCandidate.dedupeKey)
+            ) {
+                seenEntries.add(routeManifestEntryCandidate.dedupeKey);
+                entries.push(routeManifestEntryCandidate.entry);
+            }
+
+            stack.push(...Object.values(currentValue));
+        } else {
+            // Primitive values cannot contain route manifest entries.
         }
-
-        if (!isRecord(currentValue)) {
-            continue;
-        }
-
-        const routeManifestEntryCandidate = createRouteManifestEntryCandidate(
-            currentValue,
-            siteDirectory
-        );
-
-        if (
-            routeManifestEntryCandidate !== undefined &&
-            !seenEntries.has(routeManifestEntryCandidate.dedupeKey)
-        ) {
-            seenEntries.add(routeManifestEntryCandidate.dedupeKey);
-            entries.push(routeManifestEntryCandidate.entry);
-        }
-
-        stack.push(...Object.values(currentValue));
     }
 
     return entries.sort((leftEntry, rightEntry) =>
@@ -833,34 +824,23 @@ export const parseGitDiffNameStatus = (diffText) => {
     for (const line of diffText.split(/\r?\n/u)) {
         const trimmedLine = line.trim();
 
-        if (trimmedLine.length === 0) {
-            continue;
-        }
+        if (trimmedLine.length > 0) {
+            const fields = trimmedLine.split("\t");
+            const status = fields[0] ?? "";
+            const changedPath =
+                status.startsWith("A") ||
+                status.startsWith("C") ||
+                status.startsWith("M") ||
+                status.startsWith("R")
+                    ? fields.at(-1)
+                    : undefined;
 
-        const fields = trimmedLine.split("\t");
-        const status = fields[0] ?? "";
-
-        if (
-            status.startsWith("A") ||
-            status.startsWith("C") ||
-            status.startsWith("M")
-        ) {
-            const addedPath = fields.at(-1);
-
-            if (addedPath !== undefined && !seenPaths.has(addedPath)) {
-                seenPaths.add(addedPath);
-                paths.push(addedPath.replaceAll("\\", "/"));
-            }
-
-            continue;
-        }
-
-        if (status.startsWith("R")) {
-            const renamedPath = fields.at(-1);
-
-            if (renamedPath !== undefined && !seenPaths.has(renamedPath)) {
-                seenPaths.add(renamedPath);
-                paths.push(renamedPath.replaceAll("\\", "/"));
+            if (
+                changedPath !== undefined &&
+                !seenPaths.has(changedPath)
+            ) {
+                seenPaths.add(changedPath);
+                paths.push(changedPath.replaceAll("\\", "/"));
             }
         }
     }
@@ -895,21 +875,17 @@ export const resolveChangedUrlsFromManifest = ({
     for (const changedPath of changedPaths) {
         const permalink = manifestBySourcePath.get(changedPath);
 
-        if (permalink === undefined) {
-            continue;
+        if (permalink !== undefined) {
+            const absoluteUrl = new URL(
+                permalink,
+                normalizeSiteUrl(siteUrl)
+            ).toString();
+
+            if (!seenUrls.has(absoluteUrl)) {
+                seenUrls.add(absoluteUrl);
+                urls.push(absoluteUrl);
+            }
         }
-
-        const absoluteUrl = new URL(
-            permalink,
-            normalizeSiteUrl(siteUrl)
-        ).toString();
-
-        if (seenUrls.has(absoluteUrl)) {
-            continue;
-        }
-
-        seenUrls.add(absoluteUrl);
-        urls.push(absoluteUrl);
     }
 
     return urls;
@@ -979,18 +955,14 @@ const createRouteManifestEntries = async ({ siteDirectoryPath, siteUrl }) => {
         );
 
         for (const entry of entries) {
-            if (!entry.permalink.startsWith(sitePathnamePrefix)) {
-                continue;
+            if (entry.permalink.startsWith(sitePathnamePrefix)) {
+                const dedupeKey = `${entry.sourcePath}::${entry.permalink}`;
+
+                if (!seenEntries.has(dedupeKey)) {
+                    seenEntries.add(dedupeKey);
+                    manifestEntries.push(entry);
+                }
             }
-
-            const dedupeKey = `${entry.sourcePath}::${entry.permalink}`;
-
-            if (seenEntries.has(dedupeKey)) {
-                continue;
-            }
-
-            seenEntries.add(dedupeKey);
-            manifestEntries.push(entry);
         }
     }
 

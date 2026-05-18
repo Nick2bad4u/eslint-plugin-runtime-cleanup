@@ -3,6 +3,8 @@
  * Stable catalog IDs for all plugin rules.
  */
 
+import { objectFromEntries, setHas } from "ts-extras";
+
 /**
  * Catalog metadata for a single rule.
  */
@@ -71,7 +73,7 @@ export const runtimeCleanupRuleCatalogEntries: readonly RuntimeCleanupRuleCatalo
  */
 export const runtimeCleanupRuleCatalogByRuleName: Readonly<
     Partial<Record<string, RuntimeCleanupRuleCatalogEntry>>
-> = Object.fromEntries(
+> = objectFromEntries(
     runtimeCleanupRuleCatalogEntries.map((entry) => [entry.ruleName, entry])
 );
 
@@ -128,7 +130,7 @@ export const validateRuleCatalogIntegrity = (): boolean => {
     const seenRuleIds = new Set<RuntimeCleanupRuleCatalogId>();
 
     for (const [index, entry] of entries.entries()) {
-        if (seenRuleIds.has(entry.ruleId)) {
+        if (setHas(seenRuleIds, entry.ruleId)) {
             return false;
         }
 

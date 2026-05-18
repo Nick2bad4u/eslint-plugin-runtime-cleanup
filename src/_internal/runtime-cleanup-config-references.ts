@@ -3,6 +3,10 @@
  * Shared runtime-cleanup preset/config reference constants and type guards.
  */
 
+import type { ArrayValues } from "type-fest";
+
+import { objectHasOwn } from "ts-extras";
+
 /** Canonical flat-config preset keys exposed through `plugin.configs`. */
 export const runtimeCleanupConfigNames = [
     "all",
@@ -23,7 +27,7 @@ export type RuntimeCleanupConfigMetadata = Readonly<{
 
 /** Canonical flat-config preset key type exposed through `plugin.configs`. */
 export type RuntimeCleanupConfigName =
-    (typeof runtimeCleanupConfigNames)[number];
+    ArrayValues<typeof runtimeCleanupConfigNames>;
 
 /**
  * Canonical metadata for every exported `runtime-cleanup` preset key.
@@ -111,4 +115,4 @@ export type RuntimeCleanupConfigReference =
 export const isRuntimeCleanupConfigReference = (
     value: string
 ): value is RuntimeCleanupConfigReference =>
-    Object.hasOwn(runtimeCleanupConfigReferenceToName, value);
+    objectHasOwn(runtimeCleanupConfigReferenceToName, value);

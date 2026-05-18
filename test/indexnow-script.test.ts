@@ -244,24 +244,30 @@ describe("indexnow script helpers", () => {
 
     it("detects Bing verification-pending responses as retryable", () => {
         expect.hasAssertions();
-        expect(
-            isIndexNowVerificationPendingResponse(
-                403,
-                '{"errorCode":"SiteVerificationNotCompleted","message":"Site Verification is not completed."}'
-            )
-        ).toBeTruthy();
+
+        const retryable = isIndexNowVerificationPendingResponse(
+            403,
+            '{"errorCode":"SiteVerificationNotCompleted","message":"Site Verification is not completed."}'
+        );
+
+        expect({ retryable }).toStrictEqual({ retryable: true });
     });
 
     it("does not mark unrelated IndexNow failures as retryable", () => {
         expect.hasAssertions();
-        expect(
-            isIndexNowVerificationPendingResponse(
-                403,
-                '{"errorCode":"Forbidden","message":"Some other failure."}'
-            )
-        ).toBeFalsy();
-        expect(
-            isIndexNowVerificationPendingResponse(422, "unprocessable entity")
-        ).toBeFalsy();
+
+        const forbiddenRetryable = isIndexNowVerificationPendingResponse(
+            403,
+            '{"errorCode":"Forbidden","message":"Some other failure."}'
+        );
+        const validationRetryable = isIndexNowVerificationPendingResponse(
+            422,
+            "unprocessable entity"
+        );
+
+        expect({ forbiddenRetryable, validationRetryable }).toStrictEqual({
+            forbiddenRetryable: false,
+            validationRetryable: false,
+        });
     });
 });

@@ -22,24 +22,25 @@ describe("bounded cache helpers", () => {
             found: true,
             value: null,
         });
-        expect(cache.has("entry")).toBeTruthy();
+        expect({ actual: cache.has("entry") }).toStrictEqual({ actual: true });
     });
 
     it("treats cached undefined as a cache hit", () => {
         expect.hasAssertions();
 
         const cache = new Map<string, number | undefined>();
+        const cachedUndefined = void 0;
 
         setBoundedCacheValue({
             cache,
             key: "entry",
             maxEntries: 2,
-            value: undefined,
+            value: cachedUndefined,
         });
 
         expect(getBoundedCacheValue(cache, "entry")).toStrictEqual({
             found: true,
-            value: undefined,
+            value: cachedUndefined,
         });
     });
 
@@ -74,9 +75,9 @@ describe("bounded cache helpers", () => {
             value: 3,
         });
 
-        expect(cache.has("first")).toBeTruthy();
-        expect(cache.has("second")).toBeFalsy();
-        expect(cache.has("third")).toBeTruthy();
+        expect({ actual: cache.has("first") }).toStrictEqual({ actual: true });
+        expect({ actual: cache.has("second") }).toStrictEqual({ actual: false });
+        expect({ actual: cache.has("third") }).toStrictEqual({ actual: true });
     });
 
     it("does nothing when maxEntries is invalid", () => {

@@ -114,6 +114,8 @@ describe("readme rules table synchronization", () => {
         const readmePath = path.join(process.cwd(), "README.md");
         const readmeMarkdown = await fs.readFile(readmePath, "utf8");
 
+        expect(readmeMarkdown).not.toContain("eslint-plugin-typefest");
+
         const readmeRulesSection = extractRulesSection(readmeMarkdown);
         const runtimeCleanupRules =
             runtimeCleanupPlugin.rules as Parameters<
@@ -136,6 +138,10 @@ describe("readme rules table synchronization", () => {
             >[0];
         const generatedRulesSection =
             generateReadmeRulesSectionFromRules(runtimeCleanupRules);
+
+        expect(generatedRulesSection).toContain(
+            "/docs/rules/no-floating-timers"
+        );
 
         await expect(generatedRulesSection).toMatchFileSnapshot(
             RULES_SECTION_SNAPSHOT_PATH

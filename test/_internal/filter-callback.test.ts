@@ -19,6 +19,16 @@ const createProgramNode = (): TSESTree.Program =>
         type: "Program",
     }) as unknown as TSESTree.Program;
 
+const requireCallbackMatch = (
+    callbackMatch: ReturnType<typeof getSingleParameterExpressionArrowFilterCallback>
+) => {
+    if (callbackMatch === null) {
+        throw new TypeError("Expected filter callback metadata.");
+    }
+
+    return callbackMatch;
+};
+
 describe(isWithinFilterCallback, () => {
     it("returns true for nodes inside .filter callback", () => {
         expect.hasAssertions();
@@ -26,7 +36,6 @@ describe(isWithinFilterCallback, () => {
         const program = createProgramNode();
 
         const callbackNode = {
-            parent: undefined,
             type: "ArrowFunctionExpression",
         } as unknown as TSESTree.ArrowFunctionExpression;
 
@@ -55,7 +64,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeTruthy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: true });
     });
 
     it("returns false for nodes outside .filter callback", () => {
@@ -64,7 +73,6 @@ describe(isWithinFilterCallback, () => {
         const program = createProgramNode();
 
         const callbackNode = {
-            parent: undefined,
             type: "ArrowFunctionExpression",
         } as unknown as TSESTree.ArrowFunctionExpression;
 
@@ -93,7 +101,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for function passed as second .filter argument", () => {
@@ -102,12 +110,10 @@ describe(isWithinFilterCallback, () => {
         const program = createProgramNode();
 
         const actualCallbackNode = {
-            parent: undefined,
             type: "ArrowFunctionExpression",
         } as unknown as TSESTree.ArrowFunctionExpression;
 
         const secondArgumentFunctionNode = {
-            parent: undefined,
             type: "FunctionExpression",
         } as unknown as TSESTree.FunctionExpression;
 
@@ -139,7 +145,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for computed member access filter calls", () => {
@@ -148,7 +154,6 @@ describe(isWithinFilterCallback, () => {
         const program = createProgramNode();
 
         const callbackNode = {
-            parent: undefined,
             type: "ArrowFunctionExpression",
         } as unknown as TSESTree.ArrowFunctionExpression;
 
@@ -177,7 +182,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for non-member filter calls", () => {
@@ -186,7 +191,6 @@ describe(isWithinFilterCallback, () => {
         const program = createProgramNode();
 
         const callbackNode = {
-            parent: undefined,
             type: "ArrowFunctionExpression",
         } as unknown as TSESTree.ArrowFunctionExpression;
 
@@ -208,7 +212,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for cyclic parent chains", () => {
@@ -224,7 +228,7 @@ describe(isWithinFilterCallback, () => {
 
         (cycleA as unknown as { parent?: TSESTree.Node }).parent = cycleB;
 
-        expect(isWithinFilterCallback(cycleA)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(cycleA) }).toStrictEqual({ actual: false });
     });
 
     it("returns false when callback-like node is not parented by a call expression", () => {
@@ -242,7 +246,7 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect(isWithinFilterCallback(nestedNode)).toBeFalsy();
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for optional-chain filter calls", () => {
@@ -267,7 +271,7 @@ describe(isWithinFilterCallback, () => {
             type: "CallExpression",
         } as unknown as TSESTree.CallExpression;
 
-        expect(isFilterCallExpression(optionalFilterCallNode)).toBeFalsy();
+        expect({ actual: isFilterCallExpression(optionalFilterCallNode) }).toStrictEqual({ actual: false });
     });
 
     it("returns false for optional member invocation filter calls", () => {
@@ -292,9 +296,13 @@ describe(isWithinFilterCallback, () => {
             type: "CallExpression",
         } as unknown as TSESTree.CallExpression;
 
-        expect(
-            isFilterCallExpression(optionalMemberFilterCallNode)
-        ).toBeFalsy();
+        const matchesFilterCall = isFilterCallExpression(
+            optionalMemberFilterCallNode
+        );
+
+        expect({ matchesFilterCall }).toStrictEqual({
+            matchesFilterCall: false,
+        });
     });
 
     it("extracts single-parameter expression arrow callbacks", () => {
@@ -344,9 +352,12 @@ describe(isWithinFilterCallback, () => {
         const callbackMatch =
             getSingleParameterExpressionArrowFilterCallback(filterCallNode);
 
-        expect(callbackMatch).not.toBeNull();
-        expect(callbackMatch?.parameter.name).toBe("value");
-        expect(callbackMatch?.callback.body.type).toBe("BinaryExpression");
+        const requiredCallbackMatch = requireCallbackMatch(callbackMatch);
+
+        expect(requiredCallbackMatch.parameter.name).toBe("value");
+        expect(requiredCallbackMatch.callback.body.type).toBe(
+            "BinaryExpression"
+        );
     });
 
     it("returns null for block-bodied filter arrow callbacks", () => {

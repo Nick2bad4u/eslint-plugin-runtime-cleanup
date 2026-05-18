@@ -4,6 +4,8 @@
  *
  * @packageDocumentation
  */
+import { isSafeInteger } from "ts-extras";
+
 const isSameValueZero = <Value>(left: Value, right: Value): boolean =>
     left === right ||
     (typeof left === "number" &&
@@ -75,7 +77,7 @@ export const setBoundedCacheValue = <Key, Value>({
     maxEntries: number;
     value: Value;
 }>): void => {
-    if (!Number.isSafeInteger(maxEntries) || maxEntries < 1) {
+    if (!isSafeInteger(maxEntries) || maxEntries < 1) {
         return;
     }
 

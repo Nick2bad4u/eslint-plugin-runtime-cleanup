@@ -57,7 +57,7 @@ describe("docusaurus site configuration integrity", () => {
             const linkMatch = chartIndexBulletPattern.exec(bulletLine);
             const chartFile = linkMatch?.groups?.["chartFile"];
 
-            expect(chartFile).toBeDefined();
+            expect(chartFile).toBeTypeOf("string");
 
             const resolvedTargetPath = path.resolve(
                 process.cwd(),
@@ -65,7 +65,7 @@ describe("docusaurus site configuration integrity", () => {
                 chartFile ?? ""
             );
 
-            expect(fs.existsSync(resolvedTargetPath)).toBeTruthy();
+            expect({ actual: fs.existsSync(resolvedTargetPath) }).toStrictEqual({ actual: true });
         }
     });
 });

@@ -144,7 +144,10 @@ const getAnimationReceiver = (
         return undefined;
     }
 
-    const propertyName = getStaticPropertyName(callee.property, callee.computed);
+    const propertyName = getStaticPropertyName(
+        callee.property,
+        callee.computed
+    );
 
     return propertyName === "animate" ? callee.object : undefined;
 };

@@ -25,9 +25,7 @@ const globalReceiverNames = [
     "window",
 ] as const;
 
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 const messagePortPropertyNameSet: ReadonlySet<string> = new Set(
     messagePortPropertyNames
 );
@@ -196,24 +194,22 @@ const noFloatingMessageChannels: TSESLint.RuleModule<
     "floatingMessageChannel",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                if (
-                    !isMessageChannelConstructor(context, node.callee) ||
-                    (!isDiscardedMessageChannel(node) &&
-                        !isImmediateMessagePortAccess(node))
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            if (
+                !isMessageChannelConstructor(context, node.callee) ||
+                (!isDiscardedMessageChannel(node) &&
+                    !isImmediateMessagePortAccess(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingMessageChannel",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingMessageChannel",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

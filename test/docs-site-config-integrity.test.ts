@@ -65,7 +65,9 @@ describe("docusaurus site configuration integrity", () => {
                 chartFile ?? ""
             );
 
-            expect({ actual: fs.existsSync(resolvedTargetPath) }).toStrictEqual({ actual: true });
+            expect({ actual: fs.existsSync(resolvedTargetPath) }).toStrictEqual(
+                { actual: true }
+            );
         }
     });
 });

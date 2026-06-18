@@ -25,14 +25,6 @@ const sidebars = {
             customProps: {
                 badge: "guides",
             },
-            type: "category",
-            label: "Adoption & Rollout",
-            link: {
-                type: "generated-index",
-                title: "Adoption & Rollout",
-                description:
-                    "Migration, rollout, and fix-safety guidance for future runtime-cleanup rule adoption.",
-            },
             items: [
                 {
                     id: "guides/adoption-checklist",
@@ -55,18 +47,20 @@ const sidebars = {
                     type: "doc",
                 },
             ],
+            label: "Adoption & Rollout",
+            link: {
+                description:
+                    "Migration, rollout, and fix-safety guidance for future runtime-cleanup rule adoption.",
+                title: "Adoption & Rollout",
+                type: "generated-index",
+            },
+            type: "category",
         },
         {
             className: "sb-cat-presets",
             collapsed: false,
             customProps: {
                 badge: "presets",
-            },
-            type: "category",
-            label: "Presets",
-            link: {
-                type: "doc",
-                id: "presets/index",
             },
             items: [
                 {
@@ -148,6 +142,12 @@ const sidebars = {
                     type: "category",
                 },
             ],
+            label: "Presets",
+            link: {
+                id: "presets/index",
+                type: "doc",
+            },
+            type: "category",
         },
     ],
 } satisfies SidebarsConfig;

@@ -32,9 +32,9 @@ type RuntimeCleanupRuleCreator = ReturnType<
  * Plugin-specific metadata extensions for `meta.docs`.
  *
  * @remarks
- * `eslint-plugin/require-meta-docs-recommended` expects
- * `meta.docs.recommended` to be boolean. Preset membership is tracked
- * separately via `meta.docs.runtimeCleanupConfigs`.
+ * `eslint-plugin/require-meta-docs-recommended` expects `meta.docs.recommended`
+ * to be boolean. Preset membership is tracked separately via
+ * `meta.docs.runtimeCleanupConfigs`.
  */
 interface RuntimeCleanupRuleDocs {
     recommended?: boolean;
@@ -93,8 +93,7 @@ export const createTypedRule: RuntimeCleanupRuleCreator = (ruleDefinition) => {
         );
     }
 
-    const docsWithCatalog: RuntimeCleanupRuleDocs &
-        TSESLint.RuleMetaDataDocs =
+    const docsWithCatalog: RuntimeCleanupRuleDocs & TSESLint.RuleMetaDataDocs =
         catalogEntry === null
             ? {
                   ...ruleDocs,
@@ -117,9 +116,9 @@ export const createTypedRule: RuntimeCleanupRuleCreator = (ruleDefinition) => {
         },
         meta: {
             ...createdRule.meta,
-            ...(isDefined(metaDefaultOptions)
-                ? { defaultOptions: metaDefaultOptions }
-                : {}),
+            ...(isDefined(metaDefaultOptions) && {
+                defaultOptions: metaDefaultOptions,
+            }),
             docs: docsWithCatalog,
         },
         name: ruleDefinition.name,

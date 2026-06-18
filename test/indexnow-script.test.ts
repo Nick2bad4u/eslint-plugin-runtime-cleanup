@@ -52,7 +52,8 @@ describe("indexnow script helpers", () => {
                 "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/indexnow-key.txt",
             sitemapUrl:
                 "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/sitemap.xml",
-            siteUrl: "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
+            siteUrl:
+                "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
         });
     });
 
@@ -68,9 +69,7 @@ describe("indexnow script helpers", () => {
     it("normalizes Docusaurus source paths to repository-relative paths", () => {
         expect.hasAssertions();
         expect(
-            normalizeDocusaurusSourcePath(
-                "@site/../rules/getting-started.md"
-            )
+            normalizeDocusaurusSourcePath("@site/../rules/getting-started.md")
         ).toBe("docs/rules/getting-started.md");
         expect(normalizeDocusaurusSourcePath("@site/src/pages/index.jsx")).toBe(
             "docs/docusaurus/src/pages/index.tsx"
@@ -189,7 +188,8 @@ describe("indexnow script helpers", () => {
                 sourcePath: "docs/docusaurus/site-docs/developer/index.md",
             },
             {
-                permalink: "/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
+                permalink:
+                    "/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
                 sourcePath: "docs/rules/getting-started.md",
             },
         ]);
@@ -229,12 +229,14 @@ describe("indexnow script helpers", () => {
                         sourcePath: "docs/rules/getting-started.md",
                     },
                     {
-                        permalink: "/eslint-plugin-runtime-cleanup/docs/developer/",
+                        permalink:
+                            "/eslint-plugin-runtime-cleanup/docs/developer/",
                         sourcePath:
                             "docs/docusaurus/site-docs/developer/index.md",
                     },
                 ],
-                siteUrl: "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
+                siteUrl:
+                    "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/",
             })
         ).toStrictEqual([
             "https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/getting-started",
@@ -245,27 +247,30 @@ describe("indexnow script helpers", () => {
     it("detects Bing verification-pending responses as retryable", () => {
         expect.hasAssertions();
 
-        const retryable = isIndexNowVerificationPendingResponse(
+        const isRetryable = isIndexNowVerificationPendingResponse(
             403,
             '{"errorCode":"SiteVerificationNotCompleted","message":"Site Verification is not completed."}'
         );
 
-        expect({ retryable }).toStrictEqual({ retryable: true });
+        expect({ retryable: isRetryable }).toStrictEqual({ retryable: true });
     });
 
     it("does not mark unrelated IndexNow failures as retryable", () => {
         expect.hasAssertions();
 
-        const forbiddenRetryable = isIndexNowVerificationPendingResponse(
+        const isForbiddenRetryable = isIndexNowVerificationPendingResponse(
             403,
             '{"errorCode":"Forbidden","message":"Some other failure."}'
         );
-        const validationRetryable = isIndexNowVerificationPendingResponse(
+        const isValidationRetryable = isIndexNowVerificationPendingResponse(
             422,
             "unprocessable entity"
         );
 
-        expect({ forbiddenRetryable, validationRetryable }).toStrictEqual({
+        expect({
+            forbiddenRetryable: isForbiddenRetryable,
+            validationRetryable: isValidationRetryable,
+        }).toStrictEqual({
             forbiddenRetryable: false,
             validationRetryable: false,
         });

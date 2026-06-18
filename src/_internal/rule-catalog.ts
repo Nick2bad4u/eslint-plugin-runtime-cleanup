@@ -26,7 +26,7 @@ export type RuntimeCleanupRuleCatalogId = `R${string}`;
  * Append new rules to preserve existing IDs once the first runtime-cleanup
  * rules are added.
  */
-/* eslint-disable perfectionist/sort-arrays -- Catalog order is append-only so existing rule IDs remain stable. */
+
 const orderedRuleNames = [
     "no-floating-timers",
     "no-unmanaged-event-listeners",
@@ -49,7 +49,6 @@ const orderedRuleNames = [
     "no-floating-web-stream-locks",
     "no-floating-infinite-animations",
 ] as const satisfies readonly string[];
-/* eslint-enable perfectionist/sort-arrays -- Re-enable sorting outside the stable rule catalog. */
 
 const toRuleCatalogId = (ruleNumber: number): RuntimeCleanupRuleCatalogId =>
     `R${String(ruleNumber).padStart(3, "0")}`;

@@ -23,26 +23,22 @@ const disposableStackConstructorNames = [
     "AsyncDisposableStack",
     "DisposableStack",
 ] as const;
-const cleanupMethodNames = [
-    "dispose",
-    "disposeAsync",
-] as const;
+const cleanupMethodNames = ["dispose", "disposeAsync"] as const;
 const globalReceiverNames = [
     "globalThis",
     "self",
     "window",
 ] as const;
 
-type DisposableStackConstructorName =
-    ArrayValues<typeof disposableStackConstructorNames>;
+type DisposableStackConstructorName = ArrayValues<
+    typeof disposableStackConstructorNames
+>;
 
 const disposableStackConstructorNameSet: ReadonlySet<string> = new Set(
     disposableStackConstructorNames
 );
 const cleanupMethodNameSet: ReadonlySet<string> = new Set(cleanupMethodNames);
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 
 const isDisposableStackConstructorName = (
     name: string
@@ -239,30 +235,28 @@ const noFloatingDisposableStacks: TSESLint.RuleModule<
     "floatingDisposableStack",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                const constructorName = getDisposableStackConstructorName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            const constructorName = getDisposableStackConstructorName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(constructorName) ||
-                    (!isDiscardedDisposableStack(node) &&
-                        !isImmediateDisposableStackMethodReceiver(node))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(constructorName) ||
+                (!isDiscardedDisposableStack(node) &&
+                    !isImmediateDisposableStackMethodReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { constructorName },
-                    messageId: "floatingDisposableStack",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { constructorName },
+                messageId: "floatingDisposableStack",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

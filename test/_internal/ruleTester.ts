@@ -232,7 +232,7 @@ const withGeneratedRuleCaseNames = (
  *
  * @returns Patched RuleTester instance.
  */
-/* eslint-disable @typescript-eslint/prefer-readonly-parameter-types -- RuleTester instances are patched in place in this helper. */
+
 const patchRuleTesterRunWithGeneratedCaseNames = (
     tester: RuleTester
 ): RuleTester => {
@@ -258,7 +258,6 @@ const patchRuleTesterRunWithGeneratedCaseNames = (
 export const applySharedRuleTesterRunBehavior = (
     tester: RuleTester
 ): RuleTester => patchRuleTesterRunWithGeneratedCaseNames(tester);
-/* eslint-enable @typescript-eslint/prefer-readonly-parameter-types -- Re-enable after mutable RuleTester patch helpers. */
 
 /**
  * Resolve an absolute repository path from optional relative segments.

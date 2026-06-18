@@ -16,12 +16,12 @@ Then enable it in your Flat Config:
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [
-    {
-        plugins: {
-            "runtime-cleanup": runtimeCleanup,
-        },
-        rules: {},
-    },
+ {
+  plugins: {
+   "runtime-cleanup": runtimeCleanup,
+  },
+  rules: {},
+ },
 ];
 ```
 

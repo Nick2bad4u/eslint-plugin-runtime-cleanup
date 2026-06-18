@@ -100,10 +100,9 @@ describe("presets rules matrix synchronization", () => {
         expect(presetsMarkdown).not.toContain("eslint-plugin-typefest");
 
         const presetsMatrixSection = extractMatrixSection(presetsMarkdown);
-        const runtimeCleanupRules =
-            runtimeCleanupPlugin.rules as Parameters<
-                typeof generatePresetsRulesMatrixSectionFromRules
-            >[0];
+        const runtimeCleanupRules = runtimeCleanupPlugin.rules as Parameters<
+            typeof generatePresetsRulesMatrixSectionFromRules
+        >[0];
         const expectedMatrixSection =
             generatePresetsRulesMatrixSectionFromRules(runtimeCleanupRules);
 

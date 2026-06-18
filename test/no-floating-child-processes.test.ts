@@ -103,7 +103,7 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
             code: [
                 'import { spawn } from "node:child_process";',
                 'const child = spawn("node", ["worker.js"]);',
-                'child.kill();',
+                "child.kill();",
             ].join("\n"),
             name: "allows retained child process handles that can be killed",
         },
@@ -123,7 +123,7 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
         },
         {
             code: [
-                'function spawn(command: string): void {',
+                "function spawn(command: string): void {",
                 "    console.log(command);",
                 "}",
                 'spawn("node");',

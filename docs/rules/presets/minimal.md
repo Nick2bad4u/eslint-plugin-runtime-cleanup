@@ -13,5 +13,5 @@ No rules are currently enabled by this preset.
   - `-` = report only
 
 | Rule | Fix |
-| --- | :-: |
-| - | - |
+| ---- | :-: |
+| -    |  -  |

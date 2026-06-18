@@ -6,4 +6,3 @@ export const benchmarkStatsMessage =
     "No runtime-cleanup benchmark scenarios are defined yet.";
 
 console.log(benchmarkStatsMessage);
-

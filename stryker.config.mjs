@@ -1,5 +1,5 @@
 // @ts-check
-const processEnvironment = globalThis.process.env;
+const processEnvironment = process.env;
 const isCI = (processEnvironment["CI"] ?? "").toLowerCase() === "true";
 
 /** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
@@ -23,7 +23,7 @@ const config = {
     coverageAnalysis: "perTest",
     dashboard: {
         baseUrl: "https://dashboard.stryker-mutator.io/api/reports",
-    project: "github.com/Nick2bad4u/eslint-plugin-runtime-cleanup",
+        project: "github.com/Nick2bad4u/eslint-plugin-runtime-cleanup",
         reportType:
             /** @type {import("@stryker-mutator/api/core").ReportType} */ (
                 "full"

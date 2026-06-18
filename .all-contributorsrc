@@ -73,7 +73,7 @@
     ],
     "imageSize": 80,
     "linkToUsage": false,
-  "projectName": "eslint-plugin-runtime-cleanup",
+    "projectName": "eslint-plugin-runtime-cleanup",
     "projectOwner": "Nick2bad4u",
     "repoHost": "https://github.com",
     "repoType": "github",

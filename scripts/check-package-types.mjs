@@ -4,28 +4,45 @@ import { readFile } from "node:fs/promises";
 
 /**
  * @param {unknown} value - Value to narrow.
- * @returns {value is Record<string, unknown>} Whether the value is a plain object record.
+ *
+ * @returns {value is Record<string, unknown>} Whether the value is a plain
+ *   object record.
  */
 const isRecord = (value) =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
  * @param {string} filePath - JSON file path to read.
+ *
  * @returns {Promise<unknown>} Parsed JSON content.
  */
-const readJsonFile = async (filePath) => JSON.parse(await readFile(filePath, "utf8"));
+const readJsonFile = async (filePath) =>
+    JSON.parse(await readFile(filePath, "utf8"));
 
 const npmExecPath = process.env["npm_execpath"];
 const packCommand = npmExecPath === undefined ? "npm" : process.execPath;
 const packArguments =
     npmExecPath === undefined
-        ? ["pack", "--dry-run", "--json"]
-        : [npmExecPath, "pack", "--dry-run", "--json"];
+        ? [
+              "pack",
+              "--dry-run",
+              "--json",
+          ]
+        : [
+              npmExecPath,
+              "pack",
+              "--dry-run",
+              "--json",
+          ];
 
 const packProcess = spawnSync(packCommand, packArguments, {
     encoding: "utf8",
     shell: npmExecPath === undefined && process.platform === "win32",
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: [
+        "ignore",
+        "pipe",
+        "pipe",
+    ],
 });
 
 if (packProcess.error) {
@@ -41,7 +58,9 @@ const packOutput = packProcess.stdout;
 const packEntries = JSON.parse(packOutput);
 
 if (!Array.isArray(packEntries) || packEntries.length !== 1) {
-    throw new Error("Expected npm pack --dry-run --json to return one package entry.");
+    throw new Error(
+        "Expected npm pack --dry-run --json to return one package entry."
+    );
 }
 
 const [packEntry] = packEntries;
@@ -57,7 +76,9 @@ if (
     typeof manifest["name"] !== "string" ||
     typeof manifest["version"] !== "string"
 ) {
-    throw new Error("Expected package.json to include string name and version fields.");
+    throw new Error(
+        "Expected package.json to include string name and version fields."
+    );
 }
 
 const packageName = manifest["name"];
@@ -68,7 +89,9 @@ const packageFiles = {};
 
 for (const fileEntry of packEntry["files"]) {
     if (!isRecord(fileEntry) || typeof fileEntry["path"] !== "string") {
-        throw new Error("Expected every packed file entry to include a string path.");
+        throw new Error(
+            "Expected every packed file entry to include a string path."
+        );
     }
 
     const filePath = fileEntry["path"];

@@ -28,10 +28,10 @@ export const memoizeExpressionBooleanPredicate = (
             return cachedResult;
         }
 
-        const result = evaluate(expression);
+        const isResult = evaluate(expression);
 
-        cache.set(expression, result);
+        cache.set(expression, isResult);
 
-        return result;
+        return isResult;
     };
 };

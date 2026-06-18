@@ -91,10 +91,7 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
             name: "allows worker instances passed to a manager",
         },
         {
-            code: [
-                "class Worker {}",
-                "new Worker();",
-            ].join("\n"),
+            code: ["class Worker {}", "new Worker();"].join("\n"),
             name: "ignores shadowed browser worker constructors",
         },
         {

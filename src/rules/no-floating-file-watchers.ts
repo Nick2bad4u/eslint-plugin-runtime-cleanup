@@ -336,30 +336,25 @@ const noFloatingFileWatchers: TSESLint.RuleModule<
     "floatingFileWatcher",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                const factoryName = getFileWatcherFactoryName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            const factoryName = getFileWatcherFactoryName(context, node.callee);
 
-                if (
-                    !isDefined(factoryName) ||
-                    (!isDiscardedFileWatcherHandle(node) &&
-                        !isImmediateFileWatcherMethodReceiver(node))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(factoryName) ||
+                (!isDiscardedFileWatcherHandle(node) &&
+                    !isImmediateFileWatcherMethodReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { factoryName },
-                    messageId: "floatingFileWatcher",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { factoryName },
+                messageId: "floatingFileWatcher",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

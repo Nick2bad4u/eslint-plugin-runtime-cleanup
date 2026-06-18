@@ -199,23 +199,21 @@ const noFloatingWakeLocks: TSESLint.RuleModule<
     "floatingWakeLock",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                if (
-                    !isWakeLockRequestCall(context, node.callee) ||
-                    !isDiscardedWakeLockRequest(node)
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            if (
+                !isWakeLockRequestCall(context, node.callee) ||
+                !isDiscardedWakeLockRequest(node)
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingWakeLock",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingWakeLock",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

@@ -139,24 +139,22 @@ const noFloatingAbortControllers: TSESLint.RuleModule<
     "floatingAbortController",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                if (
-                    !isAbortControllerConstructor(context, node.callee) ||
-                    (!isDiscardedAbortControllerHandle(node) &&
-                        !isImmediateAbortSignalAccess(node))
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            if (
+                !isAbortControllerConstructor(context, node.callee) ||
+                (!isDiscardedAbortControllerHandle(node) &&
+                    !isImmediateAbortSignalAccess(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingAbortController",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingAbortController",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

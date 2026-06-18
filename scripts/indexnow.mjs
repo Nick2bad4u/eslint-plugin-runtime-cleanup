@@ -835,10 +835,7 @@ export const parseGitDiffNameStatus = (diffText) => {
                     ? fields.at(-1)
                     : undefined;
 
-            if (
-                changedPath !== undefined &&
-                !seenPaths.has(changedPath)
-            ) {
+            if (changedPath !== undefined && !seenPaths.has(changedPath)) {
                 seenPaths.add(changedPath);
                 paths.push(changedPath.replaceAll("\\", "/"));
             }

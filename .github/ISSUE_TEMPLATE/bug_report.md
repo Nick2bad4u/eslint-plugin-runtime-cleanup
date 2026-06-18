@@ -3,8 +3,8 @@ name: Bug report
 about: Report a reproducible bug in eslint-plugin-runtime-cleanup
 title: "Bug: "
 labels:
-    - bug
-    - triage
+ - bug
+ - triage
 assignees: []
 ---
 

@@ -26,8 +26,9 @@ export type RuntimeCleanupConfigMetadata = Readonly<{
 }>;
 
 /** Canonical flat-config preset key type exposed through `plugin.configs`. */
-export type RuntimeCleanupConfigName =
-    ArrayValues<typeof runtimeCleanupConfigNames>;
+export type RuntimeCleanupConfigName = ArrayValues<
+    typeof runtimeCleanupConfigNames
+>;
 
 /**
  * Canonical metadata for every exported `runtime-cleanup` preset key.

@@ -10,8 +10,16 @@ import runtimeCleanupPlugin from "../src/plugin";
 
 const docsRulesDirectory = path.join(process.cwd(), "docs", "rules");
 const obsoleteTemplateRulePrefixes = [
-    ["prefer", "ts", "extras"].join("-"),
-    ["prefer", "type", "fest"].join("-"),
+    [
+        "prefer",
+        "ts",
+        "extras",
+    ].join("-"),
+    [
+        "prefer",
+        "type",
+        "fest",
+    ].join("-"),
 ] as const;
 
 /**

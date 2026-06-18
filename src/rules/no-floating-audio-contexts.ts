@@ -28,17 +28,20 @@ const audioContextConstructorNames = [
     "webkitAudioContext",
 ] as const;
 const cleanupMemberNames: ReadonlySet<string> = new Set(["close"]);
-const globalReceiverNames = ["globalThis", "self", "window"] as const;
+const globalReceiverNames = [
+    "globalThis",
+    "self",
+    "window",
+] as const;
 
-type AudioContextConstructorName =
-    ArrayValues<typeof audioContextConstructorNames>;
+type AudioContextConstructorName = ArrayValues<
+    typeof audioContextConstructorNames
+>;
 
 const audioContextConstructorNameSet: ReadonlySet<string> = new Set(
     audioContextConstructorNames
 );
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 
 const isAudioContextConstructorName = (
     name: string
@@ -112,33 +115,28 @@ const noFloatingAudioContexts: TSESLint.RuleModule<
     "floatingAudioContext",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                const constructorName = getAudioContextConstructorName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            const constructorName = getAudioContextConstructorName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(constructorName) ||
-                    (!isDiscardedResourceExpression(node) &&
-                        !isImmediateUnownedMemberReceiver(
-                            node,
-                            cleanupMemberNames
-                        ))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(constructorName) ||
+                (!isDiscardedResourceExpression(node) &&
+                    !isImmediateUnownedMemberReceiver(node, cleanupMemberNames))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { constructorName },
-                    messageId: "floatingAudioContext",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { constructorName },
+                messageId: "floatingAudioContext",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

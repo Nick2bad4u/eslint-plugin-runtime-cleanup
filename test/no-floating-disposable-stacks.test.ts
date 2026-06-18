@@ -62,9 +62,10 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
             name: "allows await using async disposable stacks",
         },
         {
-            code: ["using stack = new DisposableStack();", "stack.defer(cleanup);"].join(
-                "\n"
-            ),
+            code: [
+                "using stack = new DisposableStack();",
+                "stack.defer(cleanup);",
+            ].join("\n"),
             name: "allows using disposable stacks",
         },
         {

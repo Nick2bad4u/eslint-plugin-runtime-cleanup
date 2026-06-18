@@ -28,7 +28,8 @@ type CleanupBoundary =
     | TSESTree.FunctionExpression
     | TSESTree.Program;
 
-type EventListenerCleanupKey = `${string}\u0000${string}\u0000${string}\u0000${string}`;
+type EventListenerCleanupKey =
+    `${string}\u{0}${string}\u{0}${string}\u{0}${string}`;
 type ReadonlyCleanupBoundary = Readonly<CleanupBoundary>;
 
 const unknownCaptureKey = "*";
@@ -41,9 +42,7 @@ const isCleanupBoundary = (
     node.type === AST_NODE_TYPES.FunctionExpression ||
     node.type === AST_NODE_TYPES.ArrowFunctionExpression;
 
-const getCleanupBoundary = (
-    node: Readonly<TSESTree.Node>
-): CleanupBoundary => {
+const getCleanupBoundary = (node: Readonly<TSESTree.Node>): CleanupBoundary => {
     let current: Readonly<TSESTree.Node> | undefined = node;
 
     while (isDefined(current)) {
@@ -83,14 +82,15 @@ const isMethodCallNamed = (
     callee.property.type === AST_NODE_TYPES.Identifier &&
     callee.property.name === methodName;
 
-const isUnknownRecord = (value: unknown): value is Record<PropertyKey, unknown> =>
+const isUnknownRecord = (
+    value: unknown
+): value is Record<PropertyKey, unknown> =>
     typeof value === "object" && value !== null;
 
 const isVariableDeclarator = (
     node: unknown
 ): node is TSESTree.VariableDeclarator =>
-    isUnknownRecord(node) &&
-    node["type"] === AST_NODE_TYPES.VariableDeclarator;
+    isUnknownRecord(node) && node["type"] === AST_NODE_TYPES.VariableDeclarator;
 
 const getVariableInitializer = (
     context: TypedRuleContext,
@@ -206,11 +206,18 @@ const getCleanupKey = (
     context: TypedRuleContext,
     node: Readonly<TSESTree.CallExpression>
 ): EventListenerCleanupKey | undefined => {
-    if (node.arguments.length < 2 || node.callee.type !== AST_NODE_TYPES.MemberExpression) {
+    if (
+        node.arguments.length < 2 ||
+        node.callee.type !== AST_NODE_TYPES.MemberExpression
+    ) {
         return undefined;
     }
 
-    const [eventType, listener, options] = node.arguments;
+    const [
+        eventType,
+        listener,
+        options,
+    ] = node.arguments;
 
     if (
         !isDefined(eventType) ||
@@ -226,16 +233,17 @@ const getCleanupKey = (
     const listenerText = context.sourceCode.getText(listener);
     const captureKey = getCaptureKey(context, options);
 
-    return `${targetText}\u0000${eventTypeText}\u0000${listenerText}\u0000${captureKey}`;
+    return `${targetText}\u{0}${eventTypeText}\u{0}${listenerText}\u{0}${captureKey}`;
 };
 
 const getWildcardCleanupKey = (
     cleanupKey: EventListenerCleanupKey
 ): EventListenerCleanupKey => {
-    const [targetText, eventTypeText, listenerText] = stringSplit(
-        cleanupKey,
-        "\u0000"
-    );
+    const [
+        targetText,
+        eventTypeText,
+        listenerText,
+    ] = stringSplit(cleanupKey, "\u{0}");
 
     if (
         !isDefined(targetText) ||
@@ -245,7 +253,7 @@ const getWildcardCleanupKey = (
         throw new TypeError("Expected a complete event listener cleanup key.");
     }
 
-    return `${targetText}\u0000${eventTypeText}\u0000${listenerText}\u0000${unknownCaptureKey}`;
+    return `${targetText}\u{0}${eventTypeText}\u{0}${listenerText}\u{0}${unknownCaptureKey}`;
 };
 
 /** Rule implementation for `runtime-cleanup/no-unmanaged-event-listeners`. */

@@ -36,7 +36,9 @@ describe(isIdentifierTypeReference, () => {
             },
         } as unknown as TSESTree.TypeNode;
 
-        expect({ actual: isIdentifierTypeReference(node, "Arrayable") }).toStrictEqual({ actual: false });
+        expect({
+            actual: isIdentifierTypeReference(node, "Arrayable"),
+        }).toStrictEqual({ actual: false });
     });
 
     it("returns false for non-type-reference nodes", () => {
@@ -46,6 +48,8 @@ describe(isIdentifierTypeReference, () => {
             type: "TSStringKeyword",
         } as unknown as TSESTree.TypeNode;
 
-        expect({ actual: isIdentifierTypeReference(node, "Arrayable") }).toStrictEqual({ actual: false });
+        expect({
+            actual: isIdentifierTypeReference(node, "Arrayable"),
+        }).toStrictEqual({ actual: false });
     });
 });

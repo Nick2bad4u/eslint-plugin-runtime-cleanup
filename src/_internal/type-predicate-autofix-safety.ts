@@ -8,7 +8,6 @@ import { isDefined } from "ts-extras";
 import { getParentNode } from "./ast-node.js";
 import { isTransparentExpressionWrapper } from "./value-rewrite-autofix-safety.js";
 
-
 const isLogicalExpressionOperand = (
     parentNode: Readonly<TSESTree.Node>,
     currentNode: Readonly<TSESTree.Node>

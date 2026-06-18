@@ -29,10 +29,7 @@ const childProcessModuleNames = [
     "child_process",
     "node:child_process",
 ] as const;
-const immediateCleanupMethodNames = [
-    "disconnect",
-    "kill",
-] as const;
+const immediateCleanupMethodNames = ["disconnect", "kill"] as const;
 
 type ChildProcessFactoryName = ArrayValues<typeof childProcessFactoryNames>;
 
@@ -368,30 +365,28 @@ const noFloatingChildProcesses: TSESLint.RuleModule<
     "floatingChildProcess",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                const factoryName = getChildProcessFactoryName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            const factoryName = getChildProcessFactoryName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(factoryName) ||
-                    (!isDiscardedChildProcessHandle(node) &&
-                        !isImmediateChildProcessMethodReceiver(node))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(factoryName) ||
+                (!isDiscardedChildProcessHandle(node) &&
+                    !isImmediateChildProcessMethodReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { factoryName },
-                    messageId: "floatingChildProcess",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { factoryName },
+                messageId: "floatingChildProcess",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

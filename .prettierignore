@@ -18,6 +18,7 @@ docs/TSDoc/
 docs/Guides/
 
 # MD and MDX files since we use Remark Lint and other tools for those
+test/__snapshots__/readme-rules-section.generated.md
 
 # Ignore Change Logs
 

@@ -40,23 +40,25 @@ reliably stop it.
 
 ```ts
 element.animate(keyframes, {
-    duration: 1000,
-    iterations: Infinity,
+ duration: 1000,
+ iterations: Infinity,
 });
 ```
 
 ```ts
-element.animate(keyframes, {
-    iterations: Number.POSITIVE_INFINITY,
-}).play();
+element
+ .animate(keyframes, {
+  iterations: Number.POSITIVE_INFINITY,
+ })
+ .play();
 ```
 
 ## Correct
 
 ```ts
 const animation = element.animate(keyframes, {
-    duration: 1000,
-    iterations: Infinity,
+ duration: 1000,
+ iterations: Infinity,
 });
 
 cleanupCallbacks.add(() => animation.cancel());
@@ -64,16 +66,16 @@ cleanupCallbacks.add(() => animation.cancel());
 
 ```ts
 function startPulse(element: Element) {
-    return element.animate(keyframes, {
-        duration: 1000,
-        iterations: Infinity,
-    });
+ return element.animate(keyframes, {
+  duration: 1000,
+  iterations: Infinity,
+ });
 }
 ```
 
 ```ts
 element.animate(keyframes, {
-    iterations: 1,
+ iterations: 1,
 });
 ```
 
@@ -91,9 +93,7 @@ owner and cancellation point.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs["recommended-type-checked"],
-];
+export default [runtimeCleanup.configs["recommended-type-checked"]];
 ```
 
 ## When not to use it
@@ -107,4 +107,3 @@ the animation start.
 - [MDN: `Element.animate()`](https://developer.mozilla.org/docs/Web/API/Element/animate)
 - [MDN: `Animation.cancel()`](https://developer.mozilla.org/docs/Web/API/Animation/cancel)
 - [MDN: `Animation.finish()`](https://developer.mozilla.org/docs/Web/API/Animation/finish)
-

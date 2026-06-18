@@ -17,7 +17,7 @@ const RULES_SECTION_SNAPSHOT_PATH = path.join(
     "__snapshots__",
     "readme-rules-section.generated.md"
 );
-const processEnvironment = globalThis.process.env;
+const processEnvironment = process.env;
 const SHOULD_SYNC_README_IN_UPDATE_MODE =
     process.argv.includes("-u") ||
     process.argv.includes("--update") ||
@@ -117,10 +117,9 @@ describe("readme rules table synchronization", () => {
         expect(readmeMarkdown).not.toContain("eslint-plugin-typefest");
 
         const readmeRulesSection = extractRulesSection(readmeMarkdown);
-        const runtimeCleanupRules =
-            runtimeCleanupPlugin.rules as Parameters<
-                typeof generateReadmeRulesSectionFromRules
-            >[0];
+        const runtimeCleanupRules = runtimeCleanupPlugin.rules as Parameters<
+            typeof generateReadmeRulesSectionFromRules
+        >[0];
         const expectedRulesSection =
             generateReadmeRulesSectionFromRules(runtimeCleanupRules);
 
@@ -132,10 +131,9 @@ describe("readme rules table synchronization", () => {
     it("keeps generated rules markdown snapshot-stable", async () => {
         expect.hasAssertions();
 
-        const runtimeCleanupRules =
-            runtimeCleanupPlugin.rules as Parameters<
-                typeof generateReadmeRulesSectionFromRules
-            >[0];
+        const runtimeCleanupRules = runtimeCleanupPlugin.rules as Parameters<
+            typeof generateReadmeRulesSectionFromRules
+        >[0];
         const generatedRulesSection =
             generateReadmeRulesSectionFromRules(runtimeCleanupRules);
 

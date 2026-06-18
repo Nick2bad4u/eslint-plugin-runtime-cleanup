@@ -62,7 +62,7 @@ export const resolveFirstValueInLinkedStructure = <Node, Value>({
             fastNode = getNextNode(fastNode);
         }
 
-        if (slowNode !== null && fastNode !== null && slowNode === fastNode) {
+        if (slowNode !== null && slowNode === fastNode) {
             return {
                 found: false,
             };

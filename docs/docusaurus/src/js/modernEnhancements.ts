@@ -7,9 +7,9 @@
 type CleanupFunction = () => void;
 
 /** Mutable holder used to swap active cleanup handlers between route refreshes. */
-type CleanupRef = {
+interface CleanupRef {
     current: CleanupFunction | null;
-};
+}
 
 declare global {
     interface Window {
@@ -33,74 +33,19 @@ const runtimeSidebarKindPrefixes = [
     "Method:",
     "Namespace:",
     "Property:",
-    "Type Alias:",
     "Type:",
+    "Type Alias:",
     "Variable:",
 ] as const;
 
 /** Stored mutation record used to restore labels during cleanup. */
-type SidebarLabelMutation = {
+interface SidebarLabelMutation {
     element: HTMLAnchorElement;
     originalLabel: string;
-};
+}
 
 /** Dataset key used to mark links already tokenized by this enhancer. */
 const SIDEBAR_TOKENIZED_DATA_KEY = "sbTokenized";
-
-/**
- * Check whether a node is an {@link HTMLElement}.
- *
- * @param element - DOM element candidate.
- *
- * @returns `true` when element is an `HTMLElement` instance.
- */
-function isHTMLElement(element: Element | null): element is HTMLElement {
-    return element instanceof HTMLElement;
-}
-
-/**
- * Check whether a sidebar link belongs to the runtime API category.
- *
- * @param link - Candidate sidebar link.
- *
- * @returns `true` when link is under `.sb-cat-api-runtime`.
- */
-function isRuntimeSidebarLink(link: HTMLAnchorElement): boolean {
-    return link.closest(".sb-cat-api-runtime") !== null;
-}
-
-/**
- * Check whether a sidebar link belongs to a numbered rules subsection.
- *
- * @param link - Candidate sidebar link.
- *
- * @returns `true` when link belongs to runtime-cleanup rule lists.
- */
-function isNumberedRuleSidebarLink(link: HTMLAnchorElement): boolean {
-    return (
-        link.closest(".sb-cat-rules-runtime") !== null ||
-        link.closest(".sb-cat-rules-cleanup") !== null
-    );
-}
-
-/**
- * Detect runtime kind prefix in a sidebar label.
- *
- * @param label - Trimmed sidebar label.
- *
- * @returns Matching prefix when present.
- */
-function getRuntimeSidebarKindPrefix(
-    label: string
-): (typeof runtimeSidebarKindPrefixes)[number] | null {
-    for (const prefix of runtimeSidebarKindPrefixes) {
-        if (label.startsWith(`${prefix} `)) {
-            return prefix;
-        }
-    }
-
-    return null;
-}
 
 /**
  * Parse an optional numeric rule prefix from a sidebar label.
@@ -124,8 +69,8 @@ function getRuleNumberPrefix(
     if (
         numberToken.length < 2 ||
         numberToken.length > 3 ||
-        ![...numberToken].every(
-            (character) => character >= "0" && character <= "9"
+        [...numberToken].some(
+            (character) => character < "0" || character > "9"
         ) ||
         remainder.length === 0
     ) {
@@ -139,36 +84,58 @@ function getRuleNumberPrefix(
 }
 
 /**
- * Replace one sidebar link label with a highlighted leading token.
+ * Detect runtime kind prefix in a sidebar label.
  *
- * @param options - Token replacement parameters.
+ * @param label - Trimmed sidebar label.
+ *
+ * @returns Matching prefix when present.
  */
-function setSidebarLeadingToken(
-    options: Readonly<{
-        link: HTMLAnchorElement;
-        separator?: string;
-        tokenClassName: string;
-        tokenText: string;
-        remainderText: string;
-    }>
-): void {
-    const {
-        link,
-        separator = " ",
-        tokenClassName,
-        tokenText,
-        remainderText,
-    } = options;
-    const token = document.createElement("span");
+function getRuntimeSidebarKindPrefix(
+    label: string
+): (typeof runtimeSidebarKindPrefixes)[number] | null {
+    for (const prefix of runtimeSidebarKindPrefixes) {
+        if (label.startsWith(`${prefix} `)) {
+            return prefix;
+        }
+    }
 
-    token.className = tokenClassName;
-    token.textContent = tokenText;
-    link.dataset[SIDEBAR_TOKENIZED_DATA_KEY] = tokenClassName;
+    return null;
+}
 
-    link.replaceChildren(
-        token,
-        document.createTextNode(`${separator}${remainderText}`)
+/**
+ * Check whether a node is an {@link HTMLElement}.
+ *
+ * @param element - DOM element candidate.
+ *
+ * @returns `true` when element is an `HTMLElement` instance.
+ */
+function isHTMLElement(element: Element | null): element is HTMLElement {
+    return element instanceof HTMLElement;
+}
+
+/**
+ * Check whether a sidebar link belongs to a numbered rules subsection.
+ *
+ * @param link - Candidate sidebar link.
+ *
+ * @returns `true` when link belongs to runtime-cleanup rule lists.
+ */
+function isNumberedRuleSidebarLink(link: HTMLAnchorElement): boolean {
+    return (
+        link.closest(".sb-cat-rules-runtime") !== null ||
+        link.closest(".sb-cat-rules-cleanup") !== null
     );
+}
+
+/**
+ * Check whether a sidebar link belongs to the runtime API category.
+ *
+ * @param link - Candidate sidebar link.
+ *
+ * @returns `true` when link is under `.sb-cat-api-runtime`.
+ */
+function isRuntimeSidebarLink(link: HTMLAnchorElement): boolean {
+    return link.closest(".sb-cat-api-runtime") !== null;
 }
 
 /**
@@ -182,6 +149,39 @@ function isSidebarLinkTokenized(link: HTMLAnchorElement): boolean {
     const tokenizedValue = link.dataset[SIDEBAR_TOKENIZED_DATA_KEY];
 
     return tokenizedValue !== undefined && tokenizedValue.length > 0;
+}
+
+/**
+ * Replace one sidebar link label with a highlighted leading token.
+ *
+ * @param options - Token replacement parameters.
+ */
+function setSidebarLeadingToken(
+    options: Readonly<{
+        link: HTMLAnchorElement;
+        remainderText: string;
+        separator?: string;
+        tokenClassName: string;
+        tokenText: string;
+    }>
+): void {
+    const {
+        link,
+        remainderText,
+        separator = " ",
+        tokenClassName,
+        tokenText,
+    } = options;
+    const token = document.createElement("span");
+
+    token.className = tokenClassName;
+    token.textContent = tokenText;
+    link.dataset[SIDEBAR_TOKENIZED_DATA_KEY] = tokenClassName;
+
+    link.replaceChildren(
+        token,
+        document.createTextNode(`${separator}${remainderText}`)
+    );
 }
 
 const rememberSidebarLabelMutation = (
@@ -222,7 +222,7 @@ const tokenizeRuntimeSidebarLabel = (
         remainderText,
         separator: "",
         tokenClassName: "sb-inline-runtime-kind",
-        tokenText: `${runtimePrefix}\u00A0`,
+        tokenText: `${runtimePrefix}\u{A0}`,
     });
 
     return true;
@@ -292,7 +292,7 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
             ".theme-doc-sidebar-menu .menu__link"
         );
 
-        processLinks(Array.from(sidebarLinks));
+        processLinks([...sidebarLinks]);
     };
 
     processSidebarMenuLinks();
@@ -325,7 +325,7 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
                   const addedLinks: HTMLAnchorElement[] = [];
 
                   for (const record of records) {
-                      for (const addedNode of Array.from(record.addedNodes)) {
+                      for (const addedNode of record.addedNodes) {
                           if (!(addedNode instanceof HTMLElement)) {
                               continue;
                           }
@@ -338,7 +338,7 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
                               addedNode.querySelectorAll<HTMLAnchorElement>(
                                   "a.menu__link"
                               );
-                          addedLinks.push(...Array.from(nestedLinks));
+                          addedLinks.push(...nestedLinks);
                       }
                   }
 
@@ -374,47 +374,6 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
             delete mutation.element.dataset[SIDEBAR_TOKENIZED_DATA_KEY];
             mutation.element.textContent = mutation.originalLabel;
         }
-    };
-}
-
-/**
- * Create and maintain a top-page scroll progress indicator.
- *
- * @returns Cleanup callback that removes listeners and indicator markup.
- */
-function createScrollIndicator(): CleanupFunction {
-    const indicator = document.createElement("div");
-    indicator.className = "scroll-indicator";
-    indicator.style.cssText = [
-        "position: fixed",
-        "inset-block-start: 0",
-        "inset-inline-start: 0",
-        "z-index: 9999",
-        "height: 3px",
-        "width: 0%",
-        "background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-primary-light))",
-        "pointer-events: none",
-        "transition: width 80ms linear",
-    ].join(";");
-
-    document.body.append(indicator);
-
-    const update = (): void => {
-        const scrollTop =
-            globalThis.pageYOffset || document.documentElement.scrollTop;
-        const docHeight =
-            document.documentElement.scrollHeight - globalThis.innerHeight;
-        const safeHeight = docHeight > 0 ? docHeight : 1;
-        const scrollPercent = (scrollTop / safeHeight) * 100;
-        indicator.style.width = `${Math.max(0, Math.min(100, scrollPercent))}%`;
-    };
-
-    globalThis.addEventListener("scroll", update, { passive: true });
-    update();
-
-    return (): void => {
-        globalThis.removeEventListener("scroll", update);
-        indicator.remove();
     };
 }
 
@@ -463,12 +422,51 @@ function applyThemeToggleAnimation(): CleanupFunction {
 }
 
 /**
+ * Create and maintain a top-page scroll progress indicator.
+ *
+ * @returns Cleanup callback that removes listeners and indicator markup.
+ */
+function createScrollIndicator(): CleanupFunction {
+    const indicator = document.createElement("div");
+    indicator.className = "scroll-indicator";
+    indicator.style.cssText = [
+        "position: fixed",
+        "inset-block-start: 0",
+        "inset-inline-start: 0",
+        "z-index: 9999",
+        "height: 3px",
+        "width: 0%",
+        "background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-primary-light))",
+        "pointer-events: none",
+        "transition: width 80ms linear",
+    ].join(";");
+
+    document.body.append(indicator);
+
+    const update = (): void => {
+        const scrollTop = pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - innerHeight;
+        const safeHeight = docHeight > 0 ? docHeight : 1;
+        const scrollPercent = (scrollTop / safeHeight) * 100;
+        indicator.style.width = `${Math.max(0, Math.min(100, scrollPercent))}%`;
+    };
+
+    globalThis.addEventListener("scroll", update, { passive: true });
+    update();
+
+    return (): void => {
+        globalThis.removeEventListener("scroll", update);
+        indicator.remove();
+    };
+}
+
+/**
  * Initialize modern interaction features and return cleanup hooks.
  *
  * @returns Cleanup callback for all registered enhancement handlers.
  */
 function initializeAdvancedFeatures(): CleanupFunction {
-    const prefersReducedMotion = globalThis.matchMedia(
+    const isPrefersReducedMotion = globalThis.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
     const cleanupFunctions: CleanupFunction[] = [
@@ -476,14 +474,14 @@ function initializeAdvancedFeatures(): CleanupFunction {
         applySidebarLabelTokenColoring(),
     ];
 
-    if (!prefersReducedMotion) {
+    if (!isPrefersReducedMotion) {
         cleanupFunctions.push(applyThemeToggleAnimation());
     }
 
     return (): void => {
-        cleanupFunctions.forEach((cleanup) => {
+        for (const cleanup of cleanupFunctions) {
             cleanup();
-        });
+        }
     };
 }
 
@@ -583,12 +581,9 @@ function initializeEnhancements(): CleanupFunction {
     };
 }
 
-if (
-    typeof globalThis.window !== "undefined" &&
-    typeof document !== "undefined"
-) {
+if (globalThis !== undefined && typeof document !== "undefined") {
     initializeEnhancements();
-    globalThis.window.initializeAdvancedFeatures = initializeAdvancedFeatures;
+    window.initializeAdvancedFeatures = initializeAdvancedFeatures;
 }
 
 export { initializeAdvancedFeatures, initializeEnhancements };

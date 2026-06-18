@@ -20,7 +20,9 @@ const createProgramNode = (): TSESTree.Program =>
     }) as unknown as TSESTree.Program;
 
 const requireCallbackMatch = (
-    callbackMatch: ReturnType<typeof getSingleParameterExpressionArrowFilterCallback>
+    callbackMatch: ReturnType<
+        typeof getSingleParameterExpressionArrowFilterCallback
+    >
 ) => {
     if (callbackMatch === null) {
         throw new TypeError("Expected filter callback metadata.");
@@ -64,7 +66,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: true });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: true,
+        });
     });
 
     it("returns false for nodes outside .filter callback", () => {
@@ -101,7 +105,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false for function passed as second .filter argument", () => {
@@ -145,7 +151,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false for computed member access filter calls", () => {
@@ -182,7 +190,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false for non-member filter calls", () => {
@@ -212,7 +222,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false for cyclic parent chains", () => {
@@ -228,7 +240,9 @@ describe(isWithinFilterCallback, () => {
 
         (cycleA as unknown as { parent?: TSESTree.Node }).parent = cycleB;
 
-        expect({ actual: isWithinFilterCallback(cycleA) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(cycleA) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false when callback-like node is not parented by a call expression", () => {
@@ -246,7 +260,9 @@ describe(isWithinFilterCallback, () => {
             type: "Identifier",
         } as unknown as TSESTree.Node;
 
-        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({ actual: false });
+        expect({ actual: isWithinFilterCallback(nestedNode) }).toStrictEqual({
+            actual: false,
+        });
     });
 
     it("returns false for optional-chain filter calls", () => {
@@ -271,7 +287,9 @@ describe(isWithinFilterCallback, () => {
             type: "CallExpression",
         } as unknown as TSESTree.CallExpression;
 
-        expect({ actual: isFilterCallExpression(optionalFilterCallNode) }).toStrictEqual({ actual: false });
+        expect({
+            actual: isFilterCallExpression(optionalFilterCallNode),
+        }).toStrictEqual({ actual: false });
     });
 
     it("returns false for optional member invocation filter calls", () => {
@@ -296,11 +314,11 @@ describe(isWithinFilterCallback, () => {
             type: "CallExpression",
         } as unknown as TSESTree.CallExpression;
 
-        const matchesFilterCall = isFilterCallExpression(
+        const isMatchesFilterCall = isFilterCallExpression(
             optionalMemberFilterCallNode
         );
 
-        expect({ matchesFilterCall }).toStrictEqual({
+        expect({ matchesFilterCall: isMatchesFilterCall }).toStrictEqual({
             matchesFilterCall: false,
         });
     });

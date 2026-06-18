@@ -19,10 +19,7 @@ import {
     type TypedRuleContext,
 } from "../_internal/typed-rule.js";
 
-const serverFactoryNames = [
-    "createSecureServer",
-    "createServer",
-] as const;
+const serverFactoryNames = ["createSecureServer", "createServer"] as const;
 const http2OnlyServerFactoryNames = ["createSecureServer"] as const;
 const serverModuleNames = [
     "http",
@@ -400,19 +397,13 @@ const isDiscardedServerHandle = (
     isDiscardedExpression(node) || isDiscardedImmediateServerMethodChain(node);
 
 /** Rule implementation for `runtime-cleanup/no-floating-servers`. */
-const noFloatingServers: TSESLint.RuleModule<
-    "floatingServer",
-    readonly []
-> = createTypedRule({
-    create(context) {
-        return {
+const noFloatingServers: TSESLint.RuleModule<"floatingServer", readonly []> =
+    createTypedRule({
+        create: (context) => ({
             CallExpression(node: Readonly<TSESTree.CallExpression>) {
                 const factoryName = getServerFactoryName(context, node.callee);
 
-                if (
-                    !isDefined(factoryName) ||
-                    !isDiscardedServerHandle(node)
-                ) {
+                if (!isDefined(factoryName) || !isDiscardedServerHandle(node)) {
                     return;
                 }
 
@@ -422,31 +413,30 @@ const noFloatingServers: TSESLint.RuleModule<
                     node,
                 });
             },
-        };
-    },
-    defaultOptions: [],
-    meta: {
-        docs: {
-            description:
-                "require Node.js server handles to be retained so they can be closed.",
-            recommended: true,
-            requiresTypeChecking: false,
-            runtimeCleanupConfigs: [
-                "runtime-cleanup.configs.recommended",
-                "runtime-cleanup.configs.recommended-type-checked",
-                "runtime-cleanup.configs.strict",
-                "runtime-cleanup.configs.all",
-            ],
-            url: createRuleDocsUrl("no-floating-servers"),
+        }),
+        defaultOptions: [],
+        meta: {
+            docs: {
+                description:
+                    "require Node.js server handles to be retained so they can be closed.",
+                recommended: true,
+                requiresTypeChecking: false,
+                runtimeCleanupConfigs: [
+                    "runtime-cleanup.configs.recommended",
+                    "runtime-cleanup.configs.recommended-type-checked",
+                    "runtime-cleanup.configs.strict",
+                    "runtime-cleanup.configs.all",
+                ],
+                url: createRuleDocsUrl("no-floating-servers"),
+            },
+            messages: {
+                floatingServer:
+                    "Store or return the server from {{factoryName}} so close() can stop it during cleanup.",
+            },
+            schema: [],
+            type: "problem",
         },
-        messages: {
-            floatingServer:
-                "Store or return the server from {{factoryName}} so close() can stop it during cleanup.",
-        },
-        schema: [],
-        type: "problem",
-    },
-    name: "no-floating-servers",
-});
+        name: "no-floating-servers",
+    });
 
 export default noFloatingServers;

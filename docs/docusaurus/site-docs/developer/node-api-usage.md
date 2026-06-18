@@ -15,22 +15,22 @@ import { ESLint } from "eslint";
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 const eslint = new ESLint({
-  overrideConfig: {
-    files: ["**/*.ts"],
-    plugins: {
-      "runtime-cleanup": runtimeCleanup,
-    },
-    rules: {
-      "runtime-cleanup/no-floating-timers": "error",
-    },
+ overrideConfig: {
+  files: ["**/*.ts"],
+  plugins: {
+   "runtime-cleanup": runtimeCleanup,
   },
+  rules: {
+   "runtime-cleanup/no-floating-timers": "error",
+  },
+ },
 });
 
 const fileResults = await eslint.lintFiles(["src/**/*.ts"]);
 
 const textResults = await eslint.lintText(
-  "setInterval(() => refreshCache(), 1000);",
-  { filePath: "virtual.ts" }
+ "setInterval(() => refreshCache(), 1000);",
+ { filePath: "virtual.ts" }
 );
 
 const allResults = [...fileResults, ...textResults];

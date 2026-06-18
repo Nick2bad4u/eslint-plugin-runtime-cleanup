@@ -56,7 +56,10 @@ type RuntimeCleanupConfigsContract = Record<
 >;
 
 /** Fully assembled plugin contract used by the runtime default export. */
-type RuntimeCleanupPluginContract = Except<ESLint.Plugin, "configs" | "rules"> & {
+type RuntimeCleanupPluginContract = Except<
+    ESLint.Plugin,
+    "configs" | "rules"
+> & {
     configs: RuntimeCleanupConfigsContract;
     meta: {
         name: string;

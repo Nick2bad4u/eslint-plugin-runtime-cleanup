@@ -8,8 +8,11 @@ Thanks for using `eslint-plugin-runtime-cleanup`.
    - [README.md](./README.md)
    - [docs/](./docs/)
 2. Search existing issues:
+
 - <https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues>
+
 3. Open a new issue if needed:
+
 - <https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues/new>
 
 ## What to include in an issue

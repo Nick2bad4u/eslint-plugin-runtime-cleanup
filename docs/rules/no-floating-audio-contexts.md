@@ -56,15 +56,15 @@ new AudioContext().resume();
 const context = new AudioContext();
 
 try {
-    await context.resume();
+ await context.resume();
 } finally {
-    await context.close();
+ await context.close();
 }
 ```
 
 ```ts
 function createAudioContext() {
-    return new AudioContext();
+ return new AudioContext();
 }
 ```
 
@@ -86,9 +86,7 @@ This rule does not autofix because adding a variable without a matching
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

@@ -27,15 +27,15 @@ Recommended checks:
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [
-  {
-    files: ["**/*.{ts,tsx}"],
-    plugins: {
-      "runtime-cleanup": runtimeCleanup,
-    },
-    rules: {
-      ...runtimeCleanup.configs.recommended.rules,
-    },
+ {
+  files: ["**/*.{ts,tsx}"],
+  plugins: {
+   "runtime-cleanup": runtimeCleanup,
   },
+  rules: {
+   ...runtimeCleanup.configs.recommended.rules,
+  },
+ },
 ];
 ```
 

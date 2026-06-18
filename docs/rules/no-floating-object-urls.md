@@ -55,15 +55,15 @@ void window.URL.createObjectURL(file);
 const objectUrl = URL.createObjectURL(blob);
 
 try {
-    image.src = objectUrl;
+ image.src = objectUrl;
 } finally {
-    URL.revokeObjectURL(objectUrl);
+ URL.revokeObjectURL(objectUrl);
 }
 ```
 
 ```ts
 function createDownloadUrl(file: File) {
-    return URL.createObjectURL(file);
+ return URL.createObjectURL(file);
 }
 ```
 
@@ -86,9 +86,7 @@ resource leak.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

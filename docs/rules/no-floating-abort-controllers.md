@@ -54,7 +54,7 @@ void new AbortController();
 
 ```ts
 fetch("/api", {
-    signal: new AbortController().signal,
+ signal: new AbortController().signal,
 });
 ```
 
@@ -68,7 +68,7 @@ const signal = new AbortController().signal;
 const controller = new AbortController();
 
 fetch("/api", {
-    signal: controller.signal,
+ signal: controller.signal,
 });
 
 controller.abort();
@@ -107,9 +107,7 @@ code look managed without actually solving cleanup.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

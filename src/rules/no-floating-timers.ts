@@ -37,9 +37,7 @@ const globalReceiverNames = [
 type TimerFunctionName = ArrayValues<typeof timerFunctionNames>;
 
 const timerFunctionNameSet: ReadonlySet<string> = new Set(timerFunctionNames);
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 
 const isTimerFunctionName = (name: string): name is TimerFunctionName =>
     setHas(timerFunctionNameSet, name);
@@ -95,70 +93,68 @@ const getMemberTimerName = (
 };
 
 /** Rule implementation for `runtime-cleanup/no-floating-timers`. */
-const noFloatingTimers: TSESLint.RuleModule<
-    "floatingTimer",
-    readonly []
-> = createTypedRule({
-    create(context) {
-        const reportFloatingTimer = (
-            node: Readonly<TSESTree.CallExpression>,
-            timerName: TimerFunctionName
-        ): void => {
-            if (!isDiscardedTimerHandle(node)) {
-                return;
-            }
-
-            context.report({
-                data: { timerName },
-                messageId: "floatingTimer",
-                node,
-            });
-        };
-
-        return {
-            'CallExpression[callee.type="Identifier"]'(
-                node: TSESTree.CallExpression
-            ) {
-                const timerName = getDirectTimerName(context, node.callee);
-
-                if (isDefined(timerName)) {
-                    reportFloatingTimer(node, timerName);
+const noFloatingTimers: TSESLint.RuleModule<"floatingTimer", readonly []> =
+    createTypedRule({
+        create(context) {
+            const reportFloatingTimer = (
+                node: Readonly<TSESTree.CallExpression>,
+                timerName: TimerFunctionName
+            ): void => {
+                if (!isDiscardedTimerHandle(node)) {
+                    return;
                 }
-            },
-            'CallExpression[callee.type="MemberExpression"]'(
-                node: TSESTree.CallExpression
-            ) {
-                const timerName = getMemberTimerName(node.callee);
 
-                if (isDefined(timerName)) {
-                    reportFloatingTimer(node, timerName);
-                }
+                context.report({
+                    data: { timerName },
+                    messageId: "floatingTimer",
+                    node,
+                });
+            };
+
+            return {
+                'CallExpression[callee.type="Identifier"]'(
+                    node: TSESTree.CallExpression
+                ) {
+                    const timerName = getDirectTimerName(context, node.callee);
+
+                    if (isDefined(timerName)) {
+                        reportFloatingTimer(node, timerName);
+                    }
+                },
+                'CallExpression[callee.type="MemberExpression"]'(
+                    node: TSESTree.CallExpression
+                ) {
+                    const timerName = getMemberTimerName(node.callee);
+
+                    if (isDefined(timerName)) {
+                        reportFloatingTimer(node, timerName);
+                    }
+                },
+            };
+        },
+        defaultOptions: [],
+        meta: {
+            docs: {
+                description:
+                    "require timer handles to be retained so they can be cleared during cleanup.",
+                recommended: true,
+                requiresTypeChecking: false,
+                runtimeCleanupConfigs: [
+                    "runtime-cleanup.configs.recommended",
+                    "runtime-cleanup.configs.recommended-type-checked",
+                    "runtime-cleanup.configs.strict",
+                    "runtime-cleanup.configs.all",
+                ],
+                url: createRuleDocsUrl("no-floating-timers"),
             },
-        };
-    },
-    defaultOptions: [],
-    meta: {
-        docs: {
-            description:
-                "require timer handles to be retained so they can be cleared during cleanup.",
-            recommended: true,
-            requiresTypeChecking: false,
-            runtimeCleanupConfigs: [
-                "runtime-cleanup.configs.recommended",
-                "runtime-cleanup.configs.recommended-type-checked",
-                "runtime-cleanup.configs.strict",
-                "runtime-cleanup.configs.all",
-            ],
-            url: createRuleDocsUrl("no-floating-timers"),
+            messages: {
+                floatingTimer:
+                    "Store or return the {{timerName}} handle so it can be cleared during cleanup.",
+            },
+            schema: [],
+            type: "problem",
         },
-        messages: {
-            floatingTimer:
-                "Store or return the {{timerName}} handle so it can be cleared during cleanup.",
-        },
-        schema: [],
-        type: "problem",
-    },
-    name: "no-floating-timers",
-});
+        name: "no-floating-timers",
+    });
 
 export default noFloatingTimers;

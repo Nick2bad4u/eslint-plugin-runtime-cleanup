@@ -78,10 +78,9 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
             name: "allows observer instances passed to a manager",
         },
         {
-            code: [
-                "class ResizeObserver {}",
-                "new ResizeObserver();",
-            ].join("\n"),
+            code: ["class ResizeObserver {}", "new ResizeObserver();"].join(
+                "\n"
+            ),
             name: "ignores shadowed observer constructors",
         },
         {

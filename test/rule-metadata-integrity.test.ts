@@ -76,10 +76,7 @@ describe("rule metadata integrity", () => {
                 throw new TypeError(`Rule '${ruleName}' is missing meta.`);
             }
 
-            const docs = requireRuntimeCleanupDocsMetadata(
-                ruleName,
-                meta.docs
-            );
+            const docs = requireRuntimeCleanupDocsMetadata(ruleName, meta.docs);
 
             expect(docs.description).toBeTypeOf("string");
             expect(docs.recommended).toBeTypeOf("boolean");
@@ -91,7 +88,9 @@ describe("rule metadata integrity", () => {
             }).toStrictEqual({ actual: true });
             expect(docs.url).toContain(`/rules/${ruleName}`);
             expect(meta.messages).not.toStrictEqual({});
-            expect({ actual: Array.isArray(meta.schema) }).toStrictEqual({ actual: true });
+            expect({ actual: Array.isArray(meta.schema) }).toStrictEqual({
+                actual: true,
+            });
         }
     });
 });

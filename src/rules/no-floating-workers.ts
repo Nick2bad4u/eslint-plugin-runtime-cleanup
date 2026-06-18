@@ -19,10 +19,7 @@ import {
     type TypedRuleContext,
 } from "../_internal/typed-rule.js";
 
-const browserWorkerConstructorNames = [
-    "SharedWorker",
-    "Worker",
-] as const;
+const browserWorkerConstructorNames = ["SharedWorker", "Worker"] as const;
 const globalReceiverNames = [
     "globalThis",
     "self",
@@ -33,15 +30,14 @@ const workerThreadsModuleNames = [
     "worker_threads",
 ] as const;
 
-type BrowserWorkerConstructorName =
-    ArrayValues<typeof browserWorkerConstructorNames>;
+type BrowserWorkerConstructorName = ArrayValues<
+    typeof browserWorkerConstructorNames
+>;
 
 const browserWorkerConstructorNameSet: ReadonlySet<string> = new Set(
     browserWorkerConstructorNames
 );
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 const workerThreadsModuleNameSet: ReadonlySet<string> = new Set(
     workerThreadsModuleNames
 );
@@ -103,10 +99,9 @@ const isWorkerThreadsImportBinding = (
     const variable = getVariableInScopeChain(scope, identifier.name);
     const definition = arrayFirst(variable?.defs ?? []);
 
-    const importSource =
-        isDefined(definition)
-            ? getImportSourceValue(definition.node)
-            : undefined;
+    const importSource = isDefined(definition)
+        ? getImportSourceValue(definition.node)
+        : undefined;
 
     return (
         identifier.name === "Worker" &&
@@ -243,12 +238,9 @@ const isImmediateWorkerMethodReceiver = (
 };
 
 /** Rule implementation for `runtime-cleanup/no-floating-workers`. */
-const noFloatingWorkers: TSESLint.RuleModule<
-    "floatingWorker",
-    readonly []
-> = createTypedRule({
-    create(context) {
-        return {
+const noFloatingWorkers: TSESLint.RuleModule<"floatingWorker", readonly []> =
+    createTypedRule({
+        create: (context) => ({
             NewExpression(node: Readonly<TSESTree.NewExpression>) {
                 const workerName = getWorkerConstructorName(
                     context,
@@ -269,31 +261,30 @@ const noFloatingWorkers: TSESLint.RuleModule<
                     node,
                 });
             },
-        };
-    },
-    defaultOptions: [],
-    meta: {
-        docs: {
-            description:
-                "require worker handles to be retained so they can be terminated during cleanup.",
-            recommended: true,
-            requiresTypeChecking: false,
-            runtimeCleanupConfigs: [
-                "runtime-cleanup.configs.recommended",
-                "runtime-cleanup.configs.recommended-type-checked",
-                "runtime-cleanup.configs.strict",
-                "runtime-cleanup.configs.all",
-            ],
-            url: createRuleDocsUrl("no-floating-workers"),
+        }),
+        defaultOptions: [],
+        meta: {
+            docs: {
+                description:
+                    "require worker handles to be retained so they can be terminated during cleanup.",
+                recommended: true,
+                requiresTypeChecking: false,
+                runtimeCleanupConfigs: [
+                    "runtime-cleanup.configs.recommended",
+                    "runtime-cleanup.configs.recommended-type-checked",
+                    "runtime-cleanup.configs.strict",
+                    "runtime-cleanup.configs.all",
+                ],
+                url: createRuleDocsUrl("no-floating-workers"),
+            },
+            messages: {
+                floatingWorker:
+                    "Store or return the {{workerName}} handle so it can be terminated during cleanup.",
+            },
+            schema: [],
+            type: "problem",
         },
-        messages: {
-            floatingWorker:
-                "Store or return the {{workerName}} handle so it can be terminated during cleanup.",
-        },
-        schema: [],
-        type: "problem",
-    },
-    name: "no-floating-workers",
-});
+        name: "no-floating-workers",
+    });
 
 export default noFloatingWorkers;

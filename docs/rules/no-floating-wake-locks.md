@@ -49,7 +49,7 @@ void navigator.wakeLock.request("screen");
 
 ```ts
 async function keepAwake() {
-    await navigator.wakeLock.request("screen");
+ await navigator.wakeLock.request("screen");
 }
 ```
 
@@ -57,21 +57,21 @@ async function keepAwake() {
 
 ```ts
 async function keepAwake() {
-    const sentinel = await navigator.wakeLock.request("screen");
+ const sentinel = await navigator.wakeLock.request("screen");
 
-    await sentinel.release();
+ await sentinel.release();
 }
 ```
 
 ```ts
 async function keepAwake() {
-    return navigator.wakeLock.request("screen");
+ return navigator.wakeLock.request("screen");
 }
 ```
 
 ```ts
 async function keepAwake() {
-    registerWakeLock(await navigator.wakeLock.request("screen"));
+ registerWakeLock(await navigator.wakeLock.request("screen"));
 }
 ```
 
@@ -90,9 +90,7 @@ is a semantic decision.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

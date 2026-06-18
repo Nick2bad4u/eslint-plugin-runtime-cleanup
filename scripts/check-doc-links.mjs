@@ -121,16 +121,16 @@ async function collectMarkdownFiles(startDirectory) {
     while (stack.length > 0) {
         const current = stack.pop();
         if (current === undefined) {
-            throw new Error("Expected a directory path while walking markdown files.");
+            throw new Error(
+                "Expected a directory path while walking markdown files."
+            );
         }
 
         const entries = await readdir(current, { withFileTypes: true });
         for (const entry of entries) {
             const entryName = entry.name;
 
-            if (
-                !IGNORED_DIRECTORIES.has(entryName)
-            ) {
+            if (!IGNORED_DIRECTORIES.has(entryName)) {
                 const entryPath = join(current, entryName);
                 if (entry.isDirectory()) {
                     stack.push(entryPath);

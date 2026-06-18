@@ -32,7 +32,7 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
             name: "reports immediate listener registration",
         },
         {
-            code: '(new BroadcastChannel(name) as BroadcastChannel).postMessage(message);',
+            code: "(new BroadcastChannel(name) as BroadcastChannel).postMessage(message);",
             errors: [{ messageId: "floatingBroadcastChannel" }],
             name: "reports TypeScript-wrapped channel method chains",
         },

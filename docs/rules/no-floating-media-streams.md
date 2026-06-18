@@ -53,7 +53,7 @@ void navigator.mediaDevices.getDisplayMedia({ video: true });
 
 ```ts
 async function openCamera() {
-    await navigator.mediaDevices.getUserMedia({ video: true });
+ await navigator.mediaDevices.getUserMedia({ video: true });
 }
 ```
 
@@ -61,23 +61,21 @@ async function openCamera() {
 
 ```ts
 async function openCamera() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+ const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
-    stream.getTracks().forEach((track) => track.stop());
+ stream.getTracks().forEach((track) => track.stop());
 }
 ```
 
 ```ts
 async function openScreen() {
-    return navigator.mediaDevices.getDisplayMedia({ video: true });
+ return navigator.mediaDevices.getDisplayMedia({ video: true });
 }
 ```
 
 ```ts
 async function openCamera() {
-    registerStream(
-        await navigator.mediaDevices.getUserMedia({ audio: true }),
-    );
+ registerStream(await navigator.mediaDevices.getUserMedia({ audio: true }));
 }
 ```
 
@@ -95,9 +93,7 @@ track-stop lifecycle would hide the cleanup bug instead of solving it.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

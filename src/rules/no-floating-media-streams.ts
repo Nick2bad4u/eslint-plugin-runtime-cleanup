@@ -19,10 +19,7 @@ import {
     type TypedRuleContext,
 } from "../_internal/typed-rule.js";
 
-const mediaCaptureFunctionNames = [
-    "getDisplayMedia",
-    "getUserMedia",
-] as const;
+const mediaCaptureFunctionNames = ["getDisplayMedia", "getUserMedia"] as const;
 const globalNavigatorReceiverNames = ["globalThis", "window"] as const;
 
 type MediaCaptureFunctionName = ArrayValues<typeof mediaCaptureFunctionNames>;
@@ -232,29 +229,27 @@ const noFloatingMediaStreams: TSESLint.RuleModule<
     "floatingMediaStream",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                const captureName = getMediaCaptureFunctionName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            const captureName = getMediaCaptureFunctionName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(captureName) ||
-                    !isDiscardedMediaStreamRequest(node)
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(captureName) ||
+                !isDiscardedMediaStreamRequest(node)
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { captureName },
-                    messageId: "floatingMediaStream",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { captureName },
+                messageId: "floatingMediaStream",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

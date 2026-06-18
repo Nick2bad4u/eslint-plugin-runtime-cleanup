@@ -95,35 +95,30 @@ const noFloatingWebStreamLocks: TSESLint.RuleModule<
     "floatingWebStreamLock",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                const metadata = getLockFactoryMetadata(node.callee);
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            const metadata = getLockFactoryMetadata(node.callee);
 
-                if (
-                    !isDefined(metadata) ||
-                    !isReceiverExpectedWebStream(
-                        context,
-                        metadata.receiver,
-                        metadata.streamTypeName
-                    ) ||
-                    (!isDiscardedResourceExpression(node) &&
-                        !isImmediateUnownedMemberReceiver(
-                            node,
-                            cleanupMemberNames
-                        ))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(metadata) ||
+                !isReceiverExpectedWebStream(
+                    context,
+                    metadata.receiver,
+                    metadata.streamTypeName
+                ) ||
+                (!isDiscardedResourceExpression(node) &&
+                    !isImmediateUnownedMemberReceiver(node, cleanupMemberNames))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { lockKind: metadata.lockKind },
-                    messageId: "floatingWebStreamLock",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { lockKind: metadata.lockKind },
+                messageId: "floatingWebStreamLock",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

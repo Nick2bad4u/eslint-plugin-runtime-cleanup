@@ -54,4 +54,3 @@ ruleTester.run(ruleName, getPluginRule(ruleName), {
         },
     ],
 });
-

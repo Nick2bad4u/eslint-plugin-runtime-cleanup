@@ -195,23 +195,21 @@ const noFloatingGeolocationWatches: TSESLint.RuleModule<
     "floatingGeolocationWatch",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                if (
-                    !isGeolocationWatchCall(context, node.callee) ||
-                    !isDiscardedWatchId(node)
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            if (
+                !isGeolocationWatchCall(context, node.callee) ||
+                !isDiscardedWatchId(node)
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingGeolocationWatch",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingGeolocationWatch",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

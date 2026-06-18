@@ -76,7 +76,9 @@ describe("bounded cache helpers", () => {
         });
 
         expect({ actual: cache.has("first") }).toStrictEqual({ actual: true });
-        expect({ actual: cache.has("second") }).toStrictEqual({ actual: false });
+        expect({ actual: cache.has("second") }).toStrictEqual({
+            actual: false,
+        });
         expect({ actual: cache.has("third") }).toStrictEqual({ actual: true });
     });
 

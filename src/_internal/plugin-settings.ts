@@ -3,7 +3,7 @@
  * Parsing and memoization helpers for plugin-level runtime settings.
  */
 import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
-import type { UnknownArray, UnknownRecord  } from "type-fest";
+import type { UnknownArray, UnknownRecord } from "type-fest";
 
 import { isDefined, objectHasOwn } from "ts-extras";
 
@@ -34,9 +34,7 @@ const settingsByProgram = new WeakMap<TSESTree.Program, ProgramSettings>();
  *
  * @returns `true` when the value is a non-null, non-array object.
  */
-const isObject = (
-    value: unknown
-): value is Readonly<UnknownRecord> =>
+const isObject = (value: unknown): value is Readonly<UnknownRecord> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**

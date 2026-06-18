@@ -195,8 +195,7 @@ const getNamedFileStreamFactoryBindingName = (
     if (definition.node.type === AST_NODE_TYPES.ImportSpecifier) {
         const importedName = getImportedSpecifierName(definition.node);
 
-        return isDefined(importedName) &&
-            isFileStreamFactoryName(importedName)
+        return isDefined(importedName) && isFileStreamFactoryName(importedName)
             ? importedName
             : undefined;
     }
@@ -210,8 +209,7 @@ const getNamedFileStreamFactoryBindingName = (
             identifier.name
         );
 
-        return isDefined(propertyName) &&
-            isFileStreamFactoryName(propertyName)
+        return isDefined(propertyName) && isFileStreamFactoryName(propertyName)
             ? propertyName
             : undefined;
     }
@@ -310,29 +308,27 @@ const isDiscardedFileStreamHandle = (
 /** Rule implementation for `runtime-cleanup/no-floating-streams`. */
 const noFloatingStreams: TSESLint.RuleModule<"floatingStream", readonly []> =
     createTypedRule({
-        create(context) {
-            return {
-                CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                    const factoryName = getFileStreamFactoryName(
-                        context,
-                        node.callee
-                    );
+        create: (context) => ({
+            CallExpression(node: Readonly<TSESTree.CallExpression>) {
+                const factoryName = getFileStreamFactoryName(
+                    context,
+                    node.callee
+                );
 
-                    if (
-                        !isDefined(factoryName) ||
-                        !isDiscardedFileStreamHandle(node)
-                    ) {
-                        return;
-                    }
+                if (
+                    !isDefined(factoryName) ||
+                    !isDiscardedFileStreamHandle(node)
+                ) {
+                    return;
+                }
 
-                    context.report({
-                        data: { factoryName },
-                        messageId: "floatingStream",
-                        node,
-                    });
-                },
-            };
-        },
+                context.report({
+                    data: { factoryName },
+                    messageId: "floatingStream",
+                    node,
+                });
+            },
+        }),
         defaultOptions: [],
         meta: {
             docs: {

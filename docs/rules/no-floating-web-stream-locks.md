@@ -55,15 +55,15 @@ stream.getWriter().write(chunk);
 const reader = stream.getReader();
 
 try {
-    await reader.read();
+ await reader.read();
 } finally {
-    reader.releaseLock();
+ reader.releaseLock();
 }
 ```
 
 ```ts
 function createReader(stream: ReadableStream<Uint8Array>) {
-    return stream.getReader();
+ return stream.getReader();
 }
 ```
 
@@ -85,9 +85,7 @@ too context-dependent for a safe automatic fix.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs["recommended-type-checked"],
-];
+export default [runtimeCleanup.configs["recommended-type-checked"]];
 ```
 
 ## When not to use it

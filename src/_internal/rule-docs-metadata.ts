@@ -3,7 +3,7 @@
  * Derivation helpers for canonical rule docs metadata.
  */
 import type { TSESLint } from "@typescript-eslint/utils";
-import type { UnknownArray, UnknownRecord  } from "type-fest";
+import type { UnknownArray, UnknownRecord } from "type-fest";
 
 import {
     arrayIncludes,
@@ -34,9 +34,7 @@ export type RuleDocsMetadata = Readonly<{
 }>;
 
 /** Rule-name keyed metadata map derived from static docs contracts. */
-export type RuleDocsMetadataByName = Readonly<
-    Record<string, RuleDocsMetadata>
->;
+export type RuleDocsMetadataByName = Readonly<Record<string, RuleDocsMetadata>>;
 
 /** Rule-map contract accepted by docs metadata derivation helpers. */
 type RuleMap = Readonly<
@@ -93,9 +91,7 @@ const isRuleIdInCanonicalFormat = (value: string): boolean => {
 /**
  * Guard dynamic values to object-shaped records.
  */
-const isUnknownRecord = (
-    value: unknown
-): value is Readonly<UnknownRecord> =>
+const isUnknownRecord = (value: unknown): value is Readonly<UnknownRecord> =>
     typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
@@ -195,12 +191,12 @@ const getRuleDocsContract = (
         );
     }
 
-    const checkedRecommended = getRequiredBoolean(
+    const isCheckedRecommended = getRequiredBoolean(
         ruleName,
         recommended,
         "recommended"
     );
-    const checkedRequiresTypeChecking = getRequiredBoolean(
+    const isCheckedRequiresTypeChecking = getRequiredBoolean(
         ruleName,
         requiresTypeChecking,
         "requiresTypeChecking"
@@ -235,8 +231,8 @@ const getRuleDocsContract = (
 
         return {
             description: checkedDescription,
-            recommended: checkedRecommended,
-            requiresTypeChecking: checkedRequiresTypeChecking,
+            recommended: isCheckedRecommended,
+            requiresTypeChecking: isCheckedRequiresTypeChecking,
             ruleId,
             ruleNumber,
             runtimeCleanupConfigs,
@@ -263,8 +259,8 @@ const getRuleDocsContract = (
 
     return {
         description: checkedDescription,
-        recommended: checkedRecommended,
-        requiresTypeChecking: checkedRequiresTypeChecking,
+        recommended: isCheckedRecommended,
+        requiresTypeChecking: isCheckedRequiresTypeChecking,
         ruleId,
         ruleNumber,
         runtimeCleanupConfigs,
@@ -278,10 +274,7 @@ const getRuleDocsContract = (
 export const deriveRuleDocsMetadataByName = (
     rules: RuleMap
 ): RuleDocsMetadataByName => {
-    const metadataByRuleName: Record<
-        string,
-        RuleDocsMetadata
-    > = {};
+    const metadataByRuleName: Record<string, RuleDocsMetadata> = {};
 
     for (const [ruleName, ruleModule] of objectEntries(rules)) {
         const ruleDocs = getRuleDocsContract(ruleName, ruleModule.meta.docs);
@@ -317,9 +310,7 @@ export const deriveTypeCheckedRuleNameSet = (
 ): ReadonlySet<string> => {
     const ruleNames: string[] = [];
 
-    for (const [ruleName, metadata] of objectEntries(
-        ruleDocsMetadataByName
-    )) {
+    for (const [ruleName, metadata] of objectEntries(ruleDocsMetadataByName)) {
         if (metadata.requiresTypeChecking) {
             ruleNames.push(ruleName);
         }
@@ -333,17 +324,13 @@ export const deriveTypeCheckedRuleNameSet = (
  */
 export const deriveRulePresetMembershipByRuleName = (
     ruleDocsMetadataByName: RuleDocsMetadataByName
-): Readonly<
-    Record<string, readonly RuntimeCleanupConfigName[]>
-> => {
+): Readonly<Record<string, readonly RuntimeCleanupConfigName[]>> => {
     const membershipByRuleName: Record<
         string,
         readonly RuntimeCleanupConfigName[]
     > = {};
 
-    for (const [ruleName, metadata] of objectEntries(
-        ruleDocsMetadataByName
-    )) {
+    for (const [ruleName, metadata] of objectEntries(ruleDocsMetadataByName)) {
         membershipByRuleName[ruleName] = metadata.runtimeCleanupConfigNames;
     }
 

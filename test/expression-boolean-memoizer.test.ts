@@ -25,10 +25,13 @@ describe(memoizeExpressionBooleanPredicate, () => {
 
         const memoizedPredicate = memoizeExpressionBooleanPredicate(evaluate);
         const expressionNode = createIdentifierExpression("value");
-        const firstResult = memoizedPredicate(expressionNode);
-        const secondResult = memoizedPredicate(expressionNode);
+        const isFirstResult = memoizedPredicate(expressionNode);
+        const isSecondResult = memoizedPredicate(expressionNode);
 
-        expect({ firstResult, secondResult }).toStrictEqual({
+        expect({
+            firstResult: isFirstResult,
+            secondResult: isSecondResult,
+        }).toStrictEqual({
             firstResult: true,
             secondResult: true,
         });
@@ -42,10 +45,13 @@ describe(memoizeExpressionBooleanPredicate, () => {
 
         const memoizedPredicate = memoizeExpressionBooleanPredicate(evaluate);
         const expressionNode = createIdentifierExpression("other");
-        const firstResult = memoizedPredicate(expressionNode);
-        const secondResult = memoizedPredicate(expressionNode);
+        const isFirstResult = memoizedPredicate(expressionNode);
+        const isSecondResult = memoizedPredicate(expressionNode);
 
-        expect({ firstResult, secondResult }).toStrictEqual({
+        expect({
+            firstResult: isFirstResult,
+            secondResult: isSecondResult,
+        }).toStrictEqual({
             firstResult: false,
             secondResult: false,
         });
@@ -68,8 +74,12 @@ describe(memoizeExpressionBooleanPredicate, () => {
         const firstExpression = createIdentifierExpression("longName");
         const secondExpression = createIdentifierExpression("id");
 
-        expect({ actual: memoizedPredicate(firstExpression) }).toStrictEqual({ actual: true });
-        expect({ actual: memoizedPredicate(secondExpression) }).toStrictEqual({ actual: false });
+        expect({ actual: memoizedPredicate(firstExpression) }).toStrictEqual({
+            actual: true,
+        });
+        expect({ actual: memoizedPredicate(secondExpression) }).toStrictEqual({
+            actual: false,
+        });
         expect(evaluate).toHaveBeenCalledTimes(2);
     });
 });

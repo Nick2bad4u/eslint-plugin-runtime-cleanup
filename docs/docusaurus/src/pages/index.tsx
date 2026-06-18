@@ -1,29 +1,29 @@
 import Head from "@docusaurus/Head";
 import Link from "@docusaurus/Link";
 import useBaseUrl from "@docusaurus/useBaseUrl";
-import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
-import GitHubStats from "../components/GitHubStats";
+import Layout from "@theme/Layout";
 
+import GitHubStats from "../components/GitHubStats";
 import styles from "./index.module.css";
 
-type HeroBadge = {
+interface HeroBadge {
     readonly description: string;
     readonly icon: string;
     readonly label: string;
-};
+}
 
-type HeroStat = {
+interface HeroStat {
     readonly description: string;
     readonly headline: string;
-};
+}
 
-type HomeCard = {
+interface HomeCard {
     readonly description: string;
     readonly icon: string;
     readonly title: string;
     readonly to: string;
-};
+}
 
 /**
  * Hero badges Note: These icons are from the "Nerd Font Symbols" font.
@@ -33,17 +33,17 @@ type HomeCard = {
 const heroBadges = [
     {
         description: "Drop-in config for ESLint v9+ and modern repos.",
-        icon: "\uf013",
+        icon: "\u{F013}",
         label: "Flat Config native",
     },
     {
         description: "Type-aware guidance without sacrificing readability.",
-        icon: "\ue628",
+        icon: "\u{E628}",
         label: "TypeScript-first",
     },
     {
         description: "Clear diagnostics with safe autofixes and suggestions.",
-        icon: "\uf0ad",
+        icon: "\u{F0AD}",
         label: "Actionable rule docs",
     },
 ] as const satisfies readonly HeroBadge[];
@@ -56,15 +56,15 @@ const heroBadges = [
 const heroStats = [
     {
         description: "Ready for the first runtime cleanup rules.",
-        headline: "\uf0ca Clean Scaffold",
+        headline: "\u{F0CA} Clean Scaffold",
     },
     {
         description: "Start small, then scale to stricter coverage.",
-        headline: "\ue690 6 Presets",
+        headline: "\u{E690} 6 Presets",
     },
     {
         description: "Safe rewrites where semantics are preserved.",
-        headline: "\udb80\udc68 DX-first Autofix & Suggestions",
+        headline: "\u{F0068} DX-first Autofix & Suggestions",
     },
 ] as const satisfies readonly HeroStat[];
 
@@ -73,10 +73,10 @@ const heroStats = [
  *
  * @see https://www.nerdfonts.com/cheat-sheet for available icons in the "Nerd Font Symbols" font
  */
-const overviewButtonIcon = "\udb81\udf1d";
-const comparePresetsButtonIcon = "\udb85\udc92";
-const heroKickerIcon = "\uf0ad";
-const heroKickerIcon2 = "\uf135";
+const overviewButtonIcon = "\u{F071D}";
+const comparePresetsButtonIcon = "\u{F1492}";
+const heroKickerIcon = "\u{F0AD}";
+const heroKickerIcon2 = "\u{F135}";
 const packageName = "eslint-plugin-runtime-cleanup";
 const homepageDescription = `Explore ${packageName} documentation, presets, and rule references for enforcing cleanup of timers, listeners, observers, AbortController instances, workers, streams, child processes, and disposables.`;
 const homepageKeywords = `${packageName}, runtime cleanup, eslint rules, timers, event listeners, abortcontroller, workers, streams, disposables, typescript linting, flat config`;
@@ -104,24 +104,24 @@ const homepageSocialImageUrl = `https://nick2bad4u.github.io/${packageName}/img/
  */
 const homeCards = [
     {
-        icon: "\uf135",
-        title: "Get Started",
         description:
             "Install the plugin, enable a preset, and prepare a runtime cleanup linting baseline.",
+        icon: "\u{F135}",
+        title: "Get Started",
         to: "/docs/rules/getting-started",
     },
     {
-        icon: "\ue690",
-        title: "Presets",
         description:
             "Choose the right preset for your team, from minimal baseline to full strict coverage.",
+        icon: "\u{E690}",
+        title: "Presets",
         to: "/docs/rules/presets",
     },
     {
-        icon: "\uf02d",
-        title: "Rule Reference",
         description:
             "Review the current rule roadmap and the documentation shape future rules will use.",
+        icon: "\u{F02D}",
+        title: "Rule Reference",
         to: "/docs/rules/overview",
     },
 ] as const satisfies readonly HomeCard[];
@@ -134,8 +134,8 @@ export default function Home() {
 
     return (
         <Layout
-            title="ESLint rules for runtime cleanup"
             description={homepageDescription}
+            title="ESLint rules for runtime cleanup"
         >
             <Head>
                 <meta content={homepageKeywords} name="keywords" />
@@ -167,8 +167,8 @@ export default function Home() {
                             <div className={styles.heroBadgeRow}>
                                 {heroBadges.map((badge) => (
                                     <article
-                                        key={badge.label}
                                         className={styles.heroBadge}
+                                        key={badge.label}
                                     >
                                         <p className={styles.heroBadgeLabel}>
                                             <span
@@ -224,8 +224,8 @@ export default function Home() {
                     <div className={styles.heroStats}>
                         {heroStats.map((stat) => (
                             <article
-                                key={stat.headline}
                                 className={styles.heroStatCard}
+                                key={stat.headline}
                             >
                                 <p className={styles.heroStatHeading}>
                                     {stat.headline}
@@ -243,7 +243,7 @@ export default function Home() {
                 <section className="container">
                     <div className={styles.cardGrid}>
                         {homeCards.map((card) => (
-                            <article key={card.title} className={styles.card}>
+                            <article className={styles.card} key={card.title}>
                                 <div className={styles.cardHeader}>
                                     <p className={styles.cardIcon}>
                                         {card.icon}

@@ -67,11 +67,11 @@ target.removeEventListener("scroll", onScroll, false);
 
 ```ts
 function setup() {
-    window.addEventListener("resize", onResize);
+ window.addEventListener("resize", onResize);
 }
 
 function cleanup() {
-    window.removeEventListener("resize", onResize);
+ window.removeEventListener("resize", onResize);
 }
 ```
 
@@ -81,7 +81,7 @@ function cleanup() {
 const controller = new AbortController();
 
 button.addEventListener("click", handleClick, {
-    signal: controller.signal,
+ signal: controller.signal,
 });
 
 controller.abort();
@@ -99,11 +99,11 @@ target.removeEventListener("scroll", onScroll, { capture: true });
 
 ```ts
 function setup() {
-    window.addEventListener("resize", onResize);
+ window.addEventListener("resize", onResize);
 
-    return () => {
-        window.removeEventListener("resize", onResize);
-    };
+ return () => {
+  window.removeEventListener("resize", onResize);
+ };
 }
 ```
 
@@ -125,9 +125,7 @@ semantic decision.
 ```js
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [
-    runtimeCleanup.configs.recommended,
-];
+export default [runtimeCleanup.configs.recommended];
 ```
 
 ## When not to use it

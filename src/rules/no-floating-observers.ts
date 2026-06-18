@@ -35,9 +35,7 @@ const globalReceiverNames = [
 
 type ObserverConstructorName = ArrayValues<typeof observerConstructorNames>;
 
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 const observerConstructorNameSet: ReadonlySet<string> = new Set(
     observerConstructorNames
 );
@@ -202,30 +200,28 @@ const noFloatingObservers: TSESLint.RuleModule<
     "floatingObserver",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                const observerName = getObserverConstructorName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            const observerName = getObserverConstructorName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(observerName) ||
-                    (!isDiscardedObserverInstance(node) &&
-                        !isObserveMethodCallReceiver(node))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(observerName) ||
+                (!isDiscardedObserverInstance(node) &&
+                    !isObserveMethodCallReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { observerName },
-                    messageId: "floatingObserver",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { observerName },
+                messageId: "floatingObserver",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

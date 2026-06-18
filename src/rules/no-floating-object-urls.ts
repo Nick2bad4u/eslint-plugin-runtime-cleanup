@@ -20,7 +20,11 @@ import {
     type TypedRuleContext,
 } from "../_internal/typed-rule.js";
 
-const globalUrlReceiverNames = ["globalThis", "self", "window"] as const;
+const globalUrlReceiverNames = [
+    "globalThis",
+    "self",
+    "window",
+] as const;
 const globalUrlReceiverNameSet: ReadonlySet<string> = new Set(
     globalUrlReceiverNames
 );
@@ -54,7 +58,7 @@ const isDirectUrlPath = (path: readonly string[]): boolean =>
 
 const isGlobalUrlPath = (path: readonly string[]): boolean =>
     path.length === 3 &&
-        setHas(globalUrlReceiverNameSet, arrayFirst(path) ?? "") &&
+    setHas(globalUrlReceiverNameSet, arrayFirst(path) ?? "") &&
     path[1] === "URL" &&
     path[2] === "createObjectURL";
 
@@ -68,7 +72,10 @@ const isObjectUrlCreateCall = (
 
     const path = collectStaticMemberPath(callee);
 
-    if (!isDefined(path) || (!isDirectUrlPath(path) && !isGlobalUrlPath(path))) {
+    if (
+        !isDefined(path) ||
+        (!isDirectUrlPath(path) && !isGlobalUrlPath(path))
+    ) {
         return false;
     }
 
@@ -85,23 +92,21 @@ const noFloatingObjectUrls: TSESLint.RuleModule<
     "floatingObjectUrl",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            CallExpression(node: Readonly<TSESTree.CallExpression>) {
-                if (
-                    !isObjectUrlCreateCall(context, node.callee) ||
-                    !isDiscardedResourceExpression(node)
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        CallExpression(node: Readonly<TSESTree.CallExpression>) {
+            if (
+                !isObjectUrlCreateCall(context, node.callee) ||
+                !isDiscardedResourceExpression(node)
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingObjectUrl",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingObjectUrl",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

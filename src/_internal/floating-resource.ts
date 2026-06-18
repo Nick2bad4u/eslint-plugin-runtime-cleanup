@@ -7,7 +7,6 @@ import { isDefined, setHas } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
 
-
 /**
  * Unwrap syntax that does not change whether a resource expression is owned.
  */
@@ -174,7 +173,12 @@ export const isImmediateUnownedMemberReceiver = (
         return false;
     }
 
-    const propertyName = getStaticPropertyName(parent.property, parent.computed);
+    const propertyName = getStaticPropertyName(
+        parent.property,
+        parent.computed
+    );
 
-    return !isDefined(propertyName) || !setHas(cleanupMemberNames, propertyName);
+    return (
+        !isDefined(propertyName) || !setHas(cleanupMemberNames, propertyName)
+    );
 };

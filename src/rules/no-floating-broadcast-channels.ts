@@ -25,9 +25,7 @@ const globalReceiverNames = [
     "window",
 ] as const;
 
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 
 const isGlobalReceiverName = (name: string): boolean =>
     setHas(globalReceiverNameSet, name);
@@ -153,24 +151,22 @@ const noFloatingBroadcastChannels: TSESLint.RuleModule<
     "floatingBroadcastChannel",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                if (
-                    !isBroadcastChannelConstructor(context, node.callee) ||
-                    (!isDiscardedBroadcastChannel(node) &&
-                        !isImmediateBroadcastChannelMethodReceiver(node))
-                ) {
-                    return;
-                }
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            if (
+                !isBroadcastChannelConstructor(context, node.callee) ||
+                (!isDiscardedBroadcastChannel(node) &&
+                    !isImmediateBroadcastChannelMethodReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    messageId: "floatingBroadcastChannel",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                messageId: "floatingBroadcastChannel",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

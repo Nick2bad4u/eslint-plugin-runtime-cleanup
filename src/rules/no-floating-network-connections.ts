@@ -19,25 +19,21 @@ import {
     type TypedRuleContext,
 } from "../_internal/typed-rule.js";
 
-const networkConnectionConstructorNames = [
-    "EventSource",
-    "WebSocket",
-] as const;
+const networkConnectionConstructorNames = ["EventSource", "WebSocket"] as const;
 const globalReceiverNames = [
     "globalThis",
     "self",
     "window",
 ] as const;
 
-type NetworkConnectionConstructorName =
-    ArrayValues<typeof networkConnectionConstructorNames>;
+type NetworkConnectionConstructorName = ArrayValues<
+    typeof networkConnectionConstructorNames
+>;
 
 const networkConnectionConstructorNameSet: ReadonlySet<string> = new Set(
     networkConnectionConstructorNames
 );
-const globalReceiverNameSet: ReadonlySet<string> = new Set(
-    globalReceiverNames
-);
+const globalReceiverNameSet: ReadonlySet<string> = new Set(globalReceiverNames);
 
 const isNetworkConnectionConstructorName = (
     name: string
@@ -229,30 +225,28 @@ const noFloatingNetworkConnections: TSESLint.RuleModule<
     "floatingNetworkConnection",
     readonly []
 > = createTypedRule({
-    create(context) {
-        return {
-            NewExpression(node: Readonly<TSESTree.NewExpression>) {
-                const connectionName = getNetworkConnectionConstructorName(
-                    context,
-                    node.callee
-                );
+    create: (context) => ({
+        NewExpression(node: Readonly<TSESTree.NewExpression>) {
+            const connectionName = getNetworkConnectionConstructorName(
+                context,
+                node.callee
+            );
 
-                if (
-                    !isDefined(connectionName) ||
-                    (!isDiscardedNetworkConnection(node) &&
-                        !isImmediateNetworkConnectionMethodReceiver(node))
-                ) {
-                    return;
-                }
+            if (
+                !isDefined(connectionName) ||
+                (!isDiscardedNetworkConnection(node) &&
+                    !isImmediateNetworkConnectionMethodReceiver(node))
+            ) {
+                return;
+            }
 
-                context.report({
-                    data: { connectionName },
-                    messageId: "floatingNetworkConnection",
-                    node,
-                });
-            },
-        };
-    },
+            context.report({
+                data: { connectionName },
+                messageId: "floatingNetworkConnection",
+                node,
+            });
+        },
+    }),
     defaultOptions: [],
     meta: {
         docs: {

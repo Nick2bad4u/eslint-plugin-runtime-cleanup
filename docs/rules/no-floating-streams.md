@@ -38,7 +38,7 @@ they close or are destroyed. A discarded file stream has no reachable handle for
 `destroy()`, `end()`, error handling, or ownership transfer. Unlike an
 immediately piped stream, a bare discarded stream is almost always accidental.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 import { createReadStream } from "node:fs";
@@ -58,7 +58,7 @@ const fs = require("fs");
 fs.createReadStream("input.txt");
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 import { createReadStream } from "node:fs";

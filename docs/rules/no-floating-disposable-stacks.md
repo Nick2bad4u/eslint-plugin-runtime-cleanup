@@ -42,7 +42,7 @@ provide cleanup if the stack itself is retained and later disposed. Discarding
 the stack after registering work silently drops the only object that can run the
 registered disposers.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new DisposableStack();
@@ -60,7 +60,7 @@ new DisposableStack().defer(cleanup);
 new AsyncDisposableStack().use(resource);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 using stack = new DisposableStack();

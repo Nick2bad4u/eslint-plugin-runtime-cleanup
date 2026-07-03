@@ -111,8 +111,7 @@ const suppressKnownWebpackWarningsPlugin: PluginModule = () => ({
                  */
                 (warning: unknown) => {
                     const warningRecord = warning as
-                        | Readonly<Record<string, unknown>>
-                        | undefined;
+                        Readonly<Record<string, unknown>> | undefined;
                     const warningMessage = warningRecord?.["message"];
 
                     return (
@@ -649,7 +648,12 @@ const config = {
             title: projectName,
         },
         prism: {
-            additionalLanguages: ["bash", "json", "yaml", "typescript"],
+            additionalLanguages: [
+                "bash",
+                "json",
+                "yaml",
+                "typescript",
+            ],
             darkTheme: prismThemes.dracula,
             defaultLanguage: "typescript",
             theme: prismThemes.github,

@@ -4,8 +4,7 @@ export type ReadmeRuleModule = Readonly<{
               docs?:
                   | {
                         readonly runtimeCleanupConfigs?:
-                            | readonly string[]
-                            | string;
+                            readonly string[] | string;
                         readonly url?: string | undefined;
                     }
                   | undefined;

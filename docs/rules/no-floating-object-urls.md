@@ -39,7 +39,7 @@ revoked.
 media source reachable until the URL is revoked. Discarding the returned string
 means cleanup code cannot call `URL.revokeObjectURL()` for that object URL.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 URL.createObjectURL(blob);
@@ -49,7 +49,7 @@ URL.createObjectURL(blob);
 void window.URL.createObjectURL(file);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const objectUrl = URL.createObjectURL(blob);

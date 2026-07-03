@@ -45,7 +45,7 @@ runtime resource.
 contexts, but the creating page still needs a retained handle for its port and
 ownership bookkeeping. Discarding the handle makes that lifecycle implicit.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new Worker("./worker.js");
@@ -65,7 +65,7 @@ import { Worker } from "node:worker_threads";
 new Worker("./worker.js");
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const worker = new Worker("./worker.js");

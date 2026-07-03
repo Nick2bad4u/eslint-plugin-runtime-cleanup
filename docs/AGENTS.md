@@ -190,4 +190,5 @@ Disable this rule in short-lived scripts where timers intentionally run until pr
 - [Preset selection strategy](https://nick2bad4u.github.io/eslint-plugin-runtime-cleanup/docs/rules/guides/preset-selection-strategy)
 
   </examples>
+
 </instructions>

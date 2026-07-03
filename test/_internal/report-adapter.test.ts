@@ -104,7 +104,7 @@ describe(createReportWithoutAutofixes, () => {
             ],
         });
 
-        expect(reportSpy).toHaveBeenCalledOnce();
+        expect(reportSpy).toHaveBeenCalledTimes(1);
 
         const [reportedDescriptor] = reportSpy.mock.calls[0] as [Descriptor];
 

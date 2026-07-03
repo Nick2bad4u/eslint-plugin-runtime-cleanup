@@ -38,21 +38,28 @@ export const getBoundedCacheValue = <Key, Value>(
     cache: Map<Key, Value>,
     key: Key
 ): BoundedCacheLookupResult<Value> => {
-    for (const [entryKey, value] of cache) {
-        if (isSameValueZero(entryKey, key)) {
-            cache.delete(key);
-            cache.set(key, value);
-
-            return {
-                found: true,
-                value,
-            };
-        }
-    }
-
-    return {
+    let result: BoundedCacheLookupResult<Value> = {
         found: false,
     };
+
+    for (const [entryKey, value] of cache) {
+        if (!isSameValueZero(entryKey, key)) {
+            continue;
+        }
+
+        result = {
+            found: true,
+            value,
+        };
+        break;
+    }
+
+    if (result.found) {
+        cache.delete(key);
+        cache.set(key, result.value);
+    }
+
+    return result;
 };
 
 /**

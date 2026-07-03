@@ -37,7 +37,7 @@ the handle that can be released manually with `release()`, and applications
 usually need to retain it to update UI, react to release events, or release the
 wake lock during cleanup.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 navigator.wakeLock.request("screen");
@@ -53,7 +53,7 @@ async function keepAwake() {
 }
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 async function keepAwake() {

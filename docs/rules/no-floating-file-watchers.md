@@ -39,7 +39,7 @@ loop alive and continue receiving file-system events until they are closed. If
 the watcher handle is discarded, later cleanup cannot reliably call `.close()`
 or coordinate shutdown behavior.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 import { watch } from "node:fs";
@@ -59,7 +59,7 @@ import * as fs from "node:fs";
 fs.watch("src", onChange).on("error", onError);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 import { watch } from "node:fs";

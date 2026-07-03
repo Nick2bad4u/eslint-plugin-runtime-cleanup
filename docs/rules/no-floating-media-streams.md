@@ -41,7 +41,7 @@ or permission-sensitive resources active. `MediaStreamTrack.stop()` tells the
 browser that a track's source is no longer needed. If the stream handle is
 discarded, cleanup code cannot reliably stop its tracks.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 navigator.mediaDevices.getUserMedia({ video: true });
@@ -57,7 +57,7 @@ async function openCamera() {
 }
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 async function openCamera() {

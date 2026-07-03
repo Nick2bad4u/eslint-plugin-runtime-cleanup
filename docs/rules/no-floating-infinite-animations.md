@@ -36,7 +36,7 @@ until canceled, finished, the effect is removed, or the document lifecycle ends.
 If the returned `Animation` is discarded, component or route cleanup code cannot
 reliably stop it.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 element.animate(keyframes, {
@@ -53,7 +53,7 @@ element
  .play();
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const animation = element.animate(keyframes, {

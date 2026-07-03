@@ -40,7 +40,7 @@ or coordinate reconnect and shutdown behavior. Discarding the handle makes the
 connection lifecycle implicit and usually leaks work until the page or runtime
 exits.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new WebSocket("wss://example.com/socket");
@@ -58,7 +58,7 @@ new WebSocket(url).send("hello");
 new EventSource("/events").addEventListener("message", onMessage);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const socket = new WebSocket("wss://example.com/socket");

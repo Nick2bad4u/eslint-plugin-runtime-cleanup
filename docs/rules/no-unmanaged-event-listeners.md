@@ -28,18 +28,6 @@ The same-boundary requirement is intentional. Cleanup in a different function is
 often real, but matching cross-function ownership without framework knowledge is
 too noisy for a syntax-only rule.
 
-## Capture matching
-
-`removeEventListener(...)` only removes the original listener when the capture
-mode matches. This rule tracks the common capture forms:
-
-- no options argument, which is treated as `false`;
-- boolean options such as `true`;
-- object options such as `{ capture: true }`.
-
-Opaque option values are only considered a match when the same option expression
-is passed to both calls.
-
 ## Why this rule exists
 
 Listeners keep callbacks and their captured state alive. In browser code, that
@@ -50,7 +38,7 @@ An abort signal is usually the clearest ownership model for modern event
 targets. A matching `removeEventListener(...)` call is still valid when the
 lifecycle boundary is small and obvious.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 button.addEventListener("click", handleClick);
@@ -75,7 +63,7 @@ function cleanup() {
 }
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const controller = new AbortController();
@@ -119,6 +107,18 @@ are reported because there is no stable callback reference to remove later.
 
 This rule does not autofix because choosing the right cleanup lifetime is a
 semantic decision.
+
+## Additional examples
+
+`removeEventListener(...)` only removes the original listener when the capture
+mode matches. This rule tracks the common capture forms:
+
+- no options argument, which is treated as `false`;
+- boolean options such as `true`;
+- object options such as `{ capture: true }`.
+
+Opaque option values are only considered a match when the same option expression
+is passed to both calls.
 
 ## ESLint flat config example
 

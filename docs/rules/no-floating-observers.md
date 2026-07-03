@@ -42,7 +42,7 @@ If the observer instance is not retained, later cleanup cannot call
 `disconnect()`, and the code has no explicit ownership point for the active
 runtime resource.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new ResizeObserver(handleResize);
@@ -56,7 +56,7 @@ void new MutationObserver(handleMutations);
 new IntersectionObserver(handleIntersections).observe(element);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const observer = new ResizeObserver(handleResize);

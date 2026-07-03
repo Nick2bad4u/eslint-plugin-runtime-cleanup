@@ -40,7 +40,7 @@ alive and hold open ports. Once a server is listening, retaining the `Server`
 object is the normal way to call `.close()`, coordinate graceful shutdown, and
 stop accepting new work.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 import { createServer } from "node:http";
@@ -60,7 +60,7 @@ const http2 = require("http2");
 http2.createSecureServer(options, handler).listen(8443);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 import { createServer } from "node:http";

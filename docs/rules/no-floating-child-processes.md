@@ -45,7 +45,7 @@ is the API surface for terminating the process, disconnecting IPC, inspecting
 exit state, and wiring teardown. Discarding it leaves no explicit owner that can
 clean up the subprocess when the surrounding runtime scope ends.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 import { spawn } from "node:child_process";
@@ -69,7 +69,7 @@ childProcess.fork("./worker.js").on("exit", handleExit);
 require("node:child_process").spawn("node", ["worker.js"]);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 import { spawn } from "node:child_process";

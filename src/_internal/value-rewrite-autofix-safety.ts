@@ -84,11 +84,7 @@ export const isArrayIndexReadAutofixSafe = (
         return false;
     }
 
-    if (isDirectReturnLikeExpressionPosition(node)) {
-        return false;
-    }
-
-    return true;
+    return !isDirectReturnLikeExpressionPosition(node);
 };
 
 /**
@@ -133,9 +129,5 @@ export const isRepeatablyEvaluableExpression = (
         return node.expressions.length === 0;
     }
 
-    if (node.type === AST_NODE_TYPES.ThisExpression) {
-        return true;
-    }
-
-    return false;
+    return node.type === AST_NODE_TYPES.ThisExpression;
 };

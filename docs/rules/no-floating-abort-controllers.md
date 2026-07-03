@@ -42,7 +42,7 @@ returned object, or another lifecycle owner.
 passes only `new AbortController().signal`, no reachable owner remains that can
 abort the work during cleanup.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new AbortController();
@@ -62,7 +62,7 @@ fetch("/api", {
 const signal = new AbortController().signal;
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const controller = new AbortController();

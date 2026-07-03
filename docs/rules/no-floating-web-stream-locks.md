@@ -35,7 +35,7 @@ The lock should be released with `releaseLock()` when the owner is done with the
 stream. If the reader or writer is discarded, later cleanup code cannot release
 that lock.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new ReadableStream<Uint8Array>().getReader();
@@ -49,7 +49,7 @@ stream.getReader().read();
 stream.getWriter().write(chunk);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const reader = stream.getReader();

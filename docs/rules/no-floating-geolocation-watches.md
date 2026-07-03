@@ -37,7 +37,7 @@ returns a numeric ID for that watch, and `clearWatch(id)` uses that ID to remove
 the registered monitoring handlers. If the ID is discarded, the code that owns
 the lifecycle cannot reliably unregister the watcher.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 navigator.geolocation.watchPosition(onPosition);
@@ -47,7 +47,7 @@ navigator.geolocation.watchPosition(onPosition);
 void navigator.geolocation.watchPosition(onPosition, onError);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const watchId = navigator.geolocation.watchPosition(onPosition);

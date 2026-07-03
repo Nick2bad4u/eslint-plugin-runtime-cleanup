@@ -38,7 +38,7 @@ and lets the browser know the channel is no longer needed. If the channel handle
 is discarded, code cannot reliably call `.close()` or remove listeners during
 cleanup.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new BroadcastChannel("updates");
@@ -56,7 +56,7 @@ new BroadcastChannel("updates").postMessage(message);
 new BroadcastChannel("updates").addEventListener("message", onMessage);
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const channel = new BroadcastChannel("updates");

@@ -35,7 +35,8 @@ describe(memoizeExpressionBooleanPredicate, () => {
             firstResult: true,
             secondResult: true,
         });
-        expect(evaluate).toHaveBeenCalledOnce();
+        expect(evaluate).toHaveBeenCalledTimes(1);
+        expect(evaluate).toHaveBeenCalledWith(expressionNode);
     });
 
     it("caches false results and returns them without recomputation", () => {
@@ -55,7 +56,8 @@ describe(memoizeExpressionBooleanPredicate, () => {
             firstResult: false,
             secondResult: false,
         });
-        expect(evaluate).toHaveBeenCalledOnce();
+        expect(evaluate).toHaveBeenCalledTimes(1);
+        expect(evaluate).toHaveBeenCalledWith(expressionNode);
     });
 
     it("keeps separate cache entries for different expression nodes", () => {

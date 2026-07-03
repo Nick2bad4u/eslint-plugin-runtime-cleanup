@@ -36,7 +36,7 @@ behind.
 resources. `AudioContext.close()` releases system audio resources used by the
 context. If the context is discarded, cleanup code cannot close it.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new AudioContext();
@@ -50,7 +50,7 @@ void new window.AudioContext();
 new AudioContext().resume();
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const context = new AudioContext();

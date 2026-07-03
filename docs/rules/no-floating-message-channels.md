@@ -38,7 +38,7 @@ disconnects a port so it is no longer active. If the channel object is discarded
 or only one port is retained from an inline expression, code cannot reliably
 close both sides of the channel during cleanup.
 
-## Incorrect
+## ❌ Incorrect
 
 ```ts
 new MessageChannel();
@@ -56,7 +56,7 @@ new MessageChannel().port1.postMessage(message);
 const port = new MessageChannel().port2;
 ```
 
-## Correct
+## ✅ Correct
 
 ```ts
 const channel = new MessageChannel();

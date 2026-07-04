@@ -90,10 +90,23 @@ owner and cancellation point.
 
 ## ESLint flat config example
 
-```js
+```ts
+import tsParser from "@typescript-eslint/parser";
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [runtimeCleanup.configs["recommended-type-checked"]];
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+   },
+  },
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
 ```
 
 ## When not to use it

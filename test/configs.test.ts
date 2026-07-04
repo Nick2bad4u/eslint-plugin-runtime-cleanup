@@ -2,6 +2,9 @@
  * @packageDocumentation
  * Vitest coverage for exported flat-config preset behavior.
  */
+import tsParser from "@typescript-eslint/parser";
+import { ESLint } from "eslint";
+import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,6 +12,9 @@ import {
     runtimeCleanupConfigNames,
 } from "../src/_internal/runtime-cleanup-config-references";
 import runtimeCleanupPlugin from "../src/plugin";
+
+const jsAndTsFiles = ["**/*.{js,mjs,cjs,ts,tsx,mts,cts}"] as const;
+const typeCheckedFiles = ["**/*.{ts,tsx,mts,cts}"] as const;
 
 interface FlatConfigLike {
     files?: unknown;
@@ -43,10 +49,10 @@ function getConfig(
  *
  * @param value - Runtime value under inspection.
  *
- * @returns `true` when value is object-like and non-null.
+ * @returns `true` when value is object-like, non-null, and not an array.
  */
 function isObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null;
+    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function requireConfig(
@@ -225,16 +231,22 @@ describe("runtime-cleanup plugin configs", () => {
     it("every exported config registers plugin and TypeScript parser defaults", () => {
         expect.hasAssertions();
 
-        for (const config of Object.values(configs ?? {}) as FlatConfigLike[]) {
+        for (const configName of runtimeCleanupConfigNames) {
+            const config = requireConfig(configs, configName);
+            const expectedFiles = runtimeCleanupConfigMetadataByName[configName]
+                .requiresTypeChecking
+                ? [...typeCheckedFiles]
+                : [...jsAndTsFiles];
+
             expect(config).toStrictEqual(
                 expect.objectContaining({
-                    files: ["**/*.{ts,tsx,mts,cts}"],
+                    files: expectedFiles,
                     plugins: expect.objectContaining({
                         "runtime-cleanup": expect.anything(),
                     }),
-                    rules: expect.any(Object),
                 })
             );
+            expect(isObject(config.rules)).toBe(true);
 
             expect(config.languageOptions).toStrictEqual(
                 expect.objectContaining({
@@ -260,7 +272,7 @@ describe("runtime-cleanup plugin configs", () => {
         }
     });
 
-    it("enables parser projectService for typed presets only", () => {
+    it("does not enable parser projectService from exported presets", () => {
         expect.hasAssertions();
 
         for (const configName of runtimeCleanupConfigNames) {
@@ -271,10 +283,55 @@ describe("runtime-cleanup plugin configs", () => {
                 isObject(parserOptions) &&
                 parserOptions["projectService"] === true;
 
-            expect(hasProjectServiceEnabled).toBe(
-                runtimeCleanupConfigMetadataByName[configName]
-                    .requiresTypeChecking
-            );
+            expect(hasProjectServiceEnabled).toBe(false);
         }
+    });
+
+    it("runs type-aware preset rules when the consumer config owns projectService", async () => {
+        expect.hasAssertions();
+
+        const lintFilePath = path.join(
+            process.cwd(),
+            "typed-rule-consumer-config.ts"
+        );
+        const eslint = new ESLint({
+            ignore: false,
+            overrideConfig: [
+                {
+                    files: ["**/*.{ts,tsx,mts,cts}"],
+                    languageOptions: {
+                        parser: tsParser,
+                        parserOptions: {
+                            ecmaVersion: "latest",
+                            projectService: {
+                                allowDefaultProject: [
+                                    "typed-rule-consumer-config.ts",
+                                ],
+                                defaultProject: "tsconfig.eslint.json",
+                            },
+                            sourceType: "module",
+                            tsconfigRootDir: process.cwd(),
+                        },
+                    },
+                },
+                runtimeCleanupPlugin.configs["recommended-type-checked"],
+            ],
+            overrideConfigFile: true,
+        });
+
+        const results = await eslint.lintText(
+            "document.body.animate([], { iterations: Infinity });",
+            { filePath: lintFilePath }
+        );
+
+        expect(results).toStrictEqual([
+            expect.objectContaining({
+                messages: expect.arrayContaining([
+                    expect.objectContaining({
+                        ruleId: "runtime-cleanup/no-floating-infinite-animations",
+                    }),
+                ]),
+            }),
+        ]);
     });
 });

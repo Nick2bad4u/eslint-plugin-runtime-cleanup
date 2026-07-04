@@ -33,6 +33,11 @@ const projectKeywords =
     "eslint, eslint-plugin, cleanup, resources, timers, event listeners, observers, abortcontroller, workers, streams, child processes, disposables, typescript, flat config, static analysis";
 /** Social preview image used for Open Graph and Twitter cards. */
 const socialCardImagePath = "img/logo.png";
+
+const isUnknownRecord = (
+    value: unknown
+): value is Readonly<Record<string, unknown>> =>
+    typeof value === "object" && value !== null;
 /** Absolute social preview image URL. */
 const socialCardImageUrl = new URL(socialCardImagePath, siteUrl).href;
 /** Client module path for runtime DOM enhancement bootstrap script. */
@@ -110,9 +115,9 @@ const suppressKnownWebpackWarningsPlugin: PluginModule = () => ({
                  * site-level problem.
                  */
                 (warning: unknown) => {
-                    const warningRecord = warning as
-                        Readonly<Record<string, unknown>> | undefined;
-                    const warningMessage = warningRecord?.["message"];
+                    const warningMessage = isUnknownRecord(warning)
+                        ? warning["message"]
+                        : undefined;
 
                     return (
                         typeof warningMessage === "string" &&
@@ -524,6 +529,10 @@ const config = {
                         {
                             label: "• Getting Started",
                             to: "/docs/rules/getting-started",
+                        },
+                        {
+                            label: "• Rules",
+                            to: "/docs/rules/category/rules",
                         },
                         {
                             label: "• Adoption & Rollout",

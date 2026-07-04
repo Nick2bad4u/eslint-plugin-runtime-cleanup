@@ -3,23 +3,28 @@
 `eslint-plugin-runtime-cleanup` rules target runtime resource lifetimes that are
 easy to leak when allocation and teardown drift apart.
 
-## Stable rules
+## Rules
 
-- [`no-floating-timers`](./no-floating-timers.md) requires timer handles to be
-  retained so they can be cleared during cleanup.
-- [`no-unmanaged-event-listeners`](./no-unmanaged-event-listeners.md) requires
-  event listeners to use an `AbortSignal` option or a matching
-  `removeEventListener` cleanup call.
-- [`no-floating-observers`](./no-floating-observers.md) requires native
-  observer instances to be retained so they can be disconnected during cleanup.
-- [`no-floating-workers`](./no-floating-workers.md) requires worker handles to
-  be retained so they can be terminated during cleanup.
-- [`no-floating-child-processes`](./no-floating-child-processes.md) requires
-  child process handles to be retained so they can be killed during cleanup.
-
-Future rules should continue to target explicit runtime resource lifetimes,
-including timers, listeners, observers, abort controllers, workers, streams,
-child processes, and disposable handles.
+- [`no-floating-abort-controllers`](./no-floating-abort-controllers.md)
+- [`no-floating-audio-contexts`](./no-floating-audio-contexts.md)
+- [`no-floating-broadcast-channels`](./no-floating-broadcast-channels.md)
+- [`no-floating-child-processes`](./no-floating-child-processes.md)
+- [`no-floating-disposable-stacks`](./no-floating-disposable-stacks.md)
+- [`no-floating-file-watchers`](./no-floating-file-watchers.md)
+- [`no-floating-geolocation-watches`](./no-floating-geolocation-watches.md)
+- [`no-floating-infinite-animations`](./no-floating-infinite-animations.md)
+- [`no-floating-media-streams`](./no-floating-media-streams.md)
+- [`no-floating-message-channels`](./no-floating-message-channels.md)
+- [`no-floating-network-connections`](./no-floating-network-connections.md)
+- [`no-floating-object-urls`](./no-floating-object-urls.md)
+- [`no-floating-observers`](./no-floating-observers.md)
+- [`no-floating-servers`](./no-floating-servers.md)
+- [`no-floating-streams`](./no-floating-streams.md)
+- [`no-floating-timers`](./no-floating-timers.md)
+- [`no-floating-wake-locks`](./no-floating-wake-locks.md)
+- [`no-floating-web-stream-locks`](./no-floating-web-stream-locks.md)
+- [`no-floating-workers`](./no-floating-workers.md)
+- [`no-unmanaged-event-listeners`](./no-unmanaged-event-listeners.md)
 
 ## Rule authoring expectations
 

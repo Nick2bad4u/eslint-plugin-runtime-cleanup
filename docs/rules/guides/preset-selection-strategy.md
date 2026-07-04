@@ -4,14 +4,14 @@ description: Choose the right eslint-plugin-runtime-cleanup preset and roll it o
 
 # Preset selection strategy
 
-The package currently exposes empty presets. These keys are stable adoption
-points for future runtime cleanup rules.
+The package exposes stable presets for staged runtime-cleanup adoption.
 
 ## Recommended path
 
 1. Use `runtime-cleanup.configs.recommended` for broad, low-noise checks.
-2. Add `runtime-cleanup.configs["recommended-type-checked"]` when type-aware
-   rules are useful and project services are available.
+2. Configure TypeScript parser services in your own flat config, then add
+   `runtime-cleanup.configs["recommended-type-checked"]` when type-aware rules
+   are useful.
 3. Evaluate `runtime-cleanup.configs.strict` only after recommended findings are
    clean.
 4. Use `runtime-cleanup.configs.experimental` in narrow CI jobs or local audits

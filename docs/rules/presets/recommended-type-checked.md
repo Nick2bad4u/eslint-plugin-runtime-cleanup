@@ -3,6 +3,28 @@
 `runtime-cleanup.configs["recommended-type-checked"]` is reserved for
 recommended cleanup rules that need TypeScript parser services.
 
+This preset does not set `parserOptions.projectService`. Configure type-aware
+parsing in your own flat config before adding it:
+
+```ts
+import tsParser from "@typescript-eslint/parser";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
+
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+   },
+  },
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
+```
+
 ## Rules in this preset
 
 This preset enables recommended rules and any type-aware recommended additions.

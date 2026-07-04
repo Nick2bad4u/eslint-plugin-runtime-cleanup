@@ -14,27 +14,59 @@ const packageJson = requireFromTestModule("../package.json") as {
 };
 const expectedPluginVersion = packageJson.version;
 
-const expectedConfigRegistryShape = expect.objectContaining(
-    Object.fromEntries(
-        runtimeCleanupConfigNames.map((configName) => [
-            configName,
-            expect.any(Object),
-        ])
-    )
-);
-
 const expectedPluginMeta = {
     name: "eslint-plugin-runtime-cleanup",
     namespace: "runtime-cleanup",
     version: expectedPluginVersion,
 };
-const expectedRuleRegistryShape = expect.objectContaining({
-    "no-floating-child-processes": expect.any(Object),
-    "no-floating-observers": expect.any(Object),
-    "no-floating-timers": expect.any(Object),
-    "no-floating-workers": expect.any(Object),
-    "no-unmanaged-event-listeners": expect.any(Object),
-});
+const representativeRuleNames = [
+    "no-floating-child-processes",
+    "no-floating-observers",
+    "no-floating-timers",
+    "no-floating-workers",
+    "no-unmanaged-event-listeners",
+] as const;
+
+function assertConfigRegistryShape(configs: unknown): void {
+    assertObjectRecord(configs, "plugin configs");
+
+    for (const configName of runtimeCleanupConfigNames) {
+        assertObjectRecord(configs[configName], `plugin config ${configName}`);
+    }
+}
+
+function assertObjectRecord(
+    value: unknown,
+    label: string
+): asserts value is Record<string, unknown> {
+    expect(isObjectRecord(value)).toBe(true);
+
+    if (!isObjectRecord(value)) {
+        throw new TypeError(`${label} must be a non-array object.`);
+    }
+}
+
+function assertPluginShape(plugin: unknown): void {
+    assertObjectRecord(plugin, "plugin");
+    assertConfigRegistryShape(plugin["configs"]);
+
+    expect(plugin["meta"]).toStrictEqual(expectedPluginMeta);
+    expect(plugin["processors"]).toStrictEqual({});
+
+    assertRuleRegistryShape(plugin["rules"]);
+}
+
+function assertRuleRegistryShape(rules: unknown): void {
+    assertObjectRecord(rules, "plugin rules");
+
+    for (const ruleName of representativeRuleNames) {
+        assertObjectRecord(rules[ruleName], `plugin rule ${ruleName}`);
+    }
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 describe("plugin entry module", () => {
     it("exports default plugin object with rule and config registries", () => {
@@ -45,22 +77,22 @@ describe("plugin entry module", () => {
 
         expect(runtimeCleanupPlugin).toStrictEqual(
             expect.objectContaining({
-                configs: expect.any(Object),
                 meta: expectedPluginMeta,
                 processors: {},
-                rules: expectedRuleRegistryShape,
             })
         );
+
+        assertConfigRegistryShape(runtimeCleanupPlugin.configs);
+        assertRuleRegistryShape(runtimeCleanupPlugin.rules);
     });
 
     it("exposes supported presets and registered rules", () => {
         expect.hasAssertions();
-        expect(runtimeCleanupPlugin.configs).toStrictEqual(
-            expectedConfigRegistryShape
-        );
-        expect(runtimeCleanupPlugin.rules).toStrictEqual(
-            expectedRuleRegistryShape
-        );
+        expect(runtimeCleanupPlugin.configs).toBeTypeOf("object");
+        expect(runtimeCleanupPlugin.rules).toBeTypeOf("object");
+
+        assertConfigRegistryShape(runtimeCleanupPlugin.configs);
+        assertRuleRegistryShape(runtimeCleanupPlugin.rules);
     });
 
     it("exports matching runtime plugin shape from plugin.mjs", async () => {
@@ -68,14 +100,9 @@ describe("plugin entry module", () => {
 
         const runtimePluginModule = await import("../plugin.mjs");
 
-        expect(runtimePluginModule.default).toStrictEqual(
-            expect.objectContaining({
-                configs: expect.any(Object),
-                meta: expectedPluginMeta,
-                processors: {},
-                rules: expectedRuleRegistryShape,
-            })
-        );
+        expect(runtimePluginModule.default).toBeTypeOf("object");
+
+        assertPluginShape(runtimePluginModule.default);
     });
 
     it("exports matching runtime plugin shape from dist/plugin.cjs", () => {
@@ -88,14 +115,9 @@ describe("plugin entry module", () => {
             rules?: unknown;
         };
 
-        expect(runtimePlugin).toStrictEqual(
-            expect.objectContaining({
-                configs: expect.any(Object),
-                meta: expectedPluginMeta,
-                processors: {},
-                rules: expectedRuleRegistryShape,
-            })
-        );
+        expect(runtimePlugin).toBeTypeOf("object");
+
+        assertPluginShape(runtimePlugin);
     });
 
     it("resolves package default export through self-reference ESM import", async () => {
@@ -106,14 +128,9 @@ describe("plugin entry module", () => {
                 default: unknown;
             };
 
-        expect(packageRuntimeModule.default).toStrictEqual(
-            expect.objectContaining({
-                configs: expect.any(Object),
-                meta: expectedPluginMeta,
-                processors: {},
-                rules: expectedRuleRegistryShape,
-            })
-        );
+        expect(packageRuntimeModule.default).toBeTypeOf("object");
+
+        assertPluginShape(packageRuntimeModule.default);
     });
 
     it("resolves package default export through self-reference CJS require", () => {
@@ -128,13 +145,8 @@ describe("plugin entry module", () => {
             rules?: unknown;
         };
 
-        expect(packageRuntimePlugin).toStrictEqual(
-            expect.objectContaining({
-                configs: expect.any(Object),
-                meta: expectedPluginMeta,
-                processors: {},
-                rules: expectedRuleRegistryShape,
-            })
-        );
+        expect(packageRuntimePlugin).toBeTypeOf("object");
+
+        assertPluginShape(packageRuntimePlugin);
     });
 });

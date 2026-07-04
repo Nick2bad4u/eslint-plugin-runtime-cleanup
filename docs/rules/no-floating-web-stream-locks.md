@@ -73,8 +73,9 @@ streamReaderRegistry.add(stream.getReader());
 
 ## Behavior and migration notes
 
-This rule is type-aware and requires parser services. Enable it through a
-type-checked preset or configure `parserOptions.projectService` yourself.
+This rule is type-aware and requires parser services. Type-checked presets do
+not configure `parserOptions.projectService`; configure parser services in your
+own flat config before adding the preset.
 
 This rule does not autofix. Rewriting `stream.getReader().read()` into a
 retained reader requires a surrounding `try`/`finally` cleanup shape, which is
@@ -82,10 +83,23 @@ too context-dependent for a safe automatic fix.
 
 ## ESLint flat config example
 
-```js
+```ts
+import tsParser from "@typescript-eslint/parser";
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
-export default [runtimeCleanup.configs["recommended-type-checked"]];
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+   },
+  },
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
 ```
 
 ## When not to use it

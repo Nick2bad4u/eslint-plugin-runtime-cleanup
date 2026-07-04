@@ -146,7 +146,7 @@ describe("plugin contract snapshots", () => {
               "configKey": "all",
               "parserOptions": {
                 "ecmaVersion": "latest",
-                "projectService": true,
+                "projectService": false,
                 "sourceType": "module",
               },
               "presetName": "runtime-cleanup:all",
@@ -230,7 +230,7 @@ describe("plugin contract snapshots", () => {
               "configKey": "recommended-type-checked",
               "parserOptions": {
                 "ecmaVersion": "latest",
-                "projectService": true,
+                "projectService": false,
                 "sourceType": "module",
               },
               "presetName": "runtime-cleanup:recommended-type-checked",
@@ -262,7 +262,7 @@ describe("plugin contract snapshots", () => {
               "configKey": "strict",
               "parserOptions": {
                 "ecmaVersion": "latest",
-                "projectService": true,
+                "projectService": false,
                 "sourceType": "module",
               },
               "presetName": "runtime-cleanup:strict",

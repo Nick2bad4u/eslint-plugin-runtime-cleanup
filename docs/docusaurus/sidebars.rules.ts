@@ -4,6 +4,35 @@
  */
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
+const ruleDocIds = [
+    "no-floating-abort-controllers",
+    "no-floating-audio-contexts",
+    "no-floating-broadcast-channels",
+    "no-floating-child-processes",
+    "no-floating-disposable-stacks",
+    "no-floating-file-watchers",
+    "no-floating-geolocation-watches",
+    "no-floating-infinite-animations",
+    "no-floating-media-streams",
+    "no-floating-message-channels",
+    "no-floating-network-connections",
+    "no-floating-object-urls",
+    "no-floating-observers",
+    "no-floating-servers",
+    "no-floating-streams",
+    "no-floating-timers",
+    "no-floating-wake-locks",
+    "no-floating-web-stream-locks",
+    "no-floating-workers",
+    "no-unmanaged-event-listeners",
+] as const;
+
+const ruleDocItems = ruleDocIds.map((ruleDocId) => ({
+    id: ruleDocId,
+    label: ruleDocId,
+    type: "doc" as const,
+}));
+
 /** Complete sidebar structure for docs site navigation. */
 const sidebars = {
     rules: [
@@ -57,6 +86,22 @@ const sidebars = {
             type: "category",
         },
         {
+            className: "sb-cat-rules-cleanup",
+            collapsed: false,
+            customProps: {
+                badge: "rules",
+            },
+            items: ruleDocItems,
+            label: "Rules",
+            link: {
+                description:
+                    "Runtime cleanup rules for resource-lifetime patterns.",
+                title: "Rules",
+                type: "generated-index",
+            },
+            type: "category",
+        },
+        {
             className: "sb-cat-presets",
             collapsed: false,
             customProps: {
@@ -98,48 +143,6 @@ const sidebars = {
                     id: "presets/experimental",
                     label: "Experimental",
                     type: "doc",
-                },
-                {
-                    className: "sb-cat-rules-cleanup",
-                    collapsed: false,
-                    customProps: {
-                        badge: "rules",
-                    },
-                    items: [
-                        {
-                            id: "no-floating-child-processes",
-                            label: "no-floating-child-processes",
-                            type: "doc",
-                        },
-                        {
-                            id: "no-floating-observers",
-                            label: "no-floating-observers",
-                            type: "doc",
-                        },
-                        {
-                            id: "no-floating-timers",
-                            label: "no-floating-timers",
-                            type: "doc",
-                        },
-                        {
-                            id: "no-floating-workers",
-                            label: "no-floating-workers",
-                            type: "doc",
-                        },
-                        {
-                            id: "no-unmanaged-event-listeners",
-                            label: "no-unmanaged-event-listeners",
-                            type: "doc",
-                        },
-                    ],
-                    label: "Rules in presets",
-                    link: {
-                        description:
-                            "Stable runtime cleanup rules enabled by the recommended, strict, and all presets.",
-                        title: "Rules in presets",
-                        type: "generated-index",
-                    },
-                    type: "category",
                 },
             ],
             label: "Presets",

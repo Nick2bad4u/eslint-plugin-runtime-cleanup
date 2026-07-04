@@ -6,7 +6,7 @@ import type { ESLint, Linter } from "eslint";
 import type { Except } from "type-fest";
 
 import tsParser from "@typescript-eslint/parser";
-import { objectFromEntries, objectHasOwn } from "ts-extras";
+import { objectFromEntries } from "ts-extras";
 
 // eslint-disable-next-line import-x/extensions -- Avoid importing from the ESM entrypoint to preserve CJS compatibility
 import packageJson from "../package.json" with { type: "json" };
@@ -17,8 +17,19 @@ import {
     runtimeCleanupConfigNames,
 } from "./_internal/runtime-cleanup-config-references.js";
 
-/** Default file globs targeted by plugin presets when `files` is omitted. */
-const TS_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
+/** Default JS/TS file globs targeted by non-type-aware plugin presets. */
+const JS_AND_TS_FILES = ["**/*.{js,mjs,cjs,ts,tsx,mts,cts}"] as const;
+
+/**
+ * Default file globs targeted by type-aware plugin presets.
+ *
+ * @remarks
+ * Type-aware presets intentionally do not enable
+ * `parserOptions.projectService`. Project-service ownership belongs in the
+ * consuming flat config because it depends on tsconfig roots, monorepo layout,
+ * generated files, and performance tradeoffs.
+ */
+const TYPE_CHECKED_FILES = ["**/*.{ts,tsx,mts,cts}"] as const;
 
 /**
  * Canonical flat-config preset keys exposed through `plugin.configs`.
@@ -261,13 +272,6 @@ function withRuntimeCleanupPlugin(
     const existingParserOptions = existingLanguageOptions["parserOptions"];
     const parserOptions = normalizeParserOptions(existingParserOptions);
 
-    if (
-        options.requiresTypeChecking &&
-        !objectHasOwn(parserOptions, "projectService")
-    ) {
-        Reflect.set(parserOptions, "projectService", true);
-    }
-
     const languageOptions: FlatLanguageOptions = {
         ...existingLanguageOptions,
         parser: existingLanguageOptions["parser"] ?? tsParserValue,
@@ -276,7 +280,11 @@ function withRuntimeCleanupPlugin(
 
     return {
         ...config,
-        files: config.files ?? [...TS_FILES],
+        files:
+            config.files ??
+            (options.requiresTypeChecking
+                ? [...TYPE_CHECKED_FILES]
+                : [...JS_AND_TS_FILES]),
         languageOptions,
         plugins: {
             ...config.plugins,

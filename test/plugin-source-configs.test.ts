@@ -9,6 +9,9 @@ import {
     runtimeCleanupConfigNames,
 } from "../src/_internal/runtime-cleanup-config-references";
 
+const jsAndTsFiles = ["**/*.{js,mjs,cjs,ts,tsx,mts,cts}"] as const;
+const typeCheckedFiles = ["**/*.{ts,tsx,mts,cts}"] as const;
+
 /** Import `src/plugin` fresh for each assertion set. */
 const loadSourcePlugin = async () => {
     vi.resetModules();
@@ -190,9 +193,7 @@ describe("source plugin config wiring", () => {
         const plugin = await loadSourcePlugin();
         const recommendedConfig = plugin.configs.recommended;
 
-        expect(recommendedConfig.files).toStrictEqual([
-            "**/*.{ts,tsx,mts,cts}",
-        ]);
+        expect(recommendedConfig.files).toStrictEqual([...jsAndTsFiles]);
         expect(recommendedConfig.plugins).toHaveProperty("runtime-cleanup");
         expect(recommendedConfig.plugins?.["runtime-cleanup"]).toHaveProperty(
             "rules"
@@ -209,9 +210,16 @@ describe("source plugin config wiring", () => {
         });
 
         for (const configName of runtimeCleanupConfigNames) {
+            const expectedFiles = runtimeCleanupConfigMetadataByName[configName]
+                .requiresTypeChecking
+                ? [...typeCheckedFiles]
+                : [...jsAndTsFiles];
             const parserOptions =
                 plugin.configs[configName].languageOptions?.["parserOptions"];
 
+            expect(plugin.configs[configName].files).toStrictEqual(
+                expectedFiles
+            );
             expect(parserOptions).toStrictEqual(
                 expect.objectContaining({
                     ecmaVersion: "latest",
@@ -225,10 +233,7 @@ describe("source plugin config wiring", () => {
                 "projectService" in parserOptions &&
                 Reflect.get(parserOptions, "projectService") === true;
 
-            expect(hasProjectServiceEnabled).toBe(
-                runtimeCleanupConfigMetadataByName[configName]
-                    .requiresTypeChecking
-            );
+            expect(hasProjectServiceEnabled).toBe(false);
         }
     });
 });

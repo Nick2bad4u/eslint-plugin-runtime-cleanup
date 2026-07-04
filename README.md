@@ -2,15 +2,13 @@
 
 [![npm license.](https://flat.badgen.net/npm/license/eslint-plugin-runtime-cleanup?color=purple)](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/blob/main/LICENSE) [![npm total downloads.](https://flat.badgen.net/npm/dt/eslint-plugin-runtime-cleanup?color=pink)](https://www.npmjs.com/package/eslint-plugin-runtime-cleanup) [![latest GitHub release.](https://flat.badgen.net/github/release/Nick2bad4u/eslint-plugin-runtime-cleanup?color=cyan)](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/releases) [![GitHub stars.](https://flat.badgen.net/github/stars/Nick2bad4u/eslint-plugin-runtime-cleanup?color=yellow)](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/stargazers) [![GitHub forks.](https://flat.badgen.net/github/forks/Nick2bad4u/eslint-plugin-runtime-cleanup?color=green)](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/forks) [![GitHub open issues.](https://flat.badgen.net/github/open-issues/Nick2bad4u/eslint-plugin-runtime-cleanup?color=red)](https://github.com/Nick2bad4u/eslint-plugin-runtime-cleanup/issues) [![codecov.](https://codecov.io/gh/Nick2bad4u/eslint-plugin-runtime-cleanup/branch/main/graph/badge.svg)](https://codecov.io/gh/Nick2bad4u/eslint-plugin-runtime-cleanup)
 
-ESLint plugin scaffold for rules that require explicit cleanup of runtime
-resources such as timers, event listeners, observers, abort controllers,
-workers, streams, child processes, and disposable handles.
+ESLint plugin for rules that require explicit cleanup of runtime resources such
+as timers, event listeners, observers, abort controllers, workers, streams,
+child processes, and disposable handles.
 
-This repository has been converted from the shared modern ESLint plugin
-template. It intentionally does not publish speculative rules yet. The runtime,
-preset surfaces, documentation structure, tests, and release gates are in place
-so concrete cleanup rules can be added without carrying over template-specific
-rule behavior.
+The runtime, preset surfaces, documentation structure, tests, and release gates
+are in place so cleanup rules can stay consistent across rule metadata,
+generated docs, and flat config presets.
 
 ## Install
 
@@ -20,25 +18,49 @@ npm install --save-dev eslint-plugin-runtime-cleanup typescript
 
 ## Usage
 
-```js
+```ts
 import runtimeCleanup from "eslint-plugin-runtime-cleanup";
 
 export default [runtimeCleanup.configs.recommended];
 ```
 
-The initial presets contain no rules. They exist so consumers can adopt the
-package shape early and so future rules can land behind stable config keys.
+The recommended preset targets JavaScript and TypeScript files by default:
+`**/*.{js,mjs,cjs,ts,tsx,mts,cts}`. Type-aware presets stay scoped to
+TypeScript-family files, but they do not configure TypeScript parser services
+for you.
+
+Configure type-aware parsing in the consuming flat config before adding a
+type-aware preset:
+
+```ts
+import tsParser from "@typescript-eslint/parser";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
+
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+   },
+  },
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
+```
 
 ## Presets
 
-| Preset                                                | Purpose                                                            |
-| ----------------------------------------------------- | ------------------------------------------------------------------ |
-| `runtime-cleanup.configs.minimal`                     | Reserved for low-noise cleanup checks.                             |
-| `runtime-cleanup.configs.recommended`                 | Reserved for broadly safe cleanup checks.                          |
-| `runtime-cleanup.configs["recommended-type-checked"]` | Reserved for cleanup checks that need TypeScript type information. |
-| `runtime-cleanup.configs.strict`                      | Reserved for stricter cleanup enforcement.                         |
-| `runtime-cleanup.configs.all`                         | Reserved for all stable cleanup rules.                             |
-| `runtime-cleanup.configs.experimental`                | Reserved for rules still proving out behavior or fix safety.       |
+| Preset                                                | Purpose                                                               |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| `runtime-cleanup.configs.minimal`                     | Low-noise cleanup baseline.                                           |
+| `runtime-cleanup.configs.recommended`                 | Broadly safe cleanup rules for JS and TS files.                       |
+| `runtime-cleanup.configs["recommended-type-checked"]` | Recommended cleanup rules plus checks that need TypeScript type data. |
+| `runtime-cleanup.configs.strict`                      | Stronger cleanup enforcement for TypeScript-family files.             |
+| `runtime-cleanup.configs.all`                         | All stable cleanup rules for TypeScript-family files.                 |
+| `runtime-cleanup.configs.experimental`                | Rules still proving out behavior or fix safety.                       |
 
 ## Rules
 

@@ -3,6 +3,10 @@
 `runtime-cleanup.configs.strict` is reserved for stronger cleanup enforcement
 after low-noise rules have proven stable.
 
+This preset includes type-aware rules. It does not set
+`parserOptions.projectService`; configure type-aware parsing in your own flat
+config before adding it.
+
 ## Rules in this preset
 
 This preset enables the following rules.

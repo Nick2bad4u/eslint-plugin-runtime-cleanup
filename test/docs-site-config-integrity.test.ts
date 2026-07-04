@@ -2,8 +2,11 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import runtimeCleanupPlugin from "../src/plugin";
+
 const chartIndexBulletPattern =
     /^- \[[^\n\r]+\]\(\.\/(?<chartFile>[^\n\r]+\.md)\)$/v;
+const sidebarRuleNamePattern = /"(?<ruleName>no-[\-a-z]+)"/gv;
 
 const readWorkspaceFile = (relativePath: string): string =>
     fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
@@ -26,6 +29,31 @@ describe("docusaurus site configuration integrity", () => {
 
         expect(docusaurusConfigSource).not.toContain("/tree/");
         expect(docusaurusConfigSource).not.toContain("/blog/blog/");
+        expect(docusaurusConfigSource).toContain(
+            'to: "/docs/rules/category/rules"'
+        );
+    });
+
+    it("lists every rule doc in a top-level Rules sidebar category", () => {
+        expect.hasAssertions();
+
+        const sidebarsRulesSource = readWorkspaceFile(
+            "docs/docusaurus/sidebars.rules.ts"
+        );
+        const ruleNames = Array.from(
+            sidebarsRulesSource.matchAll(sidebarRuleNamePattern),
+            (match) => match.groups?.["ruleName"] ?? ""
+        );
+        const expectedRuleNames = Object.keys(
+            runtimeCleanupPlugin.rules
+        ).toSorted((left, right) => left.localeCompare(right));
+
+        expect(new Set(ruleNames)).toStrictEqual(new Set(expectedRuleNames));
+        expect(sidebarsRulesSource).toContain('label: "Rules"');
+        expect(sidebarsRulesSource).not.toContain("Rules in presets");
+        expect(sidebarsRulesSource.indexOf('label: "Rules"')).toBeLessThan(
+            sidebarsRulesSource.indexOf('label: "Presets"')
+        );
     });
 
     it("charts index uses linked chart entries with existing local files", () => {

@@ -1,7 +1,12 @@
 # Presets
 
 `eslint-plugin-runtime-cleanup` exposes stable flat-config presets so consumers
-can adopt the package shape before concrete rules are published.
+can choose a rule set without handing TypeScript project-service configuration
+to the plugin.
+
+Type-aware presets include rules that require TypeScript parser services, but
+they do not set `parserOptions.projectService`. Configure type-aware parsing in
+your own flat config before adding one of those presets.
 
 ## Preset list
 
@@ -10,9 +15,28 @@ can adopt the package shape before concrete rules are published.
 | `runtime-cleanup.configs.minimal`                     |        No        | Lowest-noise cleanup rules.                              |
 | `runtime-cleanup.configs.recommended`                 |        No        | Broadly safe cleanup rules.                              |
 | `runtime-cleanup.configs["recommended-type-checked"]` |       Yes        | Recommended rules that need TypeScript type information. |
-| `runtime-cleanup.configs.strict`                      |        No        | Stronger cleanup enforcement.                            |
-| `runtime-cleanup.configs.all`                         |        No        | All stable rules.                                        |
+| `runtime-cleanup.configs.strict`                      |       Yes        | Stronger cleanup enforcement.                            |
+| `runtime-cleanup.configs.all`                         |       Yes        | All stable rules.                                        |
 | `runtime-cleanup.configs.experimental`                |        No        | Rules still proving out behavior.                        |
+
+```ts
+import tsParser from "@typescript-eslint/parser";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
+
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname,
+   },
+  },
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
+```
 
 ## Rule matrix
 

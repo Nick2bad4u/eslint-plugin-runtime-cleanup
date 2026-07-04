@@ -41,20 +41,35 @@ export default [
 
 ## Type-aware parser setup notes
 
-`runtimeCleanup.configs["recommended-type-checked"]` enables `projectService`. The current recommended rule set is syntax-only, but type-aware rules should always be run from a TypeScript-targeted config block.
+`runtimeCleanup.configs["recommended-type-checked"]` does not enable
+`projectService`. Type-aware parser configuration belongs in your flat config
+because it depends on the workspace's tsconfig roots, generated-file policy, and
+performance budget.
 
-If you build a fully manual config block (instead of consuming a preset), configure parser services in the TypeScript-targeted config block:
+Configure parser services in a TypeScript-targeted config block before adding a
+type-aware runtime-cleanup preset:
 
-```js
-languageOptions: {
-  parserOptions: {
+```ts
+import tsParser from "@typescript-eslint/parser";
+import runtimeCleanup from "eslint-plugin-runtime-cleanup";
+
+export default [
+ {
+  files: ["**/*.{ts,tsx,mts,cts}"],
+  languageOptions: {
+   parser: tsParser,
+   parserOptions: {
     projectService: true,
     tsconfigRootDir: import.meta.dirname,
+   },
   },
-}
+ },
+ runtimeCleanup.configs["recommended-type-checked"],
+];
 ```
 
-If parser services are missing, future typed rules may not run as expected.
+If parser services are missing, typed rules will not have the TypeScript program
+they need for semantic checks.
 
 ## Common gotchas
 

@@ -191,7 +191,12 @@ jobs:
                   if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
                     explicit_version="${EXPLICIT_VERSION:-}"
                     if [ -n "$explicit_version" ]; then
-                      npm version "$explicit_version" --no-git-tag-version
+                      current_version=$(node -p "require('./package.json').version")
+                      if [ "$current_version" != "$explicit_version" ]; then
+                        npm version "$explicit_version" --no-git-tag-version
+                      else
+                        echo "package.json is already at $explicit_version; keeping existing version."
+                      fi
                       version="$explicit_version"
                     else
                       release_type="${RELEASE_TYPE:-patch}"

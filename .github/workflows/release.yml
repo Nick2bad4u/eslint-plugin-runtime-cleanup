@@ -263,13 +263,13 @@ jobs:
 
                   git add -A
                   if git diff --cached --quiet; then
-                    echo "No staged changes found for release commit." >&2
-                    exit 1
+                    echo "No staged changes found for release commit; tagging current HEAD."
+                  else
+                    git commit -m "chore: release ${TAG}"
+                    git push origin "HEAD:${BRANCH}"
                   fi
 
-                  git commit -m "chore: release ${TAG}"
                   git tag -a "$TAG" -m "$TAG"
-                  git push origin "HEAD:${BRANCH}"
                   git push origin "$TAG"
 
             - name: "Generate release notes from git-cliff"

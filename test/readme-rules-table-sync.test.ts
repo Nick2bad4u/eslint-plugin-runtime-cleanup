@@ -56,7 +56,10 @@ const normalizeMarkdownTableSpacing = (markdown: string): string =>
                     const hasEndColon = trimmedCell.endsWith(":");
                     const separatorKey =
                         `${Number(hasStartColon)}${Number(hasEndColon)}` as
-                            "00" | "01" | "10" | "11";
+                            | "00"
+                            | "01"
+                            | "10"
+                            | "11";
                     const normalizedSeparator = (
                         {
                             "00": "---",

@@ -18,7 +18,11 @@ type NullishComparison = Readonly<{
 type NullishComparisonKind = "null" | "undefined";
 
 /** Operators supported by nullish comparison extraction. */
-type NullishComparisonOperator = "!=" | "!==" | "==" | "===";
+type NullishComparisonOperator =
+    | "!="
+    | "!=="
+    | "=="
+    | "===";
 
 /** Default accepted operators for nullish comparison parsing. */
 const defaultNullishComparisonOperators = [

@@ -1,0 +1,8 @@
+[format.rules]
+    indent-style                      = "space"
+    indent-sub-tables                 = false
+    indent-table-key-value-pairs      = true
+    indent-width                      = 4
+    key-value-equals-sign-alignment   = true
+    key-value-equals-sign-space-width = 1
+    line-ending                       = "lf"

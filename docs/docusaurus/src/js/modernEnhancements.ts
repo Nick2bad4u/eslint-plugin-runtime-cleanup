@@ -581,7 +581,7 @@ function initializeEnhancements(): CleanupFunction {
     };
 }
 
-if (globalThis !== undefined && typeof document !== "undefined") {
+if (typeof document !== "undefined") {
     initializeEnhancements();
     window.initializeAdvancedFeatures = initializeAdvancedFeatures;
 }

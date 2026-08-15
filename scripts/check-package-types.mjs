@@ -2,14 +2,7 @@ import { checkPackage, Package } from "@arethetypeswrong/core";
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 
-/**
- * @param {unknown} value - Value to narrow.
- *
- * @returns {value is Record<string, unknown>} Whether the value is a plain
- *   object record.
- */
-const isRecord = (value) =>
-    typeof value === "object" && value !== null && !Array.isArray(value);
+import { getSingleNpmPackEntry, isRecord } from "./npm-pack-output.mjs";
 
 /**
  * @param {string} filePath - JSON file path to read.
@@ -55,15 +48,7 @@ if (packProcess.status !== 0) {
 
 const packOutput = packProcess.stdout;
 
-const packEntries = JSON.parse(packOutput);
-
-if (!Array.isArray(packEntries) || packEntries.length !== 1) {
-    throw new Error(
-        "Expected npm pack --dry-run --json to return one package entry."
-    );
-}
-
-const [packEntry] = packEntries;
+const packEntry = getSingleNpmPackEntry(JSON.parse(packOutput));
 
 if (!isRecord(packEntry) || !Array.isArray(packEntry["files"])) {
     throw new Error("Expected npm pack output to include a files array.");

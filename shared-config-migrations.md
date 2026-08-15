@@ -41,10 +41,10 @@ $sharedPrettierDeps = @(
     "prettier-plugin-sql",
     "prettier-plugin-toml"
 )
-npm uninstall $sharedPrettierDeps --force
+npm uninstall $sharedPrettierDeps
 
 # 2) Install shared config + Prettier peer
-npm install --save-dev prettier prettier-config-nick2bad4u --force
+npm install --save-dev prettier prettier-config-nick2bad4u
 
 # 3) Write new config
 @'
@@ -89,7 +89,7 @@ $remove = $names | Where-Object {
 }
 
 if ($remove.Count -gt 0) {
-    npm uninstall $remove --force
+    npm uninstall $remove
 } else {
     Write-Host "✔️ No managed remark deps found to remove."
 }
@@ -146,13 +146,13 @@ $toRemove = $depNames | Sort-Object -Unique | Where-Object {
 }
 
 if ($toRemove.Count -gt 0) {
-    npm uninstall $toRemove --force
+    npm uninstall $toRemove
 } else {
     Write-Host "✔️ No managed stylelint deps found to remove."
 }
 
 # 2) Install shared config + peer stylelint
-npm install --save-dev stylelint-config-nick2bad4u stylelint --force
+npm install --save-dev stylelint-config-nick2bad4u stylelint
 
 # 3) Write new stylelint.config.mjs
 @'
@@ -187,7 +187,7 @@ Migrate to `secretlint-config-nick2bad4u`, removing local rule packages and repl
 Write-Host "`n🔧 Starting Secretlint migration..." -ForegroundColor Cyan
 
 # 1) Uninstall Secretlint rule deps now handled by the shared config
-npm uninstall --save-dev --force `
+npm uninstall --save-dev `
     @secretlint/secretlint-rule-anthropic `
     @secretlint/secretlint-rule-aws `
     @secretlint/secretlint-rule-database-connection-string `
@@ -204,7 +204,7 @@ npm uninstall --save-dev --force `
     @secretlint/types
 
 # 2) Install shared config
-npm install --save-dev secretlint secretlint-config-nick2bad4u --force
+npm install --save-dev secretlint secretlint-config-nick2bad4u
 
 # 3) Write new .secretlintrc.cjs
 @'
@@ -285,7 +285,7 @@ $eslintPlugins = @(
 npm uninstall @($eslintPlugins)
 
 # 2) Install shared config
-npm install --save-dev eslint-config-nick2bad4u --force
+npm install --save-dev eslint-config-nick2bad4u
 
 # 3) Write new eslint.config.mjs
 @'
@@ -335,8 +335,8 @@ $sharedPrettierDeps = @(
   "prettier-plugin-sql",
   "prettier-plugin-toml"
 )
-npm uninstall $sharedPrettierDeps --force
-npm install --save-dev prettier prettier-config-nick2bad4u --force
+npm uninstall $sharedPrettierDeps
+npm install --save-dev prettier prettier-config-nick2bad4u
 @'
 import prettierConfig from "prettier-config-nick2bad4u";
 
@@ -362,9 +362,9 @@ $keep = @("remark","remark-cli","remark-config-nick2bad4u")
 $remove = $names | Where-Object {
   (($_ -match '^remark($|-)') -or ($_ -eq 'unified')) -and ($_ -notin $keep)
 }
-if ($remove.Count -gt 0) { npm uninstall $remove --force }
+if ($remove.Count -gt 0) { npm uninstall $remove }
 
-npm install --save-dev remark-config-nick2bad4u remark remark-cli --force
+npm install --save-dev remark-config-nick2bad4u remark remark-cli
 @'
 import { createConfig } from "remark-config-nick2bad4u";
 
@@ -394,9 +394,9 @@ $toRemove = $depNames | Sort-Object -Unique | Where-Object {
   $_ -ne 'stylelint-config-nick2bad4u' -and
   $_ -ne 'stylelint'
 }
-if ($toRemove.Count -gt 0) { npm uninstall $toRemove --force }
+if ($toRemove.Count -gt 0) { npm uninstall $toRemove }
 
-npm install --save-dev stylelint-config-nick2bad4u stylelint --force
+npm install --save-dev stylelint-config-nick2bad4u stylelint
 @'
 import sharedConfig from "stylelint-config-nick2bad4u";
 
@@ -413,7 +413,7 @@ npx stylelint "**/*.{css,scss,sass}" --allow-empty-input
 # ── Secretlint ────────────────────────────────────────────────────────────────
 Write-Host "`n🔧 Starting Secretlint migration..." -ForegroundColor Cyan
 
-npm uninstall --save-dev --force `
+npm uninstall --save-dev `
    @secretlint/secretlint-rule-anthropic `
    @secretlint/secretlint-rule-aws `
    @secretlint/secretlint-rule-database-connection-string `
@@ -428,7 +428,7 @@ npm uninstall --save-dev --force `
    @secretlint/secretlint-rule-privatekey `
    @secretlint/secretlint-rule-secp256k1-privatekey `
    @secretlint/types
-npm install --save-dev secretlint secretlint-config-nick2bad4u --force
+npm install --save-dev secretlint secretlint-config-nick2bad4u
 @'
 const sharedConfig = require("secretlint-config-nick2bad4u/secretlintrc.json");
 
@@ -488,8 +488,8 @@ $eslintPlugins = @(
   "eslint-plugin-write-good-comments",
   "typescript-eslint"
 )
-npm uninstall @($eslintPlugins) --force
-npm install --save-dev eslint-config-nick2bad4u --force
+npm uninstall @($eslintPlugins)
+npm install --save-dev eslint-config-nick2bad4u
 @'
 import nick2bad4u from "eslint-config-nick2bad4u";
 
@@ -535,8 +535,8 @@ $sharedPrettierDeps = @(
   "prettier-plugin-sql",
   "prettier-plugin-toml"
 )
-npm uninstall $sharedPrettierDeps --force
-npm install --save-dev prettier prettier-config-nick2bad4u --force
+npm uninstall $sharedPrettierDeps
+npm install --save-dev prettier prettier-config-nick2bad4u
 @'
 import prettierConfig from "prettier-config-nick2bad4u";
 
@@ -562,9 +562,9 @@ $keep = @("remark","remark-cli","remark-config-nick2bad4u")
 $remove = $names | Where-Object {
   (($_ -match '^remark($|-)') -or ($_ -eq 'unified')) -and ($_ -notin $keep)
 }
-if ($remove.Count -gt 0) { npm uninstall $remove --force }
+if ($remove.Count -gt 0) { npm uninstall $remove }
 
-npm install --save-dev remark-config-nick2bad4u remark remark-cli --force
+npm install --save-dev remark-config-nick2bad4u remark remark-cli
 @'
 import { createConfig } from "remark-config-nick2bad4u";
 
@@ -594,9 +594,9 @@ $toRemove = $depNames | Sort-Object -Unique | Where-Object {
   $_ -ne 'stylelint-config-nick2bad4u' -and
   $_ -ne 'stylelint'
 }
-if ($toRemove.Count -gt 0) { npm uninstall $toRemove --force }
+if ($toRemove.Count -gt 0) { npm uninstall $toRemove }
 
-npm install --save-dev stylelint-config-nick2bad4u stylelint --force
+npm install --save-dev stylelint-config-nick2bad4u stylelint
 @'
 import sharedConfig from "stylelint-config-nick2bad4u";
 
@@ -613,7 +613,7 @@ npx stylelint "**/*.{css,scss,sass}" --allow-empty-input
 # ── Secretlint ────────────────────────────────────────────────────────────────
 Write-Host "`n🔧 Starting Secretlint migration..." -ForegroundColor Cyan
 
-npm uninstall --save-dev --force `
+npm uninstall --save-dev `
    @secretlint/secretlint-rule-anthropic `
    @secretlint/secretlint-rule-aws `
    @secretlint/secretlint-rule-database-connection-string `
@@ -628,7 +628,7 @@ npm uninstall --save-dev --force `
    @secretlint/secretlint-rule-privatekey `
    @secretlint/secretlint-rule-secp256k1-privatekey `
    @secretlint/types
-npm install --save-dev secretlint secretlint-config-nick2bad4u --force
+npm install --save-dev secretlint secretlint-config-nick2bad4u
 @'
 const sharedConfig = require("secretlint-config-nick2bad4u/secretlintrc.json");
 

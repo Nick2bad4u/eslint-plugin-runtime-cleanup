@@ -795,6 +795,7 @@ coverage/
 **/auto-generated/**
 **/build/**
 **/dist/**
+test/__snapshots__/readme-rules-section.generated.md
 
 # Version-specific ignores
 **/node_modules/**

@@ -7,13 +7,20 @@ import { isDefined } from "ts-extras";
 
 import { getParentNode } from "./ast-node.js";
 
+type TransparentExpressionWrapper =
+    | TSESTree.ChainExpression
+    | TSESTree.TSAsExpression
+    | TSESTree.TSNonNullExpression
+    | TSESTree.TSSatisfiesExpression
+    | TSESTree.TSTypeAssertion;
+
 /**
  * Check whether a parent node is a transparent expression wrapper for `child`.
  */
 export const isTransparentExpressionWrapper = (
     parent: Readonly<TSESTree.Node>,
     child: Readonly<TSESTree.Node>
-): boolean => {
+): parent is Readonly<TransparentExpressionWrapper> => {
     if (parent.type === AST_NODE_TYPES.ChainExpression) {
         return parent.expression === child;
     }
@@ -54,7 +61,7 @@ export const isOptionalChainExpression = (
 export const isDirectReturnLikeExpressionPosition = (
     node: Readonly<TSESTree.Expression>
 ): boolean => {
-    let currentNode: Readonly<TSESTree.Node> = node;
+    let currentNode: Readonly<TSESTree.Expression> = node;
 
     let parentNode = getParentNode(currentNode);
 

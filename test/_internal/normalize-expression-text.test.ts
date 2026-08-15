@@ -53,59 +53,46 @@ const getAliasTypeAnnotation = (annotationText: string): TSESTree.TypeNode => {
 };
 
 describe(areEquivalentExpressions, () => {
-    it("treats identical expressions as equivalent", () => {
+    it.each([
+        {
+            expected: true,
+            left: "user.profile.id",
+            name: "treats identical expressions as equivalent",
+            right: "user.profile.id",
+        },
+        {
+            expected: false,
+            left: "user.profile.id",
+            name: "treats different expressions as non-equivalent",
+            right: "user.profile.name",
+        },
+        {
+            expected: true,
+            left: "value as string",
+            name: "unwraps TS assertion wrappers for equivalence",
+            right: "value",
+        },
+        {
+            expected: true,
+            left: "value!",
+            name: "unwraps non-null and satisfies wrappers for equivalence",
+            right: "value satisfies unknown",
+        },
+        {
+            expected: true,
+            left: "<string>value",
+            name: "unwraps TypeScript angle-bracket assertions for equivalence",
+            right: "value",
+        },
+    ])("$name", ({ expected, left, right }) => {
         expect.hasAssertions();
 
-        const left = getInitializerExpression("user.profile.id");
-        const right = getInitializerExpression("user.profile.id");
+        const leftExpression = getInitializerExpression(left);
+        const rightExpression = getInitializerExpression(right);
 
-        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual(
-            { actual: true }
-        );
-    });
-
-    it("treats different expressions as non-equivalent", () => {
-        expect.hasAssertions();
-
-        const left = getInitializerExpression("user.profile.id");
-        const right = getInitializerExpression("user.profile.name");
-
-        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual(
-            { actual: false }
-        );
-    });
-
-    it("unwraps TS assertion wrappers for equivalence", () => {
-        expect.hasAssertions();
-
-        const left = getInitializerExpression("value as string");
-        const right = getInitializerExpression("value");
-
-        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual(
-            { actual: true }
-        );
-    });
-
-    it("unwraps non-null and satisfies wrappers for equivalence", () => {
-        expect.hasAssertions();
-
-        const left = getInitializerExpression("value!");
-        const right = getInitializerExpression("value satisfies unknown");
-
-        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual(
-            { actual: true }
-        );
-    });
-
-    it("unwraps TypeScript angle-bracket assertions for equivalence", () => {
-        expect.hasAssertions();
-
-        const left = getInitializerExpression("<string>value");
-        const right = getInitializerExpression("value");
-
-        expect({ actual: areEquivalentExpressions(left, right) }).toStrictEqual(
-            { actual: true }
-        );
+        expect({
+            actual: areEquivalentExpressions(leftExpression, rightExpression),
+        }).toStrictEqual({ actual: expected });
     });
 
     it("handles cyclic wrapper expressions without infinite recursion", () => {
@@ -286,7 +273,7 @@ describe(areEquivalentTypeNodes, () => {
                 getOwnPropertyDescriptor(target, property): PropertyDescriptor {
                     descriptorReadCount += 1;
 
-                    if (descriptorReadCount >= 2 && property === "alpha") {
+                    if (property === "alpha" && descriptorReadCount >= 2) {
                         delete right.alpha;
                     }
 

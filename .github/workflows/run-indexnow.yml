@@ -57,12 +57,25 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: "Setup Node.js"
+            - name: "Setup Node.js without package-manager caching"
               uses: "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020" # v7.0.0
               with:
                   node-version-file: ".node-version"
-                  cache: "npm"
-                  cache-dependency-path: "package-lock.json"
+                  package-manager-cache: false
+
+            - name: "Install the declared npm version"
+              id: "npm-toolchain"
+              working-directory: "${{ runner.temp }}"
+              run: >-
+                  node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+
+            - name: "Restore npm download cache"
+              uses: "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: "${{ steps.npm-toolchain.outputs.cache }}"
+                  key: "${{ runner.os }}-${{ runner.arch }}-npm-${{ steps.npm-toolchain.outputs.version }}-${{ hashFiles('package-lock.json') }}"
+                  restore-keys: |
+                      ${{ runner.os }}-${{ runner.arch }}-npm-${{ steps.npm-toolchain.outputs.version }}-
 
             - name: "Install dependencies"
               run: "npm ci"

@@ -59,15 +59,16 @@ jobs:
   steps:
    - name: Checkout code
      uses: actions/checkout@v6
-   - name: Setup Node.js
-     uses: actions/setup-node@v6
+   - name: Setup Node.js without package-manager caching
+     uses: actions/setup-node@v7
      with:
       node-version-file: .node-version
-      cache: npm
-      cache-dependency-path: package-lock.json
+      package-manager-cache: false
+   - name: Install the declared npm version
+     working-directory: ${{ runner.temp }}
+     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
    - name: Install dependencies
-     run: |
-      npm ci --force
+     run: npm ci
    - name: Verify package
      run: npm run release:check
    - name: Pack tarball
@@ -247,19 +248,29 @@ jobs:
   - **Restore Keys:** Use `restore-keys` for fallbacks to older, compatible caches.
   - **Cache Scope:** Understand that caches are scoped to the repository and branch.
 - **Guidance for Copilot:**
-  - In this npm repository, prefer `actions/setup-node` with `node-version-file: .node-version` and `cache: npm` before reaching for a custom `actions/cache` block.
+  - Disable `actions/setup-node` package-manager caching, run `scripts/setup-npm-toolchain.mjs` from `runner.temp` to install the exact `packageManager` version, and only then restore the npm download cache with a SHA-pinned `actions/cache` step.
   - Treat `.node-version` as the workflow source of truth and keep `.nvmrc` synchronized with the same exact version for local tooling compatibility.
   - Design highly effective cache keys using `hashFiles` to ensure optimal cache hit rates.
   - Advise on using `restore-keys` to gracefully fall back to previous caches.
 - **Example (Repository-aligned npm caching):**
 
 ```yaml
-- name: Setup Node.js
-  uses: actions/setup-node@v6
+- name: Setup Node.js without package-manager caching
+  uses: actions/setup-node@v7
   with:
    node-version-file: .node-version
-   cache: npm
-   cache-dependency-path: package-lock.json
+   package-manager-cache: false
+- name: Install the declared npm version
+  id: npm-toolchain
+  working-directory: ${{ runner.temp }}
+  run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+- name: Restore npm download cache
+  uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+  with:
+   path: ${{ steps.npm-toolchain.outputs.cache }}
+   key: ${{ runner.os }}-${{ runner.arch }}-npm-${{ steps.npm-toolchain.outputs.version }}-${{ hashFiles('package-lock.json') }}
+   restore-keys: |
+    ${{ runner.os }}-${{ runner.arch }}-npm-${{ steps.npm-toolchain.outputs.version }}-
 ```
 
 ### **2. Matrix Strategies for Parallelization**
@@ -294,18 +305,21 @@ jobs:
    - name: Checkout code
      uses: actions/checkout@v6
 
-   - name: Setup Node.js
-     uses: actions/setup-node@v6
+   - name: Setup Node.js without package-manager caching
+     uses: actions/setup-node@v7
      with:
       node-version-file: .node-version
-      cache: npm
-      cache-dependency-path: package-lock.json
+      package-manager-cache: false
+
+   - name: Install the declared npm version
+     working-directory: ${{ runner.temp }}
+     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
 
    - name: Install dependencies
-     run: npm ci --force
+     run: npm ci
 
    - name: Install ESLint
-     run: npm install --no-save --force eslint@${{ matrix.eslint-version }} @eslint/js@${{ matrix.eslint-version }}
+     run: npm install --no-save eslint@${{ matrix.eslint-version }} @eslint/js@${{ matrix.eslint-version }}
 
    - name: Run compat lint
      run: npm run lint:compat:eslint9 -- --expect-eslint-major=9

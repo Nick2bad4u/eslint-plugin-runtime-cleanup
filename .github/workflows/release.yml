@@ -15,7 +15,7 @@ on:
     workflow_dispatch:
         inputs:
             release_type:
-                description: "Release bump type"
+                description: "Prepared release bump type"
                 required: true
                 default: "patch"
                 type: "choice"
@@ -24,11 +24,11 @@ on:
                     - "minor"
                     - "major"
             version:
-                description: "Explicit release version in x.y.z format (overrides release_type)"
+                description: "Expected prepared version in x.y.z format (overrides release_type)"
                 required: false
                 type: "string"
             ref:
-                description: "Branch to release from when running manually"
+                description: "Branch selected by the workflow dispatch"
                 required: false
                 default: "main"
                 type: "string"
@@ -76,6 +76,9 @@ jobs:
             - name: "Resolve target ref"
               id: "target_ref"
               env:
+                  EVENT_REF_NAME: "${{ github.ref_name }}"
+                  EVENT_REF_TYPE: "${{ github.ref_type }}"
+                  EVENT_SHA: "${{ github.sha }}"
                   WORKFLOW_DISPATCH_REF: "${{ inputs.ref }}"
               run: |
                   set -euo pipefail
@@ -85,11 +88,19 @@ jobs:
                       branch="${DEFAULT_RELEASE_BRANCH}"
                     fi
                     branch="${branch#refs/heads/}"
-                    if [[ "$branch" == refs/tags/* ]]; then
-                      echo "workflow_dispatch ref must be a branch, not a tag: $branch" >&2
+                    if [ "$EVENT_REF_TYPE" != "branch" ]; then
+                      echo "workflow_dispatch must target a branch, not ${EVENT_REF_TYPE}: ${EVENT_REF_NAME}" >&2
                       exit 1
                     fi
-                    echo "ref=$branch" >> "$GITHUB_OUTPUT"
+                    if [ "$branch" != "$EVENT_REF_NAME" ]; then
+                      echo "The ref input ($branch) must match the dispatched branch ($EVENT_REF_NAME)." >&2
+                      exit 1
+                    fi
+                    if [ "$branch" != "$DEFAULT_RELEASE_BRANCH" ]; then
+                      echo "Manual releases must target ${DEFAULT_RELEASE_BRANCH}; received ${branch}." >&2
+                      exit 1
+                    fi
+                    echo "ref=$EVENT_SHA" >> "$GITHUB_OUTPUT"
                     echo "branch=$branch" >> "$GITHUB_OUTPUT"
                   else
                     echo "ref=${GITHUB_REF}" >> "$GITHUB_OUTPUT"
@@ -103,6 +114,30 @@ jobs:
                   fetch-tags: true
                   ref: "${{ steps.target_ref.outputs.ref }}"
                   token: "${{ secrets.GITHUB_TOKEN }}"
+
+            - name: "Validate immutable release source"
+              if: "github.event_name == 'workflow_dispatch'"
+              env:
+                  BRANCH: "${{ steps.target_ref.outputs.branch }}"
+                  EVENT_SHA: "${{ github.sha }}"
+              run: |
+                  set -euo pipefail
+
+                  checked_out_sha=$(git rev-parse HEAD)
+                  if [ "$checked_out_sha" != "$EVENT_SHA" ]; then
+                    echo "Checked out ${checked_out_sha}, but workflow_dispatch provenance identifies ${EVENT_SHA}." >&2
+                    exit 1
+                  fi
+
+                  remote_sha=$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')
+                  if [ -z "$remote_sha" ]; then
+                    echo "Unable to resolve origin/${BRANCH}." >&2
+                    exit 1
+                  fi
+                  if [ "$remote_sha" != "$EVENT_SHA" ]; then
+                    echo "origin/${BRANCH} advanced to ${remote_sha} after dispatch; dispatch a fresh release from the new commit." >&2
+                    exit 1
+                  fi
 
             - name: "Setup Node.js without package-manager caching"
               uses: "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020" # v7.0.0
@@ -144,25 +179,24 @@ jobs:
                   RELEASE_TYPE: "${{ inputs.release_type }}"
               run: |
                   set -euo pipefail
-                  explicit_version="${EXPLICIT_VERSION:-}"
-                  if [ -n "$explicit_version" ]; then
-                    if [[ ! "$explicit_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                      echo "Invalid version input '$explicit_version'. Use x.y.z format." >&2
-                      exit 1
-                    fi
-                    exit 0
-                  fi
 
+                  package_version=$(node -p "require('./package.json').version")
+                  explicit_version="${EXPLICIT_VERSION:-}"
                   release_type="${RELEASE_TYPE:-patch}"
-                  case "$release_type" in
-                    patch|minor|major)
-                      exit 0
-                      ;;
-                    *)
-                      echo "Invalid release_type '$release_type'. Allowed: patch, minor, major." >&2
-                      exit 1
-                      ;;
-                  esac
+
+                  latest_tag=""
+                  while IFS= read -r candidate_tag; do
+                    if [[ "$candidate_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      latest_tag="$candidate_tag"
+                      break
+                    fi
+                  done < <(git tag --merged HEAD --list 'v[0-9]*' --sort=-v:refname)
+
+                  node scripts/validate-prepared-release.mjs \
+                    "$package_version" \
+                    "$latest_tag" \
+                    "$release_type" \
+                    "$explicit_version"
 
             - name: "Validate tag matches package version"
               if: "startsWith(github.ref, 'refs/tags/v')"
@@ -184,39 +218,25 @@ jobs:
               if: "${{ github.event_name != 'workflow_dispatch' || !inputs.skip_verify }}"
               run: "npm run release:check"
 
-            - name: "Ensure verification did not modify tracked files"
-              if: "startsWith(github.ref, 'refs/tags/v')"
+            - name: "Build package"
+              run: "npm run build"
+
+            - name: "Ensure release preparation did not modify tracked files"
               run: |
                   set -euo pipefail
                   if ! git diff --quiet || ! git diff --cached --quiet; then
-                    echo "release:check modified files on a tag-triggered release. Ensure main is clean before tagging." >&2
+                    echo "Release preparation modified tracked files. Commit generated release state before dispatching." >&2
                     git status --short
                     exit 1
                   fi
 
             - name: "Determine release version"
               id: "version"
-              env:
-                  EXPLICIT_VERSION: "${{ inputs.version }}"
-                  RELEASE_TYPE: "${{ inputs.release_type }}"
               run: |
                   set -euo pipefail
 
                   if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    explicit_version="${EXPLICIT_VERSION:-}"
-                    if [ -n "$explicit_version" ]; then
-                      current_version=$(node -p "require('./package.json').version")
-                      if [ "$current_version" != "$explicit_version" ]; then
-                        npm version "$explicit_version" --no-git-tag-version
-                      else
-                        echo "package.json is already at $explicit_version; keeping existing version."
-                      fi
-                      version="$explicit_version"
-                    else
-                      release_type="${RELEASE_TYPE:-patch}"
-                      npm version "$release_type" --no-git-tag-version
-                      version=$(node -p "require('./package.json').version")
-                    fi
+                    version=$(node -p "require('./package.json').version")
                   else
                     tag="${GITHUB_REF_NAME}"
                     version="${tag#v}"
@@ -234,10 +254,6 @@ jobs:
                     echo "npm_release_url=$npm_release_url"
                     echo "github_release_url=$github_release_url"
                   } >> "$GITHUB_OUTPUT"
-
-            - name: "Rebuild package after manual version bump"
-              if: "github.event_name == 'workflow_dispatch'"
-              run: "npm run build"
 
             - name: "Check whether version is already published"
               id: "npm_check"
@@ -262,29 +278,40 @@ jobs:
                   echo "Version ${VERSION} is already published. Choose a new release type/version." >&2
                   exit 1
 
-            - name: "Commit and push release version + tag"
+            - name: "Create and push release tag"
               if: "github.event_name == 'workflow_dispatch'"
               env:
                   BRANCH: "${{ steps.target_ref.outputs.branch }}"
+                  EVENT_SHA: "${{ github.sha }}"
                   TAG: "${{ steps.version.outputs.tag }}"
               run: |
                   set -euo pipefail
+
+                  head_sha=$(git rev-parse HEAD)
+                  if [ "$head_sha" != "$EVENT_SHA" ]; then
+                    echo "HEAD ${head_sha} no longer matches workflow_dispatch source ${EVENT_SHA}." >&2
+                    exit 1
+                  fi
+
+                  remote_sha=$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')
+                  if [ "$remote_sha" != "$EVENT_SHA" ]; then
+                    echo "origin/${BRANCH} is ${remote_sha}; refusing to tag stale source ${EVENT_SHA}." >&2
+                    exit 1
+                  fi
 
                   if git rev-parse "$TAG" >/dev/null 2>&1; then
                     echo "Tag $TAG already exists locally." >&2
                     exit 1
                   fi
 
-                  git add -A
-                  if git diff --cached --quiet; then
-                    echo "No staged changes found for release commit; tagging current HEAD."
-                  else
-                    git commit -m "chore: release ${TAG}"
-                    git push origin "HEAD:${BRANCH}"
-                  fi
-
                   git tag -a "$TAG" -m "$TAG"
-                  git push origin "$TAG"
+                  git push \
+                    --atomic \
+                    --no-follow-tags \
+                    --force-with-lease="refs/heads/${BRANCH}:${EVENT_SHA}" \
+                    origin \
+                    "${EVENT_SHA}:refs/heads/${BRANCH}" \
+                    "refs/tags/${TAG}:refs/tags/${TAG}"
 
             - name: "Generate release notes from git-cliff"
               env:

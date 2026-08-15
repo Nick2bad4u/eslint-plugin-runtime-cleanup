@@ -9,7 +9,7 @@ workers, streams, child processes, and disposable handles.
 ## Prerequisites
 
 - Node.js `>=22.0.0` (see `package.json#engines`)
-- npm `>=11`
+- npm `>=12.0.2` (see `package.json#devEngines`)
 - Git
 
 ## Local setup

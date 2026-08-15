@@ -64,7 +64,6 @@ const knipConfig: KnipConfig = {
         "react-github-btn",
         "actionlint",
         "commitlint",
-        "gitleaks-secret-scanner",
         "htmlhint",
         "leasot",
         "markdown-link-check",

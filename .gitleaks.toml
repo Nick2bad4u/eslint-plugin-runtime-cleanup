@@ -1,13 +1,13 @@
 title = "eslint-plugin-runtime-cleanup secret detection configuration"
 
 [extend]
-path = "node_modules/gitleaks-config-nick2bad4u/gitleaks.toml"
+    path = "node_modules/gitleaks-config-nick2bad4u/gitleaks.toml"
 
 [[allowlists]]
-description = "Ignore generated docs artifacts"
-paths = [
-    '''^docs/docusaurus/site-docs/developer/api/''',
-    '''^docs/docusaurus/static/eslint-inspector/''',
-    '''^docs/docusaurus/static/stylelint-inspector/''',
-    '''^docs/typedoc\.json$''',
-]
+    description = "Ignore generated docs artifacts"
+    paths       = [
+        '''^docs/docusaurus/site-docs/developer/api/''',
+        '''^docs/docusaurus/static/eslint-inspector/''',
+        '''^docs/docusaurus/static/stylelint-inspector/''',
+        '''^docs/typedoc\.json$''',
+    ]

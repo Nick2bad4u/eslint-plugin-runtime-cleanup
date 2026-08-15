@@ -30,6 +30,7 @@ const isLoopOrIfTest = (
         parentNode.type === AST_NODE_TYPES.ForStatement ||
         parentNode.type === AST_NODE_TYPES.IfStatement ||
         parentNode.type === AST_NODE_TYPES.WhileStatement) &&
+    parentNode.test !== null &&
     parentNode.test === currentNode;
 
 const isSwitchCaseTest = (
@@ -37,6 +38,7 @@ const isSwitchCaseTest = (
     currentNode: Readonly<TSESTree.Node>
 ): boolean =>
     parentNode.type === AST_NODE_TYPES.SwitchCase &&
+    parentNode.test !== null &&
     parentNode.test === currentNode;
 
 const isUnaryNotArgument = (
@@ -69,7 +71,7 @@ const isBooleanGuardContext = (
 export const isTypePredicateExpressionAutofixSafe = (
     node: Readonly<TSESTree.Expression>
 ): boolean => {
-    let currentNode: Readonly<TSESTree.Node> = node;
+    let currentNode: Readonly<TSESTree.Expression> = node;
 
     let parentNode = getParentNode(currentNode);
 

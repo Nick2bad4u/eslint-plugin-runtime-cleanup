@@ -9,7 +9,7 @@ workers, streams, child processes, and disposable handles.
 ## Prerequisites
 
 - Node.js `>=22.0.0` (see `package.json#engines`)
-- npm `>=11`
+- npm `>=12.0.2` (see `package.json#devEngines`)
 - Git
 
 ## Local setup
@@ -19,7 +19,7 @@ workers, streams, child processes, and disposable handles.
 2. Install dependencies from the repository root:
 
    ```bash
-   npm ci --force
+   npm ci
    ```
 
 3. Run the main quality gate:

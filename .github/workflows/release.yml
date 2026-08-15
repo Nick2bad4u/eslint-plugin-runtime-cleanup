@@ -218,11 +218,14 @@ jobs:
               if: "${{ github.event_name != 'workflow_dispatch' || !inputs.skip_verify }}"
               run: "npm run release:check"
 
-            - name: "Ensure verification did not modify tracked files"
+            - name: "Build package"
+              run: "npm run build"
+
+            - name: "Ensure release preparation did not modify tracked files"
               run: |
                   set -euo pipefail
                   if ! git diff --quiet || ! git diff --cached --quiet; then
-                    echo "release:check modified tracked files. Commit generated release state before dispatching." >&2
+                    echo "Release preparation modified tracked files. Commit generated release state before dispatching." >&2
                     git status --short
                     exit 1
                   fi
@@ -302,7 +305,13 @@ jobs:
                   fi
 
                   git tag -a "$TAG" -m "$TAG"
-                  git push origin "$TAG"
+                  git push \
+                    --atomic \
+                    --no-follow-tags \
+                    --force-with-lease="refs/heads/${BRANCH}:${EVENT_SHA}" \
+                    origin \
+                    "${EVENT_SHA}:refs/heads/${BRANCH}" \
+                    "refs/tags/${TAG}:refs/tags/${TAG}"
 
             - name: "Generate release notes from git-cliff"
               env:

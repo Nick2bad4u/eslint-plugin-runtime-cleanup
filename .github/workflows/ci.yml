@@ -194,10 +194,32 @@ jobs:
             - name: "Build package"
               run: "npm run build"
 
-            - name: "Install ESLint 9 runtime for compatibility smoke checks"
-              run: "npm install --no-save eslint@${{ matrix.eslint-version }} @eslint/js@${{ matrix.eslint-js-version }}"
+            - name: "Create isolated ESLint 9 compatibility fixture"
+              env:
+                  ESLINT_JS_VERSION: "${{ matrix.eslint-js-version }}"
+                  ESLINT_VERSION: "${{ matrix.eslint-version }}"
+              run: |
+                  set -euo pipefail
 
-            - name: "Run ESLint 9 compatibility smoke checks"
+                  fixture_dir="${RUNNER_TEMP}/eslint9-compat"
+                  pack_metadata_path="${fixture_dir}/npm-pack.json"
+                  rm -rf "$fixture_dir"
+                  mkdir -p "$fixture_dir"
+
+                  npm pack --json --pack-destination "$fixture_dir" > "$pack_metadata_path"
+                  tarball_filename=$(node scripts/read-npm-pack-filename.mjs < "$pack_metadata_path")
+                  cp scripts/eslint9-compat-smoke.mjs "$fixture_dir/compat-smoke.mjs"
+
+                  cd "$fixture_dir"
+                  npm init --yes
+                  npm install --ignore-scripts --no-package-lock --no-save \
+                    "@eslint/js@${ESLINT_JS_VERSION}" \
+                    "eslint@${ESLINT_VERSION}" \
+                    "typescript@5.9.3" \
+                    "./${tarball_filename}"
+
+            - name: "Run isolated ESLint 9 compatibility smoke checks"
               env:
                   ESLINT_EXPECTED_MAJOR: "9"
-              run: "npm run lint:compat:eslint9"
+              working-directory: "${{ runner.temp }}/eslint9-compat"
+              run: "node compat-smoke.mjs"

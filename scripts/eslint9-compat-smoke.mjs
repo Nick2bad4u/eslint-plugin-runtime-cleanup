@@ -5,7 +5,7 @@
 
 import { ESLint } from "eslint";
 
-import plugin from "../dist/plugin.js";
+import plugin from "eslint-plugin-runtime-cleanup";
 
 const expectedMajorText = process.env["ESLINT_EXPECTED_MAJOR"];
 

@@ -347,7 +347,7 @@ jobs:
 
                   npm pack --json --pack-destination "$assets_dir" > "$pack_metadata_path"
 
-                  tarball_filename=$(node -e "const fs = require('node:fs'); const packMetadata = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); process.stdout.write(packMetadata[0].filename);" "$pack_metadata_path")
+                  tarball_filename=$(node scripts/read-npm-pack-filename.mjs < "$pack_metadata_path")
                   tarball_path="${assets_dir}/${tarball_filename}"
                   safe_package_name=$(printf '%s' "$PACKAGE_NAME" | sed 's/^@//; s#/#-#g')
                   zip_basename="${safe_package_name}-${VERSION}"

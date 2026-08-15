@@ -66,7 +66,7 @@ jobs:
       package-manager-cache: false
    - name: Install the declared npm version
      working-directory: ${{ runner.temp }}
-     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" >> "$GITHUB_OUTPUT"
    - name: Install dependencies
      run: npm ci
    - name: Verify package
@@ -263,7 +263,7 @@ jobs:
 - name: Install the declared npm version
   id: npm-toolchain
   working-directory: ${{ runner.temp }}
-  run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+  run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" >> "$GITHUB_OUTPUT"
 - name: Restore npm download cache
   uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
   with:
@@ -313,7 +313,7 @@ jobs:
 
    - name: Install the declared npm version
      working-directory: ${{ runner.temp }}
-     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+     run: node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" >> "$GITHUB_OUTPUT"
 
    - name: Install dependencies
      run: npm ci

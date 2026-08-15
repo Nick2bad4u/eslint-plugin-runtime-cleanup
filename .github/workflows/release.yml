@@ -114,8 +114,9 @@ jobs:
             - name: "Install the declared npm version"
               id: "npm-toolchain"
               working-directory: "${{ runner.temp }}"
-              run: >-
-                  node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" "$GITHUB_WORKSPACE/package.json"
+              run: |
+                  set -euo pipefail
+                  node "$GITHUB_WORKSPACE/scripts/setup-npm-toolchain.mjs" >> "$GITHUB_OUTPUT"
 
             - name: "Restore npm download cache"
               uses: "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0

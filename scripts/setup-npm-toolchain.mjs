@@ -1,4 +1,4 @@
-import { appendFileSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 /**
@@ -61,11 +61,15 @@ const runNpm = (arguments_, captureOutput = false) => {
                   "pipe",
                   "inherit",
               ]
-            : "inherit",
+            : [
+                  "ignore",
+                  process.stderr,
+                  process.stderr,
+              ],
     });
 
     if (result.error !== undefined) {
-        throw result.error;
+        throw new Error("Unable to start npm.");
     }
     if (result.status !== 0) {
         throw new Error(
@@ -77,13 +81,10 @@ const runNpm = (arguments_, captureOutput = false) => {
 };
 
 const main = () => {
-    const packageJsonPath = process.argv[2];
-    if (packageJsonPath === undefined) {
-        throw new Error("Usage: setup-npm-toolchain.mjs <package.json-path>");
-    }
-
     /** @type {unknown} */
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+    const packageJson = JSON.parse(
+        readFileSync(new URL("../package.json", import.meta.url), "utf8")
+    );
     if (!isRecord(packageJson)) {
         throw new Error(
             "The repository package.json must contain a JSON object."
@@ -134,24 +135,12 @@ const main = () => {
         throw new Error("npm returned an empty download-cache path.");
     }
 
-    const githubOutput = process.env["GITHUB_OUTPUT"];
-    if (githubOutput === undefined || githubOutput.length === 0) {
-        throw new Error(
-            "GITHUB_OUTPUT is required to expose the npm toolchain."
-        );
-    }
-
-    appendFileSync(
-        githubOutput,
-        `version=${actualVersion}\ncache=${cachePath}\n`,
-        "utf8"
-    );
-    console.log(`Using npm ${actualVersion} with download cache ${cachePath}`);
+    process.stdout.write(`version=${actualVersion}\ncache=${cachePath}\n`);
 };
 
 try {
     main();
-} catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+} catch {
+    console.error("Failed to configure the declared npm toolchain.");
     process.exitCode = 1;
 }

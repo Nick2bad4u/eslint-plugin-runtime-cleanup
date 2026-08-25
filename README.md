@@ -10,6 +10,8 @@ The runtime, preset surfaces, documentation structure, tests, and release gates
 are in place so cleanup rules can stay consistent across rule metadata,
 generated docs, and flat config presets.
 
+> **Oxlint:** Not compatible as a complete plugin with Oxlint 1.80.0. Its type-aware animation and Web Stream lock rules require TypeScript parser services, which [Oxlint JavaScript plugins do not provide](https://oxc.rs/docs/guide/usage/linter/type-aware.html); use ESLint for this plugin.
+
 ## Install
 
 ```sh
